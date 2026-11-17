@@ -1,0 +1,255 @@
+{
+  "version": 5,
+  "step": "agents",
+  "owner": "active-orchestrator",
+  "discovery": {
+    "created_by": "discovery-research",
+    "sources": [
+      "https://www.softwaredentalink.com/ar/planes",
+      "https://www.softwaredentalink.com/cl/planes",
+      "https://oclucrm.com/",
+      "https://www.dentaly.com.ar/",
+      "https://clinic-cloud.com/",
+      "https://clinic-cloud.com/tarifas",
+      "https://clinic-cloud.com/blog/dentix-elige-clinic-cloud-como-software-gestion-clinicas",
+      "https://www.opendental.com/site/fees.html",
+      "https://www.dentrix.com/",
+      "https://odonthia.com/blog/mejores-software-odontologicos-argentina-2026"
+    ],
+    "competitors": [
+      { "name": "Dentalink", "notes_file": "discovery/sources/dentalink.md" },
+      { "name": "OCLÜ", "notes_file": "discovery/sources/oclu.md" },
+      { "name": "Dentaly", "notes_file": "discovery/sources/dentaly.md" },
+      { "name": "Clinic Cloud", "notes_file": "discovery/sources/clinic-cloud.md" },
+      { "name": "Open Dental", "notes_file": "discovery/sources/open-dental.md" },
+      { "name": "Dentrix", "notes_file": "discovery/sources/dentrix.md" }
+    ],
+    "problema": "El consultorio odontológico no tiene un sistema único que resuelva a la vez la gestión del consultorio (agenda, pacientes, historia clínica, cobros) y los turnos para los pacientes; hoy se resuelve con planillas, cuaderno, WhatsApp y la memoria del odontólogo. Para: odontólogos, recepción/administración y pacientes.",
+    "usuarios": [
+      "Odontólogo/a — atiende, carga historia clínica, gestiona sus turnos",
+      "Paciente — reserva/cancela turnos, ve sus datos y evoluciones",
+      "Recepción/Administración — agenda general, cobros y recordatorios",
+      "Administrador del sistema — usuarios, permisos, consultorios y reportes"
+    ],
+    "casos_de_uso": [
+      "Como paciente, quiero reservar o cancelar un turno para no depender de llamadas o WhatsApp",
+      "Como odontólogo, quiero ver mi agenda del día y registrar la atención con su cobro",
+      "Como recepción, quiero administrar la agenda general y los cobros",
+      "Como administrador, quiero gestionar usuarios y permisos por rol"
+    ],
+    "funcionalidades_necesarias": [
+      "Pacientes + historia clínica (alta, búsqueda, evolución)",
+      "Agenda y turnos (agenda por odontólogo, reservar/cancelar, sin solapamientos)",
+      "Atención y cobros (registrar sesión, cobrar, deudas/pagos)",
+      "Usuarios y permisos (login por rol: odontólogo, recepción, admin, paciente)"
+    ],
+    "funcionalidades_opcionales": [
+      "Recordatorios automáticos (WhatsApp/Email)",
+      "Facturación y reportes",
+      "Portal del paciente (reserva y consulta auto-servicio)"
+    ],
+    "reglas_de_negocio": [
+      "Un paciente no puede tener dos turnos solapados",
+      "Solo el odontólogo dueño de la agenda edita su historia clínica",
+      "La historia clínica es confidencial (dato de salud sensible)",
+      "Los cobros son registro interno de pagos/deudas, no facturación fiscal"
+    ],
+    "integraciones": [
+      "WhatsApp Business API y/o Email — confirmaciones y recordatorios",
+      "Pagos (Mercado Pago / transferencias / tarjetas) — cobro de sesiones"
+    ],
+    "restricciones": [
+      "Stack fijo (no negociable): Frontend TypeScript vanilla + diseño responsivo; Backend Spring Boot + Gradle",
+      "Plazo o presupuesto acotado — condiciona el alcance del MVP",
+      "Datos sensibles / compliance: historia clínica = datos de salud (confidencialidad, backups, auditoría)"
+    ],
+    "riesgos": [
+      "Adopción real: si no es más rápido que cuaderno/WhatsApp, odontólogo y paciente no lo usan",
+      "Datos y privacidad: manejar historia clínica desde el día 1 sin experiencia previa en compliance",
+      "Integraciones: WhatsApp Business API y pagos pueden ser caros o lentos de implementar",
+      "Scope: 4 features innegociables en el MVP con stack fijo y presupuesto acotado — riesgo de crecimiento"
+    ],
+    "preguntas_abiertas": [
+      "¿Un solo consultorio o preparado para multi-sede/multi-odontólogo desde ya?",
+      "¿Cloud o local (on-premise)? Condiciona backups de datos sensibles",
+      "¿Los cobros emiten comprobante fiscal real o solo registro interno?",
+      "Recordatorios: ¿WhatsApp Business API (tiene costo) o primero email?",
+      "¿Portal del paciente entra en el MVP o post-lanzamiento?",
+      "¿Auditoría/backups de historias clínicas: qué nivel mínimo exigir?"
+    ]
+  },
+  "kb": {
+    "created_by": "kb-creator",
+    "source": "interactive",
+    "discovery": {
+      "system_type": "SaaS multi-tenant (web application, modular monolith + static frontend)",
+      "domain": "odontología — gestión de consultorio",
+      "scale": "multi-tenant — múltiples consultorios (< 50 usuarios por tenant)",
+      "stack": ["Spring Boot", "Gradle", "PostgreSQL", "TypeScript vanilla"],
+      "needs_infra": true,
+      "problem": "El consultorio odontológico no tiene un sistema único que resuelva a la vez la gestión del consultorio (agenda, pacientes, historia clínica, cobros) y los turnos para los pacientes; hoy se resuelve con planillas, cuaderno, WhatsApp y la memoria del odontólogo."
+    },
+    "files": [
+      "knowledge-base/01_vision_y_objetivos.md",
+      "knowledge-base/02_descripcion_general.md",
+      "knowledge-base/03_actores_y_roles.md",
+      "knowledge-base/04_modelo_de_datos.md",
+      "knowledge-base/05_reglas_de_negocio.md",
+      "knowledge-base/06_funcionalidades.md",
+      "knowledge-base/07_flujos_principales.md",
+      "knowledge-base/08_arquitectura_propuesta.md",
+      "knowledge-base/09_decisiones_y_supuestos.md",
+      "knowledge-base/10_preguntas_abiertas.md",
+      "knowledge-base/README.md",
+      "knowledge-base/11_devops_local_docker.md"
+    ]
+  },
+  "visual_design": {
+    "created_by": "design-system",
+    "mode": "deferred",
+    "status": "deferred",
+    "path": "design-system/README.md"
+  },
+  "roadmap": {
+    "created_by": "roadmap-generator",
+    "source": "plan-ejecucion.md",
+    "changes": [
+      "C00",
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10"
+    ]
+  },
+  "skills": {
+    "created_by": "find-skill",
+    "recommended": [
+      {
+        "name": "java-springboot",
+        "repo": "github/awesome-copilot",
+        "installs": 22100,
+        "why": "Official GitHub skill covering Java/Spring Boot patterns; core of the fixed Spring Boot + Gradle backend stack."
+      },
+      {
+        "name": "springboot-patterns",
+        "repo": "affaan-m/ecc",
+        "installs": 15000,
+        "why": "Spring Boot architecture and layering patterns that fit a modular monolith (agenda, pacientes, cobros, usuarios modules)."
+      },
+      {
+        "name": "springboot-security",
+        "repo": "affaan-m/ecc",
+        "installs": 13700,
+        "why": "Spring Security patterns for login and RBAC by role (odontólogo, recepción, admin, paciente)."
+      },
+      {
+        "name": "spring-boot-security-jwt",
+        "repo": "giuseppe-trisciuoglio/developer-kit",
+        "installs": 4300,
+        "why": "Concrete JWT authentication recipe for the REST API auth flow."
+      },
+      {
+        "name": "springboot-tdd",
+        "repo": "affaan-m/ecc",
+        "installs": 12900,
+        "why": "TDD workflow for Spring Boot services; supports the required tenant-isolation and business-rule tests."
+      },
+      {
+        "name": "springboot-verification",
+        "repo": "affaan-m/ecc",
+        "installs": 12100,
+        "why": "Verification loop for backend changes; helps a student team prove each change works before merging."
+      },
+      {
+        "name": "jpa-patterns",
+        "repo": "affaan-m/ecc",
+        "installs": 12500,
+        "why": "JPA/Hibernate persistence patterns for PostgreSQL entities and tenant-scoped queries."
+      },
+      {
+        "name": "spring-boot-rest-api-standards",
+        "repo": "giuseppe-trisciuoglio/developer-kit",
+        "installs": 4400,
+        "why": "REST API design standards (resources, status codes, errors) for the single REST contract between backend and TS frontend."
+      },
+      {
+        "name": "spring-boot-openapi-documentation",
+        "repo": "giuseppe-trisciuoglio/developer-kit",
+        "installs": 4200,
+        "why": "OpenAPI/SpringDoc documentation so the vanilla TS frontend has a discoverable API contract."
+      },
+      {
+        "name": "java-junit",
+        "repo": "github/awesome-copilot",
+        "installs": 11900,
+        "why": "JUnit testing guidance for the unit/integration test suite including tenant-isolation tests."
+      },
+      {
+        "name": "multi-tenant-architecture",
+        "repo": "mblode/agent-skills",
+        "installs": 1900,
+        "why": "Multi-tenant SaaS design patterns; directly matches the multi-tenant dental clinic SaaS (tenant isolation is a hard rule)."
+      },
+      {
+        "name": "multi-tenant-safety-checker",
+        "repo": "patricio0312rev/skills",
+        "installs": 446,
+        "why": "Checks tenant isolation leaks — exactly the tenant-isolation tests the project requires (caution: under 1K installs)."
+      },
+      {
+        "name": "docker-compose-patterns",
+        "repo": "docker",
+        "installs": 2700,
+        "why": "Official Docker skill for the local dev environment with Docker (PostgreSQL + Flyway + backend)."
+      },
+      {
+        "name": "multi-stage-dockerfile",
+        "repo": "github/awesome-copilot",
+        "installs": 31700,
+        "why": "Multi-stage Dockerfile patterns for packaging the Spring Boot app for local Docker runs."
+      },
+      {
+        "name": "security-review",
+        "repo": "getsentry",
+        "installs": 23900,
+        "why": "Security review checklist for sensitive data handling (clinical history = sensitive health data)."
+      },
+      {
+        "name": "security-best-practices",
+        "repo": "openai",
+        "installs": 12700,
+        "why": "General secure-coding practices covering the project's confidentiality risks (health records, RBAC)."
+      },
+      {
+        "name": "frontend-design",
+        "repo": "anthropics",
+        "installs": 1100000,
+        "why": "Anthropics' frontend design guidance for the minimal TypeScript vanilla responsive UI."
+      }
+    ],
+    "installed": [
+      "springboot-patterns",
+      "jpa-patterns",
+      "springboot-tdd",
+      "springboot-security",
+      "multi-tenant-architecture",
+      "docker-compose-patterns",
+      "security-review"
+    ]
+  },
+  "registry": {
+    "created_by": "skill-registry",
+    "file": ".atl/skill-registry.md"
+  },
+  "agents": {
+    "created_by": "agent-instruction",
+    "files": ["CLAUDE.md", "AGENTS.md"],
+    "reglas_applied": ["A1", "A2", "A3", "A4", "A5", "A6+B1", "A7", "B6-ajustada", "B4", "B5", "B3", "B2"]
+  }
+}

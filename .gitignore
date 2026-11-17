@@ -1,0 +1,33 @@
+# Secretos y entorno (NUNCA subir)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Java / Gradle
+.gradle/
+build/
+out/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Node / frontend
+node_modules/
+dist/
+
+# Editores y sistema
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Skill registry (delegator-only, no versionar)
+.atl/
