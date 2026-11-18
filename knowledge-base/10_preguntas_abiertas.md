@@ -1,48 +1,23 @@
 # Preguntas Abiertas
 
-## Inconsistencias detectadas
+| Tema | Estado y momento de decisión |
+|---|---|
+| Autenticación | El módulo aislado y su interfaz están acordados. C00/C01 definen el mecanismo mínimo de token, expiración, alta inicial y configuración. |
+| Runner SQL | Propuesta de usar `node-pg-migrate` con archivos SQL. C00 debe comprobar numeración, aplicación a base vacía, repetición, fallo y compatibilidad con la conexión de Neon antes de adoptarlo. Los rangos del roadmap reservan numeración por change. |
+| Solapamientos | C05 evalúa una restricción de exclusión de PostgreSQL y debe proteger reservas concurrentes por profesional y sillón/box. |
+| Estados y bloqueos | El flujo base prioriza crear, consultar, reprogramar y cancelar. Confirmación, asistencia, ausencia y bloqueos son extensiones de agenda si queda tiempo. Sus transiciones, permisos y política ante turnos ya ocupados se definen en el spec. |
+| Profesional sin recepción | El permiso excepcional de creación en su propia agenda está definido. El spec elige cómo se habilita y comprueba. |
+| Auto-reserva | Fuera de los seis días de base. Si se aborda después, decidir vigencia del enlace de cancelación y antelación mínima. Las 24 horas son una referencia. |
+| Sucursales | Fuera del MVP. Definir su relación con el consultorio antes de incorporar multi-sede. |
+| Cobros y contabilidad | Etapa posterior. Definir representación monetaria, registro y política de idempotencia al abrir ese módulo. |
+| Historia clínica | Etapa posterior. La Ley 26.529, art. 13, exige preservar la integridad e inalterabilidad de la historia informatizada. Las correcciones fechadas, con autor y sin sobrescribir el original son una convención del proyecto. Revisar requisitos de acceso, copia, conservación y uso de datos reales antes de implementar. [Ley 26.529, arts. 12–19](https://www.argentina.gob.ar/normativa/nacional/ley-26529-160432/actualizacion) |
+| Despliegue y entrega académica | Verificar límites de Vercel, Render y Neon al desplegar. Confirmar cómo se evalúa el alcance multi-tenant y si la cátedra requiere un change por integrante. |
+| Integraciones futuras | Evaluar WhatsApp Business y email al definir recordatorios. Confirmar si el módulo de cobros incluirá comprobantes fiscales. |
 
-### IN-01 — SaaS multi-tenant vs consultorio único
-**Documento A dice** (Q&A inicial): system_type = SaaS multi-tenant.
-**Documento B dice** (Q&A posterior): un solo consultorio, SIN noción de tenant ahora; entidades bien separadas para migración futura posible.
-**Impacto**: si se modelaba tenant desde el inicio, habría complejidad extra innecesaria.
-**Resolución**: ~~resuelta a favor de consultorio único (DD-03)~~ → **RESUELTA el 2026-11-17 por el plan de ejecución §2 ("CAMBIA"): el sistema es SaaS multi-tenant con `tenant_id` desde el inicio (DD-09)**. La pregunta del *cuándo* migrar queda obsoleta; ahora las preguntas abiertas son las de la sección siguiente (plan §12).
+## Aclaraciones cerradas
 
-### IN-02 — Necesarias del Discovery vs MVP recortado
-**Documento A dice** (Discovery §5, "innegociables"): pacientes + historia clínica, agenda y turnos, atención y cobros, usuarios y permisos.
-**Documento B dice** (Q&A MVP): historia clínica y cobros **fuera** del MVP (post-lanzamiento); quedan agenda+turnos, pacientes (ficha básica) y usuarios/permisos.
-**Impacto**: dos de las cuatro "innegociables" se diferían — riesgo de que se reargan por presión.
-**Resolución propuesta**: resuelta por Q&A autoritativa; cualquier reintento debe pasar por una nueva decisión explícita (ver PA-01/PA-06). *(2026-11-17: el plan §2 confirma sin cambios — agenda+turnos+paciente mínimo, sin historia clínica ni cobros.)*
+- IN-01. El SaaS aísla consultorios desde el MVP. IN-02. Historia clínica y cobros siguen en etapas posteriores. IN-03. La auto-reserva queda fuera de la entrega base.
 
-### IN-03 — Rol `PACIENTE` no listado en el plan §5.2 (detectada 2026-11-17)
-**Documento A dice** (esta KB, `03_actores_y_roles.md` y US-001): existe un rol `PACIENTE` que reserva/cancela sus propios turnos.
-**Documento B dice** (plan de ejecución §5.2): solo `ADMIN_CONSULTORIO`, `ODONTOLOGO`, `RECEPCION` + `SUPERADMIN` interno — sin rol de paciente.
-**Impacto**: si no hay rol paciente, la auto-reserva (US-001) y RN-AG-04 no aplican; los turnos los crearía `RECEPCION`/`ODONTOLOGO`.
-**Resolución propuesta**: **no inventar** — preguntar a la líder si el MVP incluye auto-reserva por paciente o solo creación por recepción. Hasta entonces, US-001 queda cuestionada por IN-03.
-
-## Preguntas abiertas nuevas — plan de ejecución §12 (2026-11-17, verbatim)
-
-- Alcance exacto del multi-tenant dentro de la nota del trabajo (¿es requisito de la cátedra o decisión propia del equipo?).
-- Estrategia final de autenticación (token propio o proveedor externo).
-- Cumplimiento para datos reales de pacientes antes de salir de la etapa de validación.
-- Límites reales de los planes gratuitos de Vercel, Render y Neon al momento del despliegue.
-- Si la cátedra espera un solo change por el ciclo OPSX completo o uno por integrante.
-
-## Preguntas abiertas (priorizadas)
-
-| Prioridad | Pregunta | Bloquea | Decisor |
-|-----------|----------|---------|---------|
-| Alta | **¿Cuándo entra la historia clínica al alcance?** (está definida como post-lanzamiento, sin fecha ni fase) | Fase post-MVP | Product Owner |
-| Alta | ~~Multi-sede / multi-tenant futuro~~ → **resuelta 2026-11-17**: multi-tenant desde el inicio (DD-09); ver IN-01 y plan §12 | — | — |
-| Alta | **Auditoría y backups de historia clínica**: ¿qué nivel mínimo exigir cuando entre? (hoy sin audit trail por decisión DD-06) | Inicio de la fase de historia clínica | Product Owner |
-| Media | ~~Cloud vs on-prem~~ → **parcialmente resuelta 2026-11-17**: local hasta el MVP, después Vercel/Render/Neon en plan gratuito (DD-10); quedan los límites reales de los planes (plan §12) y backups de datos sensibles | Despliegue / datos no-ficticios | Tech Lead |
-| Media | **Cobros: ¿comprobante fiscal real o solo registro interno?** (hoy: solo registro interno, RN-COB-01) — confirmar si cambia al entrar cobros | Fase de cobros | Product Owner |
-| Media | **Recordatorios: ¿WhatsApp Business API (tiene costo) o primero email?** | Épica de recordatorios | Product Owner |
-| Baja | **¿Portal del paciente entra en MVP o post-lanzamiento?** (decidido: post — pero reabrir si se pide auto-servicio completo) | Épica portal | Product Owner |
-| Baja | **Adopción de Docker**: si causa problemas en el entorno del equipo, ¿se cae a ejecución sin contenedores? (decisión: Docker solo si no complica; el plan §4 recomienda `docker compose` con PostgreSQL) | Setup del equipo | Equipo técnico |
-| Baja | **Rol `PACIENTE` vs plan §5.2**: ¿hay auto-reserva de turnos por paciente en el MVP? (ver IN-03) | Roles y US-001 | Líder |
-
-## Notas de contexto
-
-- Las respuestas de esta tabla provienen del Q&A completado que cerró la fase Mode B de la KB; no deben re-preguntarse, solo evaluarse los hitos de decisión.
-- Riesgo de scope (Discovery §10): si se reintenta meter historia clínica + cobros en el MVP, revisar primero `09_decisiones_y_supuestos.md` DD-02.
+- El equipo informó que la cátedra autorizó el nuevo stack y amplió la modalidad a un máximo de seis integrantes. El equipo actual es de cinco.
+- El equipo informó que probó PostgreSQL 18 con Neon. La versión objetivo es 18 en ambos entornos.
+- Backend y frontend usan JavaScript. Admin y dueño son el mismo rol. La cancelación del paciente pasa por el consultorio durante la entrega base.
