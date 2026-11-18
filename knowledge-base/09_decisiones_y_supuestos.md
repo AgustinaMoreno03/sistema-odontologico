@@ -1,6 +1,6 @@
 # Decisiones y Supuestos
 
-> **Actualización 2026-11-17**: nuevas decisiones DD-09..DD-13 del plan de ejecución (`docs/plan-ejecucion.md`); DD-01 y DD-03 quedan **SUPERSEDED**, DD-05 actualizado y DD-07 en revisión (roles §5.2).
+> Las decisiones históricas reemplazadas se conservan para trazabilidad.
 
 ## Decisiones documentadas
 
@@ -35,7 +35,7 @@
 **Trade-offs aceptados**: posiblemente más tiempo inicial en estructura que en features.
 
 ### DD-05 — Ejecución local con Docker opcional
-**Estado**: **ACTUALIZADO (2026-11-17)** — el sistema corre local **hasta terminar el MVP**; después se despliega (Vercel/Render/Neon, ver **DD-10**). Docker sigue opcional.
+**Estado**: **ACTUALIZADO (2026-11-17)** — el sistema corre local **hasta terminar el MVP**; después se despliega (Vercel/Render/Neon, ver **DD-10**). Compose es la ruta documentada y PostgreSQL directo es el respaldo.
 **Decisión**: el sistema corre en local; Docker se usa solo si no complica. Cloud y backups de datos sensibles = decisión posterior.
 **Contexto**: datos ficticios, proyecto de estudiantes.
 **Alternativas consideradas**: cloud desde el inicio; local sin contenedores.
@@ -46,27 +46,24 @@
 **Decisión**: no se implementa trail de auditoría en el MVP; queda diferido.
 **Contexto**: control de scope; los datos son ficticios.
 **Alternativas**: auditoría mínima desde el día 1 (recomendable cuando entre la historia clínica).
-**Trade-offs aceptados**: no se podrá reconstruir quién cambió qué durante el MVP.
+**Trade-offs aceptados**: El MVP registra los datos de cancelación del turno. La auditoría general queda para una etapa posterior.
 
-### DD-07 — RBAC simple con 4 roles fijos
-**Estado**: **EN REVISIÓN (2026-11-17)** — el plan de ejecución §5.2 redefine los roles del sistema (`ADMIN_CONSULTORIO`, `ODONTOLOGO`, `RECEPCION` + `SUPERADMIN` interno); **supuesto: confirmar con la líder** (ver `03_actores_y_roles.md`).
-**Decisión**: modelo rol→permisos, sin jerarquías ni permisos por usuario; 4 roles: Odontólogo/a, Paciente, Recepción/Administración, Administrador del sistema.
-**Justificación**: suficiente para un consultorio único y < 50 personas; fácil de mantener (P5).
-**Trade-offs aceptados**: roles futuros requieren cambiar el enum/reglas.
+### DD-07 — Permisos de consultorio y condición profesional
+**Decisión vigente**. Admin y dueño son el mismo rol. Administración y recepción gestionan agendas del consultorio. El profesional opera su agenda con permisos específicos y puede dar turnos cuando se le habilita por operar sin recepción. La condición profesional es independiente del acceso administrativo.
 
-### DD-08 — Frontend NO es parte del cambio del MVP
+### DD-08 — Frontend mínimo en C09
 **Decisión**: el MVP se enfoca en API + lógica de dominio; el frontend queda mínimo (lo indispensable para probar).
 **Contexto**: decisión explícita del Q&A.
 **Trade-offs aceptados**: la experiencia de usuario final será básica hasta una fase posterior.
 
-### DD-09 — SaaS multi-tenant (esquema compartido con `tenant_id`) — 2026-11-17
+### DD-09 — SaaS multi-tenant (esquema compartido con `consultorio_id`) — 2026-11-17
 **Fecha**: 2026-11-17. **Motivo**: decisiones nuevas del plan de ejecución (`docs/plan-ejecucion.md` §2 — "CAMBIA"), registrado según §0.6.
 **Decisión**: el sistema es **SaaS multi-tenant**: varios consultorios aislados entre sí. Estrategia:
-- **Esquema compartido** con `tenant_id` en **todas** las tablas de negocio.
-- El `tenant_id` sale **del usuario autenticado (token)**, **nunca** de un parámetro que mande el cliente.
-- **Filtrado automático por tenant en la capa de persistencia** (filtro Hibernate o repositorio base), no a mano en cada consulta.
-- Restricciones únicas e índices **siempre incluyen** `tenant_id`.
-- Migraciones con **Flyway** versionadas en el repo (iguales en local y en Neon).
+- **Esquema compartido** con `consultorio_id` en **todas** las tablas de negocio.
+- El `consultorio_id` sale **del usuario autenticado (token)**, **nunca** de un parámetro que mande el cliente.
+- Cada consulta de los repositorios filtra por el `consultorio_id` del contexto autenticado.
+- Restricciones únicas e índices **siempre incluyen** `consultorio_id`.
+- Migraciones SQL numeradas en `db/migrations/` (iguales en local y en Neon).
 - **Tests obligatorios de aislamiento**: un usuario del tenant A no puede ver ni modificar datos del tenant B.
 **Reemplaza**: DD-03 (consultorio único, sin tenant).
 **Fuera del MVP**: planes de suscripción, cobros y facturación de los consultorios.
@@ -74,34 +71,48 @@
 ### DD-10 — Despliegue: Vercel (frontend) / Render (backend) / Neon (BD), planes gratuitos — 2026-11-17
 **Fecha**: 2026-11-17. **Motivo**: plan de ejecución §2 ("CAMBIA") y §9.
 **Decisión**: **todo local hasta terminar el MVP**; recién después se despliega:
-- **Vercel** → frontend estático (TypeScript vanilla).
-- **Render** → backend Spring Boot (API REST).
-- **Neon** → base de datos PostgreSQL.
+- **Vercel** → frontend estático (React 19 con Vite y JavaScript).
+- **Render** → backend Express 5 (API REST).
+- **Neon** → base de datos PostgreSQL 18.
 - Todos en **plan gratuito**; **verificar los límites vigentes en las páginas oficiales al momento de desplegar** (cambian con frecuencia). Los **arranques en frío** de los planes gratuitos son aceptables **solo para validar**, no para producción real.
 **Reemplaza**: "despliegue no definido / cloud = decisión futura" (DD-05 queda extendido por esta decisión).
 **Pendiente**: backups y datos reales siguen siendo decisión posterior (Ley 25.326 — ver §10 del plan).
 
 ### DD-11 — Frontend estático separado del backend (CORS solo para el dominio del frontend) — 2026-11-17
 **Fecha**: 2026-11-17. **Motivo**: plan de ejecución §2 ("CAMBIA") y §4.
-**Decisión**: el frontend **no** lo sirve Spring Boot: es un **frontend estático separado** (TypeScript vanilla) con su propio deploy (Vercel en la nube; servidor estático local en desarrollo). El backend expone solo la API REST y permite **CORS únicamente para el dominio del frontend** (en local, para el origen del frontend local).
+**Decisión**: el frontend se sirve de forma estática por separado (React 19 con Vite y JavaScript) con su propio deploy (Vercel en la nube; servidor estático local en desarrollo). El backend expone solo la API REST y permite **CORS únicamente para el dominio del frontend** (en local, para el origen del frontend local).
 **Reemplaza**: DD-01 (monolito que sirve el frontend, sin CORS).
 **Trade-offs aceptados**: hay CORS y dos artefactos desplegables; se acepta por separación de responsabilidades y despliegue independiente.
 
 ### DD-12 — Base de datos: PostgreSQL siempre (Docker local, Neon en la nube) — 2026-11-17
 **Fecha**: 2026-11-17. **Motivo**: plan de ejecución §2 ("CAMBIA") y §4.
-**Decisión**: **siempre PostgreSQL**: en local corre en **Docker** (`docker compose`) — si Docker genera errores, PostgreSQL instalado directo en la máquina — y en la nube en **Neon** (también PostgreSQL), para que local y nube sean iguales. Sin H2 ni MySQL.
+**Decisión**: **PostgreSQL 18**: en local corre en **Docker** (`docker compose`) — si Docker genera errores, PostgreSQL instalado directo en la máquina — y en la nube en **Neon** (también PostgreSQL), para que local y nube sean iguales. Sin H2 ni MySQL.
 **Reemplaza**: "base de datos a definida" (antes: H2 en dev / PostgreSQL o MySQL — ver `02_descripcion_general.md`).
 
 ### DD-13 — Monolito modular en el backend — 2026-11-17
 **Fecha**: 2026-11-17. **Motivo**: plan de ejecución §2 ("CAMBIA") y §4.
-**Decisión**: el backend es un **monolito modular**: un solo proyecto, un solo deploy, con **paquetes por módulo y límites claros**: `tenancy`, `identidad`, `catalogo` (profesionales, sillones/boxes, prestaciones), `pacientes`, `turnos`. **Cada módulo expone una interfaz y nunca toca las tablas de otro.**
+**Decisión**: el backend es un **monolito modular**: un solo proyecto, un solo deploy, con **paquetes por módulo y límites claros**: `consultorios`, `auth`, `catalogo` (profesionales, sillones/boxes, prestaciones), `pacientes`, `turnos`. **Cada módulo expone una interfaz y nunca toca las tablas de otro.**
 **Combina con**: DD-09 (tenant en cada capa) y DD-11 (frontend separado) — la arquitectura completa está en `08_arquitectura_propuesta.md`.
 **Justificación**: módulos separados permiten el trabajo en paralelo del equipo de 5 (DD-04, mantenibilidad) con un solo deploy.
+
+### DD-14 — Stack aprobado y entrega de seis días
+
+- Node.js con Express 5 y JavaScript. Monolito modular por capas HTTP, servicios, dominio y repositorios SQL. React 19 con Vite y JavaScript en C09.
+- PostgreSQL 18 local y en Neon. El equipo informó que verificó la compatibilidad. Conexión con `DATABASE_URL` y migraciones SQL numeradas que solo avanzan.
+- Autenticación simple y aislada en `src/modules/auth/`. Interfaz estable `{ usuarioId, consultorioId, rol }`. Tests con `npm test` por escenario del spec.
+- La cátedra confirmó el stack y un máximo de seis integrantes, según el equipo. La asignación actual sigue siendo de cinco.
+
+### DD-15 — Alcance de agenda y datos clínicos
+
+- Prioridad de seis días: crear, consultar, reprogramar y cancelar turnos. Estados de confirmación y asistencia, y bloqueos, después de verificar ese recorrido. El paciente solicita cancelación al consultorio. La auto-reserva queda fuera de la entrega base.
+- La cancelación conserva el turno, libera el horario y registra fecha, operador y origen.
+- Historia clínica posterior al MVP. Acceso clínico por condición profesional, separado del rol administrativo. Las correcciones agregan registros fechados y con autor. Se parte del caso de un solo profesional para el módulo clínico.
+- Historia clínica, cobros, contabilidad y sucursales quedan para etapas posteriores.
 
 ## Supuestos inferidos
 
 ### SU-01 — Datos 100% ficticios
-**Supuesto**: no se cargan datos reales de pacientes; no aplica compliance legal real.
+**Supuesto**: desarrollo y demostración usan exclusivamente datos ficticios.
 **Origen**: Q&A completada (proyecto de estudiantes/grupo).
 **Riesgo si es falso**: obligaciones de confidencialidad/auditoría reales desde el día 1.
 **Cómo validar**: confirmar que el sistema nunca se usará con pacientes reales en esta fase.
