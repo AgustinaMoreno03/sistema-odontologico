@@ -231,16 +231,54 @@
         "repo": "anthropics",
         "installs": 1100000,
         "why": "Anthropics' frontend design guidance for the minimal TypeScript vanilla responsive UI."
+      },
+      {
+        "name": "nodejs-backend-patterns",
+        "repo": "wshobson/agents",
+        "installs": 50500,
+        "why": "Node.js/Express backend patterns (middleware, error handling, API design) for the new Express stack."
+      },
+      {
+        "name": "backend-patterns",
+        "repo": "affaan-m/ecc",
+        "installs": 17300,
+        "why": "Backend architecture, API design and database optimization for Node.js/Express services."
+      },
+      {
+        "name": "postgres-best-practices",
+        "repo": "neondatabase/postgres-skills",
+        "installs": 2100,
+        "why": "Postgres schema design, indexing, query optimization and migrations (Neon is the cloud DB)."
+      },
+      {
+        "name": "sql-code-review",
+        "repo": "github/awesome-copilot",
+        "installs": 15700,
+        "why": "SQL security and quality review (injection prevention, access control) for the tenant-scoped queries."
+      },
+      {
+        "name": "javascript-testing-patterns",
+        "repo": "wshobson/agents",
+        "installs": 21400,
+        "why": "Jest/Vitest testing strategies and TDD workflows for the Node.js test suite."
+      },
+      {
+        "name": "tdd",
+        "repo": "mattpocock/skills",
+        "installs": 1300000,
+        "why": "Red-green-refactor TDD workflow; supports the required tenant-isolation and business-rule tests."
       }
     ],
     "installed": [
-      "springboot-patterns",
-      "jpa-patterns",
-      "springboot-tdd",
-      "springboot-security",
-      "multi-tenant-architecture",
+      "nodejs-backend-patterns",
+      "backend-patterns",
+      "postgres-best-practices",
+      "sql-code-review",
+      "javascript-testing-patterns",
+      "tdd",
       "docker-compose-patterns",
-      "security-review"
+      "security-review",
+      "multi-tenant-architecture"
     ]
   },
   "registry": {
