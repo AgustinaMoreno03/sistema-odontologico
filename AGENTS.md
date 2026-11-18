@@ -9,12 +9,12 @@
 
 | Capa | Tecnologías | Notas |
 |---|---|---|
-| Backend | Spring Boot (Java) | **Fijo, no negociable** |
-| Build backend | Gradle | **Fijo, no negociable** |
-| Frontend | TypeScript vanilla + diseño responsivo | **Fijo, no negociable**; sin frameworks |
-| Arquitectura backend | Monolito **modular** (paquetes `tenancy`, `identidad`, `catalogo`, `pacientes`, `turnos`) | DD-13; un solo proyecto y deploy, límites claros por módulo |
+| Backend | Node.js con Express 5 (JavaScript) | **Fijo, no negociable** |
+| Build y tests | npm — `npm test` cubre cada escenario del spec | **Fijo, no negociable** |
+| Frontend | React 19 con Vite (JavaScript) + diseño responsivo | Servido por separado; entra en C09 (fuera de los primeros changes) |
+| Arquitectura backend | Monolito modular **por capas** (rutas → servicios → dominio → repositorios con SQL); módulos `auth`, `consultorios`, `catalogo`, `pacientes`, `turnos` | DD-13; un módulo no toca las tablas de otro |
 | Servido | Frontend estático **servido por separado** (Vercel en nube; servidor estático local) — el backend solo expone API REST | DD-11; **CORS solo para el dominio del frontend** |
-| Base de datos | **PostgreSQL** — Docker en local, **Neon** en la nube (siempre PostgreSQL) | DD-12; ver `11_devops_local_docker.md` |
+| Base de datos | **PostgreSQL 18** — Docker en local, **Neon** en la nube; migraciones SQL numeradas en `db/migrations/` | DD-12; ver `11_devops_local_docker.md` |
 | Ejecución | **Local hasta terminar el MVP**; después despliegue: **Vercel** (frontend) / **Render** (backend) / **Neon** (BD), planes gratuitos | DD-10; límites de planes a verificar al desplegar |
 
 Detalle completo: [knowledge-base/02_descripcion_general.md](knowledge-base/02_descripcion_general.md)
@@ -50,10 +50,12 @@ Fuente de verdad: `.atl/skill-registry.md`. Cargá la skill correspondiente al c
 
 | Agente | Rol | Skills que carga |
 |--------|-----|------------------|
-| **Backend Core** | Spring Boot / JPA / TDD / migraciones | `springboot-patterns`, `jpa-patterns`, `springboot-tdd` |
-| **Backend Seguridad** | Auth, aislamiento multi-tenant, auditoría | `springboot-security`, `security-review`, `multi-tenant-architecture` |
+| **Backend Core** | Express 5 en JS — estructura por capas, rutas, middleware, errores | `nodejs-backend-patterns`, `backend-patterns` |
+| **Datos** | PostgreSQL 18, SQL a mano, migraciones, review de queries | `postgres-best-practices`, `sql-code-review` |
+| **Testing** | `npm test`, ≥3 escenarios por spec, TDD | `javascript-testing-patterns`, `tdd` |
+| **Seguridad** | Auth, aislamiento multi-tenant, auditoría | `security-review`, `multi-tenant-architecture` |
 | **Infra** | Docker Compose y entorno local | `docker-compose-patterns` |
-| **Frontend** | UI/UX en TypeScript vanilla (C09) | `emil-design-eng`, `design-taste-frontend-v1` (`frontend-design` no está instalado) |
+| **Frontend** | UI/UX en React 19 con Vite (C09) | `emil-design-eng`, `design-taste-frontend-v1` |
 | **Orquestación OPSX** | Ciclo de changes explore → propose → apply → verify → archive | `openspec-explore`, `openspec-propose`, `openspec-apply-change`, `openspec-archive-change`, `openspec-sync-specs`, `openspec-update-change` |
 | **Orquestación fundación** | Flujo activo, KB, roadmap, skills, diseño | `active-orchestrator`, `kb-creator`, `roadmap-generator`, `discovery-research`, `web-scraper`, `find-skill`, `agent-instruction`, `skill-creator`, `design-system` |
 
@@ -67,7 +69,7 @@ El plan de implementación completo está en [CHANGES.md](CHANGES.md). Resumen:
 
 - **Total**: 11 changes (`C00`–`C10`) en **5 olas** (0–4).
 - **Camino crítico**: `C00 → C01/C02/C03/C04 → C05 → C06..C09 → C10`.
-- **Primer change**: `C00` — Base del proyecto (Spring Boot + Gradle + PostgreSQL Docker + Flyway + tenancy + modularidad); la ola 0 bloquea a todos.
+- **Primer change**: `C00` — Base del proyecto (Express 5 + docker compose con PostgreSQL 18 + migración 001 + runner SQL + auth mínimo + estructura por capas); la ola 0 bloquea a todos.
 - **C05** (turno sin solapamientos) es el change principal con ciclo OPSX completo obligatorio y ≥3 escenarios.
 
 **Antes de cualquier `/opsx:propose`**: leé [CHANGES.md](CHANGES.md), identificá las dependencias del change y los archivos de "Leer antes".
@@ -85,13 +87,12 @@ Son contrato; romperlas es un defecto. Formato `NUNCA X → hacer Y`:
 3. NUNCA implementar un change sin spec aprobado con ≥3 escenarios (feliz, error de negocio, borde) → pasar por `/opsx:propose` y aprobar antes de apply.
 4. NUNCA crear turnos solapados por profesional ni por sillón/box dentro del mismo tenant → validar transaccionalmente; turnos contiguos (uno empieza justo cuando termina otro) SÍ son válidos.
 5. NUNCA dejar secretos ni credenciales en el repositorio → solo `.env.example` sin valores; `.env` en `.gitignore`.
-6. NUNCA mergear a la rama principal sin tests en verde y revisión → PR con ≥1 aprobación y `./gradlew build` en verde.
+6. NUNCA mergear a la rama principal sin tests en verde y revisión → PR con ≥1 aprobación y `npm test` en verde.
 7. NUNCA cargar datos reales de pacientes mientras el sistema esté en planes gratuitos (Ley 25.326) → requiere revisión previa de seguridad y cumplimiento.
 8. NUNCA hacer commit ni push sin que el usuario lo pida explícitamente → correr el build y los tests sí es parte de Verify y no necesita pedido.
-9. NUNCA editar una migración ya mergeada → siempre crear una nueva versión en Flyway.
-10. NUNCA tocar las tablas de otro módulo → comunicarse solo vía la interfaz del módulo (`tenancy`, `identidad`, `catalogo`, `pacientes`, `turnos`).
-11. NUNCA usar `any` en TypeScript → tipado estricto.
-12. NUNCA commitear con mensajes fuera de la convención → usar commits convencionales (`feat:`, `fix:`, `test:`, `docs:`, `chore:`…) **sin co-autoría IA**.
+9. NUNCA editar una migración ya mergeada → las migraciones SQL numeradas en `db/migrations/` solo avanzan; los cambios van siempre en una migración nueva.
+10. NUNCA tocar las tablas de otro módulo → comunicarse solo vía la interfaz del módulo (`auth`, `consultorios`, `catalogo`, `pacientes`, `turnos`); un módulo no toca las tablas de otro.
+11. NUNCA commitear con mensajes fuera de la convención → usar commits convencionales (`feat:`, `fix:`, `test:`, `docs:`, `chore:`…) **sin co-autoría IA**.
 
 ---
 
