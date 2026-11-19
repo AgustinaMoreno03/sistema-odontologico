@@ -6,17 +6,17 @@ Define cómo los usuarios obtienen una identidad autenticada y cómo la API vali
 
 ## ADDED Requirements
 
-### Requirement: Login con credenciales y token de duración limitada
-El sistema MUST autenticar usuarios por sus credenciales almacenadas de forma segura y emitir JWT firmado con expiración de ocho horas. Ante credenciales inválidas, MUST responder con el mensaje genérico `Usuario o contraseña incorrectos`, sin indicar qué dato falló.
+### Requirement: Login con email y contraseña y token de duración limitada
+El sistema MUST autenticar usuarios mediante email único y contraseña almacenada de forma segura, y emitir JWT firmado con expiración de ocho horas. Ante credenciales inválidas, MUST responder con el mensaje genérico `Usuario o contraseña incorrectos`, sin indicar qué dato falló.
 
 #### Scenario: Login válido produce token y contexto autenticado
-- **GIVEN** un usuario activo con contraseña válida almacenada como hash
-- **WHEN** inicia sesión con sus credenciales correctas
+- **GIVEN** un usuario con email único y contraseña válida almacenada como hash
+- **WHEN** inicia sesión con su email y contraseña correctos
 - **THEN** recibe un JWT firmado cuya expiración (`exp`) es ocho horas posterior a su emisión
 - **AND** las solicitudes autenticadas exponen `req.auth` con `{ usuarioId, consultorioId, rol }`
 
 #### Scenario: Credenciales inválidas usan mensaje genérico
-- **GIVEN** que el usuario no existe, está inactivo o la contraseña no coincide
+- **GIVEN** que el email no corresponde a un usuario o la contraseña no coincide
 - **WHEN** se intenta iniciar sesión
 - **THEN** la respuesta informa `Usuario o contraseña incorrectos` sin distinguir la causa
 
@@ -34,7 +34,7 @@ El sistema MUST rechazar solicitudes protegidas que no presenten un token válid
 - **THEN** la respuesta es HTTP 401
 
 #### Scenario: Token válido proporciona identidad
-- **GIVEN** un JWT firmado, vigente y emitido para un usuario activo
+- **GIVEN** un JWT firmado y vigente emitido para un usuario
 - **WHEN** se procesa una solicitud protegida
 - **THEN** `req.auth` contiene `{ usuarioId, consultorioId, rol }` derivados de la identidad validada
 

@@ -15,30 +15,35 @@ El sistema MUST permitir aprovisionar consultorios por un mecanismo operativo in
 - **THEN** el consultorio queda disponible para asociar usuarios dentro de su tenant
 
 #### Scenario: Registro público no disponible
-- **GIVEN** un cliente sin acceso operativo interno
-- **WHEN** intenta registrar un consultorio mediante la API pública
-- **THEN** no existe una operación pública que permita crear el consultorio
+- **GIVEN** un cliente sin autenticación
+- **WHEN** envía un POST a /consultorios
+- **THEN** la respuesta es HTTP 404
 
 ### Requirement: Alta de usuarios autorizada y aislada por consultorio
-El sistema MUST permitir crear usuarios únicamente a `ADMIN_CONSULTORIO`, limitar cada operación al consultorio de `req.auth` y almacenar contraseñas como hashes no reversibles.
+El sistema MUST permitir a `ADMIN_CONSULTORIO` crear usuarios con cualquiera de los tres roles, limitar operaciones al consultorio de `req.auth` e ignorar cualquier `consultorioId` del body. El email MUST ser único; un duplicado responde HTTP 409.
 
 #### Scenario: Administrador crea usuario en su consultorio
-- **GIVEN** un administrador autenticado con `req.auth.consultorioId` igual al consultorio destino
-- **WHEN** crea un usuario con un rol permitido
-- **THEN** el usuario queda asociado exclusivamente a ese consultorio y su contraseña se almacena como hash
+- **GIVEN** un administrador autenticado
+- **WHEN** crea un usuario con email no usado y cualquiera de los roles `ADMIN_CONSULTORIO`, `ODONTOLOGO` o `RECEPCION`
+- **THEN** el usuario queda asociado al consultorio de `req.auth` y su contraseña se almacena como hash
+- **AND** si el body incluye un `consultorioId` distinto, ese valor se ignora
 
-#### Scenario: Recepción intenta crear usuario
-- **GIVEN** un usuario autenticado con rol `RECEPCION`
+#### Scenario: Rol sin permiso intenta crear usuario
+- **GIVEN** un usuario autenticado con rol `ODONTOLOGO` o `RECEPCION`
 - **WHEN** intenta crear otro usuario
 - **THEN** la respuesta es HTTP 403
 
-#### Scenario: Usuario del consultorio A no puede ver ni crear usuarios del consultorio B
+#### Scenario: Listado limitado al consultorio autenticado
 - **GIVEN** un usuario autenticado del consultorio A
-- **WHEN** intenta listar, consultar o crear usuarios del consultorio B
-- **THEN** no puede ver ni crear usuarios asociados al consultorio B
-- **AND** el ámbito de la operación se deriva de `req.auth`, no de un identificador de consultorio enviado por el cliente
+- **WHEN** lista usuarios
+- **THEN** recibe únicamente usuarios asociados al consultorio A
 
-#### Scenario: Rol válido sin permiso intenta crear usuario
-- **GIVEN** un usuario autenticado que no tiene rol `ADMIN_CONSULTORIO`
-- **WHEN** intenta crear un usuario de su consultorio
-- **THEN** la respuesta es HTTP 403
+#### Scenario: Consultar por ID un usuario de otro consultorio
+- **GIVEN** un usuario autenticado del consultorio A y un usuario existente del consultorio B
+- **WHEN** consulta por ID al usuario del consultorio B
+- **THEN** la respuesta es HTTP 404
+
+#### Scenario: Email ya registrado
+- **GIVEN** que ya existe un usuario con el email indicado
+- **WHEN** un administrador intenta crear otro usuario con ese email
+- **THEN** la respuesta es HTTP 409

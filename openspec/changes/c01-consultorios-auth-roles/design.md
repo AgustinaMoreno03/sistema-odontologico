@@ -22,9 +22,9 @@ Ver `proposal.md` para la motivación y `specs/` para el contrato observable. El
 - **Secreto exclusivamente desde `JWT_SECRET`.** No usar secreto por defecto; el arranque de autenticación falla de forma segura si falta. El `.env.example` documenta solo el nombre, sin valor real.
 - **Hash de contraseñas con `crypto.scrypt` y salt aleatorio por usuario.** Evita conservar contraseñas reversibles y no requiere un paquete de hashing adicional. Nunca registrar la contraseña recibida ni incluirla en respuestas.
 - **Contexto autenticado confiable.** `middlewareAutenticacion`, ubicado en `src/modules/auth/rutas.js`, valida JWT y carga `req.auth` exclusivamente con `usuarioId`, `consultorioId` y `rol` firmados. Los módulos consumidores no aceptan `consultorioId` de entrada para seleccionar tenant. Responder 401 si falta o falla el token; responder 403 si el token es válido pero el rol no está autorizado.
-- **Login con respuesta indistinguible ante falla.** Usuario inexistente, inactivo o contraseña incorrecta comparte el mismo mensaje `Usuario o contraseña incorrectos`; no revelar si una cuenta existe.
-- **Autorización mínima C01.** Solo `ADMIN_CONSULTORIO` administra usuarios y únicamente dentro del `consultorioId` de `req.auth`. No se agrega autorización para turnos, pacientes ni agenda.
-- **Migración hacia adelante.** Crear una migración SQL nueva entre 010–019 después de revisar el esquema real de C00. Añadir únicamente lo que falte para soportar el contrato C01; no recrear tablas, cambiar UUIDs ni editar `001`. Mantener propiedad de tablas de cada módulo y evitar operaciones sobre tablas ajenas.
+- **Login con email único y respuesta indistinguible ante falla.** Buscar por email y contrastar la contraseña con su hash; email desconocido y contraseña incorrecta comparten el mensaje `Usuario o contraseña incorrectos`.
+- **Autorización mínima C01.** Solo `ADMIN_CONSULTORIO` administra usuarios y puede asignar cualquiera de los tres roles. El tenant se toma de `req.auth`; un `consultorioId` del body se ignora. Listados filtran por ese tenant y la consulta por ID ajeno responde 404. Emails duplicados responden 409. No se agrega autorización para turnos, pacientes ni agenda.
+- **Migración hacia adelante.** `CHANGES.md` reserva 010–019 para C01. Crear una migración SQL nueva en ese rango después de revisar el esquema real de C00. Añadir únicamente lo que falte para soportar el contrato C01; no recrear tablas, cambiar UUIDs ni editar `001`. Mantener propiedad de tablas de cada módulo y evitar operaciones sobre tablas ajenas.
 - **Alta de consultorio fuera de la API pública.** Un seed o script operativo crea el tenant inicial; alta de usuarios se realiza dentro de su consultorio por administración.
 
 ## Risks / Trade-offs
@@ -38,7 +38,7 @@ Ver `proposal.md` para la motivación y `specs/` para el contrato observable. El
 ## Migration Plan
 
 1. Esperar a que C00 esté integrado y revisar tablas `consultorio`/`usuario`, tipos UUID, columnas, restricciones, runner y convenciones de migración realmente existentes.
-2. Implementar migración C01 nueva dentro de 010–019, probándola sobre una base vacía con la secuencia completa y sobre una base que ya tenga C00 aplicado.
+2. Implementar migración C01 nueva dentro del rango 010–019 reservado en `CHANGES.md`, probándola sobre una base vacía con la secuencia completa y sobre una base que ya tenga C00 aplicado.
 3. Configurar `JWT_SECRET` fuera del repositorio y añadir a `.env.example` únicamente la clave vacía/placeholder no secreto.
 4. Probar login, expiración, autorización por rol y aislamiento entre dos consultorios ficticios.
 5. Rollback local: revertir el despliegue de código y usar la estrategia soportada por el runner para migración nueva solo si no destruye datos. No modificar ni revertir manualmente `001`; preferir migración correctiva hacia adelante si C01 ya fue compartido.
