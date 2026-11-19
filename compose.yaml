@@ -1,0 +1,49 @@
+# PostgreSQL 18 local — Sistema de Gestión Odontológica.
+# Archivo único y canónico (design D4): NO existe compose.override.yaml.
+#
+# Las credenciales NUNCA están en texto plano en este YAML: se sustituyen
+# desde el entorno (.env local, gitignored). Ver .env.example — plantilla
+# SIN valores para crear ese .env.
+
+services:
+  postgres:
+    # Tag fijo, nunca `latest` (skill docker-compose-patterns / design D4).
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      # Puerto documentado de la base en local.
+      - "5432:5432"
+    volumes:
+      # Volumen nombrado: los datos sobreviven a `docker compose down`
+      # (solo `down -v` los elimina, y eso exige confirmación explícita).
+      # En postgres:18 el volumen va en /var/lib/postgresql (el directorio
+      # padre): PGDATA de la imagen es /var/lib/postgresql/18/docker (upstream
+      # docker-library/postgres PR #1259); montar en la ruta legacy
+      # /var/lib/postgresql/data hace que el contenedor arranque en error.
+      - odontologia_pgdata:/var/lib/postgresql
+    healthcheck:
+      # $$ escapea la interpolación de Compose: el check usa los env del
+      # contenedor. interval 5s / timeout 3s / retries 3 / start_period 10s.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  odontologia_pgdata:
+
+# `depends_on: condition: service_healthy` aplica cuando exista un servicio
+# que dependa de esta base (healthcheck ya definido arriba). Hoy `postgres`
+# es el único servicio del archivo, y la API corre en el host con `npm start`
+# (README), por lo que no hay a qué adjuntarlo todavía:
+#
+#   services:
+#     api:
+#       depends_on:
+#         postgres:
+#           condition: service_healthy
