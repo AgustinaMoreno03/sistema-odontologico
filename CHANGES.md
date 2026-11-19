@@ -104,6 +104,7 @@ Cerrar C00–C08 y la verificación del flujo de turnos antes de ampliar agenda.
 - **Alcance:** API Express 5 en JavaScript, `DATABASE_URL`, arranque reproducible, migraciones y `npm test`. El contrato mínimo de auth es `{ usuarioId, consultorioId, rol }`. C01 completa usuarios y permisos.
 - **Runner propuesto:** `node-pg-migrate` con SQL numerado, para reutilizar historial, transacciones y bloqueo. C00 verifica archivos `001_*.sql`, orden de rangos, fallo, repetición y conexión. Usar migraciones hacia adelante.
 - **Riesgos:** C00 bloquea la ola 1. Si Docker falla, usar PostgreSQL 18 directo. Acordar con C01 la propiedad de cada tabla inicial.
+- **Estado:** completo, archivado el 2026-11-19 en `openspec/changes/archive/` (suite en verde, 46 tests). Las tablas iniciales `consultorio` y `usuario` quedaron cerradas por DD-19; C01 las extiende en su rango 010–019.
 
 ### C01 — Consultorios (tenant) y autenticación con roles
 - **Gobernanza** · CRÍTICA para autenticación y autorización.
