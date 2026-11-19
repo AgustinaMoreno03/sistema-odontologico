@@ -1,5 +1,6 @@
 # CHANGES — Índice de roadmap de changes
 
+
 > **Fuente autoritativa:** `docs/plan-ejecucion.md` (§4, §5, §6, §7, §8, §9, §12, §13). **Fecha:** 2026-11-17.
 > Este archivo reemplaza al roadmap anterior (generado con el criterio viejo: un solo consultorio, monolito que servía el frontend y sin despliegue). Leer el plan de ejecución completo antes de proponer cualquier change.
 
@@ -275,3 +276,10 @@ Cada responsable usa su rango y coordina archivos compartidos. Antes de integrar
 - **Archivos compartidos** (`package.json`, migraciones, configuración): **una sola persona por ola** los toca.
 - Ciclo OPSX por change: **explore → propose → apply → verify → archive**; en Apply no se inventan decisiones fuera del spec — si falta algo, se vuelve a Propose.
 - Ningún change sin **spec aprobado con ≥ 3 escenarios** (feliz, error de negocio, borde).
+
+## Notas para C01 (heredado del security-review de C00)
+
+- Emitir tokens siempre con expiración (hoy el middleware acepta tokens sin `exp`).
+- Validar que `consultorioId` sea un UUID al emitir el token.
+- Responder 400, no 500, ante JSON malformado en los endpoints que reciben cuerpo.
+- Revisar `npm audit` (3 avisos moderados vía node-pg-migrate) sin usar `--force`.

@@ -109,6 +109,35 @@
 - Historia clínica posterior al MVP. Acceso clínico por condición profesional, separado del rol administrativo. Las correcciones agregan registros fechados y con autor. Se parte del caso de un solo profesional para el módulo clínico.
 - Historia clínica, cobros, contabilidad y sucursales quedan para etapas posteriores.
 
+### DD-16 — El paciente no es un rol ni tiene cuenta en el MVP (cierra IN-03) — 2026-11-18
+**Fecha**: 2026-11-18. **Motivo**: decisión de la líder antes de arrancar C00; cierra la pregunta IN-03.
+**Decisión**: el paciente es un **actor externo** al sistema:
+- **No es un rol** del sistema (no existe rol `PACIENTE`) y **no tiene cuenta** ni acceso en el MVP.
+- Tiene un **registro mínimo** — nombre y al menos un contacto, siempre datos ficticios — que crea y gestiona el consultorio (recepción).
+- La **reserva online y la auto-reserva quedan fuera de la entrega base**; el paciente pide o cancela turnos a través del consultorio. Si se retoman, será una etapa posterior con spec propio.
+**Reemplaza**: IN-03 (rol `PACIENTE` no definido en el plan §5.2).
+**Combina con**: DD-17 (roles vigentes) y DD-15 (auto-reserva fuera del alcance base).
+
+### DD-17 — Roles del sistema: admin (incluye dueño), odontólogo y recepción — 2026-11-18
+**Fecha**: 2026-11-18. **Motivo**: decisión de la líder; consolida DD-07.
+**Decisión**: el sistema tiene exactamente **tres roles**: `ADMIN_CONSULTORIO` (el dueño es el mismo rol), `ODONTOLOGO` y `RECEPCION`. No hay rol de paciente ni otros roles en el MVP. La alta inicial de consultorios es un seed o comando interno, no un rol (ver `03_actores_y_roles.md`).
+**Combina con**: DD-07 (permisos por rol; condición profesional separada del acceso administrativo).
+
+### DD-18 — Autenticación: token JWT firmado; `consultorioId` y `rol` siempre desde el token — 2026-11-18
+**Fecha**: 2026-11-18. **Motivo**: decisión de la líder; resuelve la estrategia de autenticación (plan §12) antes de arrancar C00.
+**Decisión**:
+- **Token JWT firmado** con el secreto en `.env` (nunca en el repo — regla dura 5). Token propio, sin proveedor externo.
+- `consultorioId` y `rol` salen **siempre del token**, nunca de un parámetro del cliente (regla dura 2; consistente con DD-09).
+- **C00 entrega**: el middleware que verifica el token y deja `{ usuarioId, consultorioId, rol }` en la request, más un **helper de tests para emitir tokens ficticios**.
+- **C01 entrega**: login con contraseña, expiración del token y gestión de usuarios.
+- La interfaz estable `{ usuarioId, consultorioId, rol }` no cambia (DD-14); el módulo `auth` queda aislado en `src/modules/auth/`.
+**Reemplaza**: "estrategia de autenticación sin definir (token propio vs proveedor externo)".
+
+### DD-19 — Migración `001`: tablas mínimas `consultorio` y `usuario` creadas en C00 — 2026-11-18
+**Fecha**: 2026-11-18. **Motivo**: cerrar la pregunta abierta sobre la propiedad de las tablas iniciales entre C00 y C01 (fila de riesgos de CHANGES.md: "acordar con C01 la propiedad de cada tabla inicial") antes de codear la migración `001`.
+**Decisión**: la migración `001` de C00 crea **ambas tablas** `consultorio` y `usuario` con lo mínimo necesario — identificador, `consultorio_id` como clave foránea y `rol` con CHECK de los tres valores de DD-17. C01 las extiende en su rango `010–019` (password, alta de usuarios, permisos) sin editar `001` (regla dura 9).
+**Justificación**: CHANGES.md lista "migración `001`" en C00; un `001` vacío dejaría la primera migración sin esquema verificable por `npm test`; las tablas mínimas mantienen pequeña la ola 0 (C00 bloquea al equipo) y C01 extiende hacia adelante sobre migraciones ya mergeadas, sin reescribirlas.
+
 ## Supuestos inferidos
 
 ### SU-01 — Datos 100% ficticios

@@ -40,7 +40,7 @@ La fuente de verdad del dominio vive en `knowledge-base/`. **Leé el archivo rel
 | [10_preguntas_abiertas.md](knowledge-base/10_preguntas_abiertas.md) | ⚠️ Inconsistencias a resolver ANTES de codear |
 | [11_devops_local_docker.md](knowledge-base/11_devops_local_docker.md) | Arranque local, Docker Compose, checklist de onboarding |
 
-> ⚠️ Resolver las preguntas de prioridad **Alta** de `10_preguntas_abiertas.md` antes de arrancar el primer change. En particular: **IN-03 — rol `PACIENTE` no definido en el plan §5.2** (¿auto-reserva de turnos por paciente o solo creación por recepción? — no inventar, preguntar a la líder antes de cerrar specs de turnos) y la estrategia de autenticación (token propio vs proveedor externo, plan §12).
+> ✅ **Resuelto (2026-11-18)**: **IN-03** y la **estrategia de autenticación** están cerradas — ver `knowledge-base/09_decisiones_y_supuestos.md` (**DD-16**: el paciente no es un rol ni tiene cuenta en el MVP; **DD-17**: roles = admin (incluye dueño), odontólogo y recepción; **DD-18**: auth = JWT con secreto en `.env`, `consultorioId` y `rol` siempre desde el token). Los temas que cada change debe resolver siguen en `10_preguntas_abiertas.md` — leerlo antes del spec de cada change.
 
 ---
 
