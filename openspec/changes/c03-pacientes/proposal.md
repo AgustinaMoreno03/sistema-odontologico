@@ -8,10 +8,10 @@ El consultorio necesita registrar y encontrar las fichas básicas de sus pacient
 
 - Dar de alta pacientes con nombre y al menos un contacto, teléfono o email.
 - Representar nombre y apellido mediante los campos previstos en la KB.
-- Buscar por nombre y apellido de forma parcial, sin distinguir mayúsculas ni tildes, y por teléfono o email.
+- Buscar por nombre y apellido de forma parcial, sin distinguir mayúsculas ni tildes, y por contacto normalizado, con un máximo de 50 resultados.
 - Limitar las altas y búsquedas al consultorio del usuario autenticado.
-- Aplicar la unicidad del email informado dentro del consultorio, según el modelo de datos.
-- Exponer una interfaz del módulo pacientes para que turnos compruebe que el paciente pertenece al consultorio autenticado.
+- Normalizar el teléfono y el email. Garantizar en PostgreSQL la unicidad del email por consultorio sin distinguir mayúsculas.
+- Publicar prioritariamente el contrato existePaciente({ pacienteId, consultorioId }), con resultado Promise<boolean>, para que C05 prepare su integración.
 - Cubrir con pruebas el alta válida, el rechazo por falta de contacto y el aislamiento entre consultorios.
 
 ## Capabilities
@@ -28,7 +28,7 @@ El consultorio necesita registrar y encontrar las fichas básicas de sus pacient
 - Endpoints de alta y búsqueda de pacientes.
 - Migraciones SQL numeradas dentro del rango 030–039 reservado para C03 en CHANGES.md.
 - Dependencia del contexto autenticado definido por C00, con la interfaz `{ usuarioId, consultorioId, rol }`.
-- Evaluación de `unaccent` en el diseño para la búsqueda sin distinguir tildes.
+- Uso propuesto de `unaccent`, disponible según el catálogo de Neon para PostgreSQL 18, con búsqueda acotada por consultorio y sin índice funcional de unaccent en el MVP.
 - Pruebas automatizadas con PostgreSQL y datos ficticios.
 
 El alcance comprende fichas básicas y búsqueda. Historia clínica, cobros y sucursales se mantienen como etapas posteriores.

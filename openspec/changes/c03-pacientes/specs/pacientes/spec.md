@@ -1,4 +1,4 @@
-﻿# Spec Delta
+# Spec Delta
 
 ## Purpose
 
@@ -34,17 +34,21 @@ El sistema SHALL rechazar el alta cuando falte el nombre o ambos medios de conta
 
 ### Requirement: Email único por consultorio
 
-El sistema SHALL impedir que dos pacientes del mismo consultorio compartan un email informado. Un mismo email SHALL poder existir en consultorios diferentes.
+El sistema SHALL recortar los espacios exteriores del email y guardarlo en minúsculas. SHALL impedir emails repetidos dentro del consultorio sin distinguir mayúsculas. PostgreSQL SHALL garantizar esa unicidad. El mismo email SHALL poder existir en consultorios diferentes.
 
-#### Scenario: Email repetido en el mismo consultorio
+#### Scenario: Email con espacios y mayúsculas
+- **WHEN** recepción registra un paciente con email " ANA@EXAMPLE.COM "
+- **THEN** el sistema guarda ana@example.com
+
+#### Scenario: Email repetido con distintas mayúsculas
 - **GIVEN** un paciente del consultorio A con email ana@example.com
-- **WHEN** recepción del consultorio A intenta crear otro paciente con ese mismo email
-- **THEN** el sistema rechaza el alta e informa el conflicto
+- **WHEN** recepción de A registra otro paciente con ANA@EXAMPLE.COM
+- **THEN** el sistema rechaza el alta por email duplicado
 
 #### Scenario: Email existente en otro consultorio
 - **GIVEN** un paciente del consultorio A con email ana@example.com
-- **WHEN** recepción del consultorio B registra un paciente con ese email
-- **THEN** el sistema permite el alta dentro del consultorio B
+- **WHEN** recepción del consultorio B registra otro paciente con ANA@EXAMPLE.COM
+- **THEN** el sistema permite el alta en B y guarda ana@example.com
 
 ### Requirement: Búsqueda por nombre y apellido
 
@@ -59,19 +63,35 @@ El sistema SHALL permitir buscar pacientes del consultorio autenticado por coinc
 - **WHEN** una persona autorizada busca un nombre que no coincide con pacientes de su consultorio
 - **THEN** el sistema devuelve una lista vacía
 
+### Requirement: Normalización del teléfono
+
+El sistema SHALL quitar espacios, guiones y paréntesis del teléfono, conservar un único signo + inicial cuando esté informado y conservar los dígitos y el código de país recibido. SHALL aplicar la misma normalización al buscar por teléfono. SHALL rechazar valores con otros caracteres o sin dígitos.
+
+#### Scenario: Teléfono internacional con separadores
+- **WHEN** recepción registra el teléfono ficticio "+54 (11) 0000-0000"
+- **THEN** el sistema guarda +541100000000
+
+#### Scenario: Teléfono local
+- **WHEN** recepción registra el teléfono ficticio "11 0000-0000"
+- **THEN** el sistema guarda 1100000000 sin agregar un código de país
+
+#### Scenario: Teléfono inválido
+- **WHEN** recepción intenta registrar un teléfono con letras o únicamente separadores
+- **THEN** el sistema rechaza el alta e informa que el teléfono es inválido
+
 ### Requirement: Búsqueda por contacto
 
-El sistema SHALL permitir a las personas autorizadas encontrar pacientes de su consultorio por el teléfono o email registrados.
+El sistema SHALL buscar por coincidencia completa del teléfono normalizado o del email recortado y convertido a minúsculas, dentro del consultorio autenticado.
 
-#### Scenario: Búsqueda por teléfono
-- **GIVEN** un paciente ficticio del consultorio A con teléfono 1100000000
-- **WHEN** recepción del consultorio A busca 1100000000
-- **THEN** la respuesta incluye la ficha de ese paciente
+#### Scenario: Búsqueda por teléfono con separadores
+- **GIVEN** un paciente de A con teléfono +541100000000
+- **WHEN** recepción de A busca "+54 (11) 0000-0000"
+- **THEN** la respuesta incluye su ficha
 
-#### Scenario: Búsqueda por email
-- **GIVEN** un paciente ficticio del consultorio A con email ana@example.com
-- **WHEN** recepción del consultorio A busca ana@example.com
-- **THEN** la respuesta incluye la ficha de ese paciente
+#### Scenario: Búsqueda por email con mayúsculas
+- **GIVEN** un paciente de A con email ana@example.com
+- **WHEN** recepción de A busca " ANA@EXAMPLE.COM "
+- **THEN** la respuesta incluye su ficha
 
 ### Requirement: Aislamiento de fichas entre consultorios
 
@@ -89,7 +109,7 @@ El sistema SHALL resolver el consultorio desde la identidad autenticada y limita
 
 ### Requirement: Acceso autorizado a fichas básicas
 
-El sistema SHALL permitir el alta a recepción y administración, y la consulta de fichas básicas a recepción, administración y odontólogos del consultorio. El sistema SHALL rechazar solicitudes sin identidad válida y altas solicitadas únicamente con permiso de odontólogo.
+Según knowledge-base/03_actores_y_roles.md, el sistema SHALL permitir el alta a ADMIN_CONSULTORIO y RECEPCION, y la búsqueda a ADMIN_CONSULTORIO, RECEPCION y ODONTOLOGO del consultorio. El sistema SHALL rechazar solicitudes sin identidad válida y altas solicitadas únicamente con permiso de odontólogo.
 
 #### Scenario: Consulta de un odontólogo
 - **WHEN** un odontólogo autenticado busca un paciente de su consultorio
@@ -116,3 +136,24 @@ El módulo de pacientes SHALL ofrecer a los módulos consumidores una comprobaci
 - **GIVEN** un paciente existente únicamente en el consultorio B
 - **WHEN** el módulo de turnos comprueba ese identificador en el contexto autenticado de A
 - **THEN** pacientes devuelve el mismo resultado que para un paciente inexistente en A
+
+### Requirement: Campos de la ficha básica
+
+La ficha SHALL contener id UUID, consultorio_id UUID referido a consultorio(id), nombre obligatorio, apellido opcional, telefono opcional, email opcional, activo booleano y creado_en como instante UTC. El sistema SHALL asignar id, consultorio_id, activo y creado_en. Se requiere al menos un contacto.
+
+#### Scenario: Campos asignados al crear la ficha
+- **WHEN** recepción registra un paciente válido con nombre y teléfono
+- **THEN** el sistema asigna un UUID, el consultorio autenticado, activo verdadero y la fecha de creación UTC, conservando los datos básicos recibidos
+
+### Requirement: Límite de búsqueda
+
+Cada búsqueda SHALL devolver como máximo 50 fichas del consultorio autenticado, ordenadas por apellido, nombre e id. La petición SHALL proporcionar un texto de búsqueda no vacío.
+
+#### Scenario: Más de cincuenta coincidencias
+- **GIVEN** 51 pacientes del consultorio A que coinciden con la búsqueda
+- **WHEN** recepción de A realiza la búsqueda
+- **THEN** el sistema devuelve los primeros 50 según el orden definido
+
+#### Scenario: Búsqueda vacía
+- **WHEN** una persona autorizada busca con texto vacío o compuesto solo por espacios
+- **THEN** el sistema rechaza la solicitud e informa que falta el texto de búsqueda

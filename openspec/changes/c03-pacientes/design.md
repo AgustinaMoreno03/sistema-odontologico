@@ -1,4 +1,4 @@
-﻿# Design
+# Design
 
 ## Context
 
@@ -41,7 +41,7 @@ C00 valida JWT HS256 y los tres campos obligatorios. Ante token ausente o invál
 }
 ```
 
-Pacientes conserva ese comportamiento y aplica sus permisos después de autenticar.
+Pacientes conserva ese comportamiento y aplica sus permisos después de autenticar, según knowledge-base/03_actores_y_roles.md.
 
 - ADMIN_CONSULTORIO y RECEPCION pueden dar de alta pacientes.
 - ADMIN_CONSULTORIO, RECEPCION y ODONTOLOGO pueden buscar fichas básicas.
@@ -70,13 +70,17 @@ Recortar espacios exteriores. Convertir los contactos vacíos a NULL y rechazar 
 
 Generar el UUID del paciente en el servicio con la función estándar de Node.js. Las referencias a consultorio utilizan el UUID autenticado.
 
-### 4. Email único por consultorio
+### 4. Normalización de contactos y unicidad
 
-Aplicar una restricción única sobre (consultorio_id, email). Mantener email en NULL cuando no se informa permite múltiples pacientes con teléfono como único contacto.
+Recortar espacios exteriores del email y guardarlo en minúsculas. PostgreSQL garantiza la unicidad mediante un índice único sobre (consultorio_id, lower(btrim(email))). Los contactos ausentes se guardan como NULL.
 
-Para esta propuesta, la comparación de unicidad usa el email almacenado después de recortar espacios exteriores. El spec actual no exige equivalencia entre distintas mayúsculas del email.
+La normalización del servicio mantiene los valores consistentes y el índice protege la unicidad incluso ante escrituras que usen otras mayúsculas. Traducir su violación a 409.
 
-La base resuelve también los intentos concurrentes con el mismo email. Traducir la violación de esa restricción a un conflicto 409 con un mensaje comprensible.
+Para teléfono, quitar espacios, guiones y paréntesis. Conservar los dígitos y un único signo + inicial cuando esté informado. Rechazar otros caracteres o un valor sin dígitos. Un contacto compuesto solo por espacios se trata como ausente antes de validar.
+
+Ejemplo ficticio: "+54 (11) 0000-0000" se guarda como "+541100000000". Un teléfono local conserva sus dígitos. Agregar país o área requiere una regla posterior acordada.
+
+Aplicar las mismas normalizaciones en la búsqueda por contacto.
 
 ### 5. Contrato HTTP propuesto
 
@@ -93,28 +97,38 @@ Proponer estas respuestas adicionales para revisión:
 
 El cuerpo de alta admite únicamente los campos de la ficha indicados. Un identificador de consultorio enviado en el cuerpo se rechaza como campo ajeno al contrato. Los valores de query o encabezados jamás determinan el consultorio de operación.
 
-### 6. Búsqueda con unaccent
+### 6. Búsqueda con unaccent y límite de resultados
 
-Utilizar unaccent e ILIKE para comparar nombres y apellidos por coincidencia parcial, conservando su escritura original en la tabla y la respuesta.
+Utilizar unaccent e ILIKE para comparar nombres y apellidos por coincidencia parcial, conservando su escritura original.
 
-La documentación de Neon consultada durante Explore indica unaccent 1.1 disponible en PostgreSQL 18. Comprobar su funcionamiento en PostgreSQL local y en el entorno de verificación antes de cerrar Apply.
+La documentación oficial de Neon consultada durante Explore incluye unaccent 1.1 para PostgreSQL 18. La comprobación documental está realizada. Su habilitación y funcionamiento en la base del proyecto se verifican durante Apply.
 
-La búsqueda por teléfono o email compara el valor completo después de recortar espacios exteriores. Esta propuesta garantiza los casos exactos del spec y deja documentada la semántica para revisión.
-
-Todas las condiciones de búsqueda se agrupan bajo el filtro obligatorio consultorio_id. Parametrizar las consultas y escapar los comodines de búsqueda para interpretar el texto del usuario de forma literal.
-
-Ordenar los resultados por apellido, nombre e id para obtener un orden estable. Para el volumen inicial se propone búsqueda directa. Evaluar paginación e índices especializados si aumenta el volumen.
-
-Fuente consultada el 18/11/2026.
 https://neon.com/docs/extensions/pg-extensions
 
-### 7. Interfaz pública para turnos
+unaccent no es inmutable. Para el MVP, aplicar la función en la consulta y usar un índice ordinario por consultorio_id para acotar los candidatos. La búsqueda parcial con comodín inicial tampoco se beneficia de un índice B-tree ordinario sobre nombre. El volumen inicial permite este enfoque. LIMIT 50 acota la respuesta, aunque la base puede examinar más filas.
 
-Exponer una operación del módulo pacientes que reciba el identificador del paciente y el contexto autenticado de consultorio, y compruebe si existe dentro de ese consultorio.
+Si el volumen exige optimización, evaluar columnas normalizadas y un índice adecuado mediante una decisión posterior. El diseño inicial conserva las funciones reales de PostgreSQL y evita declarar artificialmente inmutable a unaccent.
 
-La consulta utiliza id y consultorio_id. Un identificador inexistente y uno perteneciente a otro consultorio producen el mismo resultado negativo.
+Buscar teléfono por coincidencia completa normalizada y email por coincidencia completa recortada y en minúsculas. Una consulta textual para nombres debe seguir funcionando aunque su contenido no sea un teléfono válido.
 
-C05 consume esta interfaz y mantiene la propiedad de las consultas sobre paciente dentro del módulo pacientes.
+Agrupar todas las alternativas bajo el filtro obligatorio consultorio_id. Utilizar parámetros SQL y escapar comodines para interpretar literalmente el texto buscado.
+
+Devolver un máximo fijo de 50 resultados mediante LIMIT 50, ordenados por apellido ASC NULLS LAST, nombre ASC e id ASC. Rechazar texto de búsqueda vacío con 422. Los parámetros del cliente no pueden ampliar el máximo.
+
+### 7. Interfaz pública prioritaria para C05
+
+Exportar existePaciente desde src/modules/pacientes/index.js.
+
+Contrato propuesto para revisión:
+existePaciente({ pacienteId, consultorioId }) devuelve Promise<boolean>.
+
+pacienteId es el UUID del paciente. consultorioId es el UUID obtenido del contexto autenticado por el módulo consumidor. Ambos son obligatorios. Los identificadores malformados generan un error de validación.
+
+Devuelve true si existe una fila de paciente con ambos identificadores y false cuando no existe. Un paciente ajeno y uno inexistente producen false. Un fallo de conexión o consulta se propaga como error técnico.
+
+El repositorio de pacientes realiza la consulta parametrizada usando id y consultorio_id. C05 consume esta interfaz pública.
+
+Publicar este contrato al equipo tras actualizar los documentos, antes de implementar. La implementación de la interfaz y su prueba se priorizan inmediatamente después de la migración.
 
 ### 8. Pruebas
 
@@ -128,15 +142,15 @@ Para comprobar rechazos, el helper permite expirado: true, omitir claims, cambia
 
 Usar tests/helpers/appProtegida.js como referencia para conectar middlewareAutenticacion. Las pruebas HTTP de pacientes deben ejercer sus propias rutas con el middleware real.
 
-La suite de C00 crea la base de test desde cero y aplica la migración 001. C03 aporta su migración en el rango reservado. Antes de ejecutar los escenarios, comprobar que la preparación de tests descubre y aplica también esa migración y habilita unaccent. Si el setup aplica únicamente 001, coordinar su ampliación con Agustina.
+C03 conserva tests/setup bajo responsabilidad de C00. Al publicarse esa rama, confirmar por lectura del setup y ejecución de la suite que se aplican todas las migraciones de db/migrations/, incluida la de C03. Esta comprobación está pendiente de acceso al código publicado. Si falta ese comportamiento, informar a Agustina para que lo resuelva en C00.
 
-Comprobar además que dos altas simultáneas con el mismo email y consultorio produzcan una sola ficha.
+La restricción de unicidad permanece garantizada en PostgreSQL. Para priorizar la entrega, las pruebas de C03 cubren el duplicado secuencial y prescinden de una prueba específica de altas concurrentes.
 
 ## Risks / Trade-offs
 
 - Contrato de C00 confirmado pero rama todavía sin publicar. Contrastar imports, conexión y helper de tests con su versión integrada antes de Apply.
 - Disponibilidad local de unaccent. Verificar su creación mediante el runner y una búsqueda con datos ficticios.
-- Diferencias de mayúsculas en email. La propuesta actual conserva la comparación documentada y Agustina revisará si necesita otra regla.
+- Emails equivalentes por mayúsculas. Normalizar en el servicio y garantizar unicidad con el índice de PostgreSQL.
 - Consultas parciales costosas con crecimiento de datos. Mantener el alcance inicial y evaluar paginación e índices cuando se conozca el volumen.
 - Cruce de consultorios por una condición OR mal agrupada. Verificar aislamiento buscando por cada campo y por identificador.
 - Migraciones de changes paralelos. Coordinar con la líder el orden de integración y respetar el rango reservado.
