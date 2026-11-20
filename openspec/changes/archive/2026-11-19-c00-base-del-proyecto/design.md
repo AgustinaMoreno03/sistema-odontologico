@@ -58,7 +58,7 @@ El repo está greenfield: no existe `package.json`, `src/`, `db/` ni Compose (ve
 
 ### D4 — Entorno: Compose canónico y respaldo directo
 
-- **Un solo archivo `compose.yaml`** (nombre canónico, sin `compose.override.yaml` — decisión del usuario; desviación de la convención dev-override de la skill `docker-compose-patterns`, aceptada para minimizar la ola 0) con `postgres:18` fijo (nunca `latest`), healthcheck `pg_isready` (`interval: 5s, timeout: 3s, retries: 3, start_period: 10s`), `depends_on: condition: service_healthy`, volumen nombrado para datos. Credenciales vía `${VAR:-${VAR}}`/`env_file`, jamás en texto plano en el YAML; `.env` ya está en `.gitignore` (verificado). Validación: `docker compose config --quiet`.
+- **Un solo archivo `compose.yaml`** (nombre canónico, sin `compose.override.yaml` — decisión del usuario; desviación de la convención dev-override de la skill `docker-compose-patterns`, aceptada para minimizar la ola 0) con `postgres:18` fijo (nunca `latest`), healthcheck `pg_isready` (`interval: 5s, timeout: 3s, retries: 3, start_period: 10s`), `depends_on: condition: service_healthy`, volumen nombrado para datos. Credenciales vía `${VAR}` (sin default; Compose las resuelve desde `.env` local), jamás en texto plano en el YAML; `.env` ya está en `.gitignore` (verificado). Validación: `docker compose config --quiet`.
 - **Respaldo (fila de riesgos del roadmap):** si Docker falla, el README documenta PostgreSQL 18 directo con la misma versión y el mismo `DATABASE_URL` — sin degradar motor.
 - **Base de test:** database separada (p. ej. `odontologia_test`) creada desde el arranque del Compose; la suite aplica migraciones en su setup. Aísla `npm test` del entorno de desarrollo.
 
