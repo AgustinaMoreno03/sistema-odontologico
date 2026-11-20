@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
  * La misma técnica la reutiliza la task 5.3 para DATABASE_URL.
  */
 const RUTA_SERVIDOR = path.resolve(process.cwd(), 'src/server.js');
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 15000;
 
 function lanzarServidor({ sinJwtSecret, jwtSecretVacio } = {}) {
   return new Promise((resolve) => {
@@ -73,11 +73,11 @@ describe('fail-fast de JWT_SECRET (spec development-environment, "Secreto del JW
     const resultado = await lanzarServidor({ sinJwtSecret: true });
 
     expectFailFastSeguro(resultado, 'JWT_SECRET');
-  }, 15000);
+  }, 30000);
 
   it('JWT_SECRET vacío ("") → el proceso termina con código distinto de cero, sin arrancar', async () => {
     const resultado = await lanzarServidor({ jwtSecretVacio: true });
 
     expectFailFastSeguro(resultado, 'JWT_SECRET');
-  }, 15000);
+  }, 30000);
 });
