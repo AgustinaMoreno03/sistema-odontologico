@@ -2,7 +2,7 @@
 
 ## 1. Base de datos y esquema C01
 
-- [ ] 1.1 Inspeccionar la migración `001` mergeada de C00 y documentar el esquema real de `consultorio` y `usuario`; verificar los hallazgos contra una base local con C00 aplicado antes de diseñar la migración C01.
+- [x] 1.1 Inspeccionar la migración `001` mergeada de C00 y documentar el esquema real de `consultorio` y `usuario`; verificar los hallazgos contra una base local con C00 aplicado antes de diseñar la migración C01.
 - [ ] 1.2 Escribir primero tests de migración que fallen para las extensiones requeridas por C01; verificar que fallan sobre el esquema actual de C00 y que no requieren editar `001`.
 - [ ] 1.3 Implementar la migración SQL nueva en el rango 010–019 reservado en `CHANGES.md`; verificar aplicación desde base vacía y sobre C00 aplicado, repetición segura según runner y ausencia de cambios a `001`.
 - [ ] 1.4 Escribir primero tests fallidos de repositorios `auth`/`consultorios` para consultas tenant-scoped y aislamiento entre dos consultorios ficticios.
@@ -10,12 +10,9 @@
 
 ## 2. Autenticación y contexto
 
-- [ ] 2.1 Escribir primero tests fallidos para login por email, mensaje genérico, JWT firmado con `exp` de ocho horas, contexto `req.auth`, respuestas 401 y fallo de configuración cuando falta `JWT_SECRET`.
-- [ ] 2.2 Durante apply, agregar la dependencia aprobada `jsonwebtoken` y configurar `JWT_SECRET` como requisito sin valor por defecto; verificar que autenticación no inicia con secreto ausente y que `.env.example` no contiene secretos reales.
-- [ ] 2.3 Implementar login con email y contraseña, hash con salt aleatorio, mensaje uniforme `Usuario o contraseña incorrectos` y JWT firmado con `exp` de ocho horas usando `jsonwebtoken`; verificar los tests escritos en 2.1.
-- [ ] 2.5 Escribir primero tests fallidos para `middlewareAutenticacion` en `src/modules/auth/rutas.js`, incluido el rechazo de token ausente, vencido o inválido y la población de `req.auth`.
-- [ ] 2.6 Implementar `middlewareAutenticacion`; verificar HTTP 401 en token ausente/vencido/inválido y el contexto `{ usuarioId, consultorioId, rol }` para token válido.
-- [ ] 2.7 Documentar el contrato de login, token, `req.auth`, códigos 401/403 y configuración requerida; verificar que ejemplos y documentación no contengan secretos ni datos reales.
+- [ ] 2.1 Escribir primero tests fallidos para login por email, mensaje genérico, JWT emitido con `exp` de ocho horas y credenciales inválidas.
+- [ ] 2.2 Implementar login con email y contraseña, hash con salt aleatorio, mensaje uniforme `Usuario o contraseña incorrectos` y emisión de JWT con `exp` de ocho horas usando el `jsonwebtoken` ya instalado; verificar los tests escritos en 2.1.
+- [ ] 2.3 Documentar el contrato de login, token, `req.auth`, códigos 401/403 y configuración requerida; verificar que ejemplos y documentación no contengan secretos ni datos reales. Reutilizar la verificación, middleware y validación de `JWT_SECRET` ≥32 caracteres de C00; no duplicarlos.
 
 ## 3. Consultorios y administración de usuarios
 
@@ -27,5 +24,5 @@
 
 ## 4. Verificación integrada
 
-- [ ] 4.1 Ejecutar `npm test` y verificar todos los escenarios de los specs: “Login válido produce token y contexto autenticado”; “Credenciales inválidas usan mensaje genérico”; “Solicitud sin token”; “Token vencido o inválido”; “Token válido proporciona identidad”; “Configuración sin secreto”; “Aprovisionamiento operativo”; “Registro público no disponible” (POST `/consultorios`, 404); “Administrador crea usuario en su consultorio”; “Rol sin permiso intenta crear usuario” (ODONTOLOGO y RECEPCION, 403); “Listado limitado al consultorio autenticado”; “Consultar por ID un usuario de otro consultorio” (404); y “Email ya registrado” (409).
+- [ ] 4.1 Ejecutar `npm test` y verificar todos los escenarios de los specs: login válido, credenciales inválidas, token ausente/vencido/inválido y contexto autenticado (reutilizando cobertura JWT/middleware/configuración de C00); “Aprovisionamiento operativo”; “Registro público no disponible” (POST `/consultorios`, 404); “Administrador crea usuario en su consultorio”; “Rol sin permiso intenta crear usuario” (ODONTOLOGO y RECEPCION, 403); “Listado limitado al consultorio autenticado”; “Consultar por ID un usuario de otro consultorio” (404); y “Email ya registrado” (409).
 - [ ] 4.2 Revisar el diff de C01 y verificar que no modifica `001`, no contiene secretos, no almacena contraseñas en texto plano y mantiene todas las operaciones tenant-scoped.
