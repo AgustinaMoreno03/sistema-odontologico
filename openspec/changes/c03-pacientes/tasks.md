@@ -11,8 +11,8 @@ Apply requiere la aprobación de Agustina y C00 integrado en main. El comportami
 ## 2. Migración e interfaz prioritaria para C05
 
 - [ ] 2.1 Crear la migración de paciente en el rango 030–039 con los campos del spec, UUID y referencia a consultorio(id). Garantizar nombre y contacto obligatorios y un índice único por consultorio_id y lower(btrim(email)). Verificar restricciones con PostgreSQL de test.
-- [ ] 2.2 Coordinar la habilitación de unaccent mediante migración. Verificar su funcionamiento con tildes y que una base de test recién creada contiene paciente y las migraciones de C03.
-- [ ] 2.3 Exportar existePaciente({ pacienteId, consultorioId }) desde src/modules/pacientes/index.js con resultado Promise<boolean>. Verificar paciente propio, paciente ajeno, identificador inexistente y rechazo de parámetros malformados.
+- [ ] 2.2 Habilitar unaccent mediante CREATE EXTENSION IF NOT EXISTS unaccent en la migración propia de C03. Verificar su funcionamiento con tildes y que una base de test recién creada contiene paciente y las migraciones de C03.
+- [ ] 2.3 Exportar existePaciente({ pacienteId, consultorioId }) desde src/modules/pacientes/index.js con resultado Promise<boolean>. Verificar paciente propio, paciente ajeno, identificador inexistente, ApiError 400 con code VALIDACION para UUID malformados y propagación de errores de base al manejador central.
 
 ## 3. Alta y normalización
 
@@ -37,6 +37,11 @@ Apply requiere la aprobación de Agustina y C00 integrado en main. El comportami
 - [ ] 6.1 Ejecutar npm test y comprobar que todos los escenarios del spec pasan con PostgreSQL y datos ficticios.
 - [ ] 6.2 Verificar las migraciones sobre una base vacía y una base con C00 aplicado. Comprobar que una segunda ejecución del runner conserva datos y reconoce las migraciones aplicadas.
 - [ ] 6.3 Revisar el diff completo y registrar la evidencia de verificación para el PR de implementación.
+
+## 7. Compatibilidad con la suite compartida
+
+- [ ] 7.1 Coordinar con Agustina la corrección de tests/esquema.test.js para admitir todas las migraciones presentes y consultar y limpiar únicamente sus fixtures. Verificar el diff acordado y que el test pasa junto con las pruebas de pacientes.
+- [ ] 7.2 Crear fixtures de C03 con consultorios ficticios propios y UUID distintos. Limpiar sus pacientes antes de sus consultorios mediante filtros específicos. Verificar que al limpiar un fixture se conservan los datos de otro consultorio.
 
 ## Workflow follow-up
 

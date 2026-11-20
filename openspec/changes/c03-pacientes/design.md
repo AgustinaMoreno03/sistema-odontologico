@@ -122,9 +122,9 @@ Exportar existePaciente desde src/modules/pacientes/index.js.
 Contrato propuesto para revisión:
 existePaciente({ pacienteId, consultorioId }) devuelve Promise<boolean>.
 
-pacienteId es el UUID del paciente. consultorioId es el UUID obtenido del contexto autenticado por el módulo consumidor. Ambos son obligatorios. Los identificadores malformados generan un error de validación.
+pacienteId es el UUID del paciente. consultorioId es el UUID obtenido del contexto autenticado por el módulo consumidor. Ambos son obligatorios. Los identificadores malformados lanzan new ApiError(400, 'VALIDACION', 'Identificadores inválidos'), importando ApiError desde src/errores.js.
 
-Devuelve true si existe una fila de paciente con ambos identificadores y false cuando no existe. Un paciente ajeno y uno inexistente producen false. Un fallo de conexión o consulta se propaga como error técnico.
+Devuelve true si existe una fila de paciente con ambos identificadores y false cuando no existe. Un paciente ajeno y uno inexistente producen false. Un fallo de conexión o consulta se propaga al manejador central de C00, que responde 500 con code ERROR_INTERNO y un mensaje seguro.
 
 El repositorio de pacientes realiza la consulta parametrizada usando id y consultorio_id. C05 consume esta interfaz pública.
 
@@ -142,7 +142,7 @@ Para comprobar rechazos, el helper permite expirado: true, omitir claims, cambia
 
 Usar tests/helpers/appProtegida.js como referencia para conectar middlewareAutenticacion. Las pruebas HTTP de pacientes deben ejercer sus propias rutas con el middleware real.
 
-C03 conserva tests/setup bajo responsabilidad de C00. Al publicarse esa rama, confirmar por lectura del setup y ejecución de la suite que se aplican todas las migraciones de db/migrations/, incluida la de C03. Esta comprobación está pendiente de acceso al código publicado. Si falta ese comportamiento, informar a Agustina para que lo resuelva en C00.
+La lectura de C00 en upstream/main confirma que tests/setup/global-setup.js recrea la base de test y ejecuta node-pg-migrate up con migrations.config.js, configurado sobre todo db/migrations/. tests/setup permanece bajo responsabilidad de Agustina. Durante Apply se verifica la ejecución con la migración de C03.
 
 La restricción de unicidad permanece garantizada en PostgreSQL. Para priorizar la entrega, las pruebas de C03 cubren el duplicado secuencial y prescinden de una prueba específica de altas concurrentes.
 
@@ -167,3 +167,12 @@ La restricción de unicidad permanece garantizada en PostgreSQL. Para priorizar 
 ## UI Mockups
 
 Decision: no (no UI)
+## Verificaciones de integración con C00
+
+La migración 001 no habilita unaccent. La migración propia de C03 debe ejecutar CREATE EXTENSION IF NOT EXISTS unaccent antes de usar la función.
+
+Cada test o grupo de tests de C03 crea consultorios ficticios propios con UUID distintos. La limpieza elimina primero sus pacientes y después sus consultorios, siempre filtrando por sus identificadores. Evitar DELETE global y TRUNCATE sobre tablas compartidas.
+
+tests/esquema.test.js contiene tres incompatibilidades con pruebas paralelas: espera únicamente 001 en el historial, cuenta todos los usuarios y elimina todos los usuarios y consultorios. Coordinar con Agustina su corrección antes de ejecutar la suite integrada: comprobar el historial frente a las migraciones presentes en db/migrations/, consultar solo su fixture y limpiar solo sus datos. Los cambios en tests/setup corresponden a C00.
+
+El cierre documental del setup se basa en lectura del código publicado. La verificación ejecutable con paciente y unaccent corresponde a Apply.

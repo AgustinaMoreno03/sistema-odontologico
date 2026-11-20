@@ -137,6 +137,14 @@ El módulo de pacientes SHALL ofrecer a los módulos consumidores una comprobaci
 - **WHEN** el módulo de turnos comprueba ese identificador en el contexto autenticado de A
 - **THEN** pacientes devuelve el mismo resultado que para un paciente inexistente en A
 
+#### Scenario: Identificador malformado en la comprobación
+- **WHEN** un módulo consumidor comprueba un paciente con pacienteId o consultorioId que no tiene formato UUID válido
+- **THEN** la operación lanza ApiError con statusCode 400 y code VALIDACION
+
+#### Scenario: Fallo de base durante la comprobación
+- **WHEN** la consulta de existencia falla por un problema de base de datos
+- **THEN** la operación propaga el error al consumidor y el manejador HTTP central responde 500 con code ERROR_INTERNO y mensaje seguro
+
 ### Requirement: Campos de la ficha básica
 
 La ficha SHALL contener id UUID, consultorio_id UUID referido a consultorio(id), nombre obligatorio, apellido opcional, telefono opcional, email opcional, activo booleano y creado_en como instante UTC. El sistema SHALL asignar id, consultorio_id, activo y creado_en. Se requiere al menos un contacto.
