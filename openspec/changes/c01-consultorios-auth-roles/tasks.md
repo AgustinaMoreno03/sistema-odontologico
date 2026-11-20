@@ -24,5 +24,5 @@
 
 ## 4. Verificación integrada
 
-- [ ] 4.1 Ejecutar `npm test` y verificar todos los escenarios de los specs: login válido, credenciales inválidas, token ausente/vencido/inválido y contexto autenticado (reutilizando cobertura JWT/middleware/configuración de C00); “Aprovisionamiento operativo”; “Registro público no disponible” (POST `/consultorios`, 404); “Administrador crea usuario en su consultorio”; “Rol sin permiso intenta crear usuario” (ODONTOLOGO y RECEPCION, 403); “Listado limitado al consultorio autenticado”; “Consultar por ID un usuario de otro consultorio” (404); y “Email ya registrado” (409).
-- [ ] 4.2 Revisar el diff de C01 y verificar que no modifica `001`, no contiene secretos, no almacena contraseñas en texto plano y mantiene todas las operaciones tenant-scoped.
+- [x] 4.1 Ejecutar `npm test` y verificar todos los escenarios de los specs: login válido, credenciales inválidas, token ausente/vencido/inválido y contexto autenticado (reutilizando cobertura JWT/middleware/configuración de C00); “Aprovisionamiento operativo”; “Registro público no disponible” (POST `/consultorios`, 404); “Administrador crea usuario en su consultorio”; “Rol sin permiso intenta crear usuario” (ODONTOLOGO y RECEPCION, 403); “Listado limitado al consultorio autenticado”; “Consultar por ID un usuario de otro consultorio” (404); y “Email ya registrado” (409).
+- [x] 4.2 Revisar el diff de C01 y verificar que no modifica `001`, no contiene secretos, no almacena contraseñas en texto plano y mantiene todas las operaciones tenant-scoped.
