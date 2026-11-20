@@ -17,6 +17,28 @@ async function consultar(sql, valores) {
 
 const COLUMNAS_PUBLICAS = 'id, consultorio_id, rol, email';
 
+/** Inserta credenciales ya hasheadas; nunca recibe ni persiste la contraseña. */
+export async function crearUsuario({ id, consultorioId, rol, email, passwordHash }) {
+  const resultado = await consultar(
+    `INSERT INTO usuario (id, consultorio_id, rol, email, password_hash)
+     VALUES (COALESCE($1::uuid, gen_random_uuid()), $2, $3, $4, $5)
+     RETURNING id, consultorio_id, rol, email, password_hash`,
+    [id ?? null, consultorioId, rol, email, passwordHash]
+  );
+  return resultado.rows[0];
+}
+
+/** Carga credenciales internas para login; el hash no se expone por rutas. */
+export async function buscarCredencialesPorEmail(email) {
+  const resultado = await consultar(
+    `SELECT id, consultorio_id, rol, email, password_hash
+     FROM usuario
+     WHERE email = $1`,
+    [email]
+  );
+  return resultado.rows[0] ?? null;
+}
+
 /**
  * Lista usuarios de un único consultorio. El llamador debe pasar el tenant
  * autenticado desde req.auth; no se reciben filtros del cliente.

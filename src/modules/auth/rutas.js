@@ -1,10 +1,19 @@
 import { Router } from 'express';
-import { noAutorizado, verificarToken } from './servicios.js';
+import { iniciarSesion, noAutorizado, verificarToken } from './servicios.js';
 
 // Capa de rutas (módulo auth): únicamente parseo y validación HTTP.
 // Sin lógica de negocio y sin SQL en esta capa (regla de capas DD-13).
 // El router se monta en src/app.js cuando existan rutas reales (C01).
 export const rutasAuth = Router();
+
+rutasAuth.post('/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body ?? {};
+    res.status(200).json(await iniciarSesion(email, password));
+  } catch (err) {
+    next(err);
+  }
+});
 
 const PREFIJO_HEADER_TENANT = 'x-tenant-';
 const ESQUEMA_BEARER = /^Bearer\s+(\S+)$/i;

@@ -216,8 +216,13 @@ app.post('/protegido', middlewareAutenticacion, responder);
 ```
 
 Dentro de `src/` el mismo import relativo es
-`'./modules/auth/rutas.js'` (C00 todavía no monta rutas protegidas en
-producción: el router `rutasAuth` se monta en C01 junto al login).
+`'./modules/auth/rutas.js'`. C01 monta `rutasAuth` bajo `/auth`; el login se
+solicita con `POST /auth/login` y un cuerpo `{ "email": "...", "password":
+"..." }`. Ante email desconocido o contraseña incorrecta devuelve HTTP 401
+con el mismo mensaje `Usuario o contraseña incorrectos`. Un login válido
+devuelve `{ "token": "<JWT>" }`, firmado con HS256 y con expiración de ocho
+horas. El middleware existente de C00 verifica la firma y vigencia y publica
+en rutas protegidas `req.auth = { usuarioId, consultorioId, rol }`.
 
 Qué hace al colocarlo como tercer argumento de la ruta:
 

@@ -10,9 +10,9 @@
 
 ## 2. Autenticación y contexto
 
-- [ ] 2.1 Escribir primero tests fallidos para login por email, mensaje genérico, JWT emitido con `exp` de ocho horas y credenciales inválidas.
-- [ ] 2.2 Implementar login con email y contraseña, hash con salt aleatorio, mensaje uniforme `Usuario o contraseña incorrectos` y emisión de JWT con `exp` de ocho horas usando el `jsonwebtoken` ya instalado; verificar los tests escritos en 2.1.
-- [ ] 2.3 Documentar el contrato de login, token, `req.auth`, códigos 401/403 y configuración requerida; verificar que ejemplos y documentación no contengan secretos ni datos reales. Reutilizar la verificación, middleware y validación de `JWT_SECRET` ≥32 caracteres de C00; no duplicarlos.
+- [x] 2.1 Escribir primero tests fallidos para login por email, mensaje genérico, JWT emitido con `exp` de ocho horas y credenciales inválidas.
+- [x] 2.2 Implementar login con email y contraseña, hash con salt aleatorio, mensaje uniforme `Usuario o contraseña incorrectos` y emisión de JWT con `exp` de ocho horas usando el `jsonwebtoken` ya instalado; verificar los tests escritos en 2.1.
+- [x] 2.3 Documentar el contrato de login, token, `req.auth`, códigos 401/403 y configuración requerida; verificar que ejemplos y documentación no contengan secretos ni datos reales. Reutilizar la verificación, middleware y validación de `JWT_SECRET` ≥32 caracteres de C00; no duplicarlos.
 
 ## 3. Consultorios y administración de usuarios
 
