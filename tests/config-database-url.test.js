@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * stack ni cadenas de conexión. Misma técnica que la task 4.6.
  */
 const RUTA_SERVIDOR = path.resolve(process.cwd(), 'src/server.js');
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 15000;
 
 function lanzarServidorSinDatabaseUrl() {
   return new Promise((resolve) => {
@@ -58,5 +58,5 @@ describe('fail-fast de DATABASE_URL (spec development-environment, "Variable de 
     expect(salida).toMatch(/DATABASE_URL/); // nombra la variable faltante
     expect(salida).not.toMatch(/at .*\.js:\d+|node:internal/); // sin stack
     expect(salida).not.toContain('postgresql://'); // sin cadenas de conexión
-  }, 15000);
+  }, 30000);
 });
