@@ -61,4 +61,12 @@ describe('GET /health', () => {
     expect(segunda.status).toBe(200);
     expect(segunda.body).toEqual({ status: 'ok' });
   });
+
+  it('no expone el header X-Powered-By (fingerprinting del framework)', async () => {
+    const app = crearApp();
+
+    const res = await request(app).get('/health');
+
+    expect(res.headers['x-powered-by']).toBeUndefined();
+  });
 });
