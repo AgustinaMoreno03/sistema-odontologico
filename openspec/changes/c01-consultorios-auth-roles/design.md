@@ -22,6 +22,7 @@ Ver `proposal.md` para la motivación y `specs/` para el contrato observable. C0
 - **JWT y verificación provistos por C00.** C00 ya incluye `jsonwebtoken`, verifica JWT con algoritmo HS256, valida expiración, claims y roles, implementa `middlewareAutenticacion` en `src/modules/auth/rutas.js` y deja `{ usuarioId, consultorioId, rol }` en `req.auth`. C01 reutiliza esos componentes; no agrega otra librería ni duplica el middleware.
 - **Secreto provisto por C00.** C00 exige `JWT_SECRET` de al menos 32 caracteres al iniciar, sin valor por defecto. C01 reutiliza esta validación; no la duplica. `.env.example` no contiene secretos reales.
 - **Hash de contraseñas con `crypto.scrypt` y salt aleatorio por usuario.** Evita conservar contraseñas reversibles y no requiere un paquete de hashing adicional. Nunca registrar la contraseña recibida ni incluirla en respuestas.
+- **Email y hash nullable en la base.** `email` y `password_hash` quedan nullable para no romper inserts existentes de C00, que crean usuarios sin esos campos. El servicio de alta de usuarios de C01 sí exige siempre email y contraseña y nunca crea por la API una cuenta sin ambos; la nulabilidad es únicamente una compatibilidad de esquema, no una regla de negocio.
 - **Contexto autenticado confiable (C00).** Las rutas C01 reutilizan el `req.auth` validado por C00. Los módulos no aceptan `consultorioId` de entrada para seleccionar tenant. Responder 401 ante token ausente/inválido y 403 si el rol autenticado no está autorizado.
 - **Login con email único y respuesta indistinguible ante falla.** Buscar por email y contrastar la contraseña con su hash; email desconocido y contraseña incorrecta comparten el mensaje `Usuario o contraseña incorrectos`.
 - **Autorización mínima C01.** Solo `ADMIN_CONSULTORIO` administra usuarios y puede asignar cualquiera de los tres roles. El tenant se toma de `req.auth`; un `consultorioId` del body se ignora. Listados filtran por ese tenant y la consulta por ID ajeno responde 404. Emails duplicados responden 409. No se agrega autorización para turnos, pacientes ni agenda.
@@ -31,7 +32,7 @@ Ver `proposal.md` para la motivación y `specs/` para el contrato observable. C0
 
 ## Risks / Trade-offs
 
-- [La base local no tiene todavía evidencia registrada de la estructura aplicada] → Verificar columnas y restricciones sobre la base local antes de diseñar la migración C01; conservar `001` intacta.
+- [La base local fue verificada contra `001` con la salida provista por la usuaria] → Mantener email/hash en una migración hacia adelante y conservar `001` intacta.
 - [Pérdida o exposición de `JWT_SECRET` permitiría emitir tokens falsos] → Mantenerlo fuera del repositorio, validar configuración al iniciar y documentar rotación como operación controlada.
 - [Tokens vigentes no se revocan individualmente antes de sus ocho horas] → Aceptar esta limitación para el MVP; no implementar lista de revocación ni sesiones en este change.
 - [La administración de usuarios y autenticación concentran datos sensibles] → No devolver hashes, aplicar consultas tenant-scoped y probar intentos cruzados con dos consultorios ficticios.

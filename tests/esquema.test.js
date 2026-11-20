@@ -25,7 +25,7 @@ describe('base de test: aislamiento y esquema migrado desde cero', () => {
       expect(tablas.rows.map((fila) => fila.table_name).sort()).toEqual(['consultorio', 'usuario']);
 
       const historial = await cliente.query('SELECT name FROM pgmigrations ORDER BY run_on, id');
-      expect(historial.rows.map((fila) => fila.name)).toEqual(['001_esquema_inicial']);
+      expect(historial.rows.map((fila) => fila.name)).toContain('001_esquema_inicial');
     } finally {
       await cliente.end();
     }

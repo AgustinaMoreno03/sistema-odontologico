@@ -3,8 +3,8 @@
 ## 1. Base de datos y esquema C01
 
 - [x] 1.1 Inspeccionar la migración `001` mergeada de C00 y documentar el esquema real de `consultorio` y `usuario`; verificar los hallazgos contra una base local con C00 aplicado antes de diseñar la migración C01.
-- [ ] 1.2 Escribir primero tests de migración que fallen para las extensiones requeridas por C01; verificar que fallan sobre el esquema actual de C00 y que no requieren editar `001`.
-- [ ] 1.3 Implementar la migración SQL nueva en el rango 010–019 reservado en `CHANGES.md`; verificar aplicación desde base vacía y sobre C00 aplicado, repetición segura según runner y ausencia de cambios a `001`.
+- [x] 1.2 Escribir primero tests de migración que fallen para las extensiones requeridas por C01; verificar que fallan sobre el esquema actual de C00 y que no requieren editar `001`.
+- [x] 1.3 Implementar la migración SQL nueva en el rango 010–019 reservado en `CHANGES.md`; verificar aplicación desde base vacía y sobre C00 aplicado, repetición segura según runner y ausencia de cambios a `001`.
 - [ ] 1.4 Escribir primero tests fallidos de repositorios `auth`/`consultorios` para consultas tenant-scoped y aislamiento entre dos consultorios ficticios.
 - [ ] 1.5 Implementar repositorios con consultas parametrizadas cuyo tenant provenga de `req.auth`; verificar que pasan los tests de aislamiento y no aceptan el tenant del cliente.
 
