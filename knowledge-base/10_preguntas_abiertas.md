@@ -2,7 +2,7 @@
 
 | Tema | Estado y momento de decisión |
 |---|---|
-| Autenticación | El módulo aislado y su interfaz están acordados. C00/C01 definen el mecanismo mínimo de token, expiración, alta inicial y configuración. |
+| Autenticación | **Cerrada (2026-11-18, DD-18):** JWT firmado con secreto en `.env`; `consultorioId` y `rol` siempre desde el token, nunca del cliente. C00 entrega el middleware que deja `{ usuarioId, consultorioId, rol }` en la request y un helper de tests para emitir tokens ficticios; C01 define login con contraseña, expiración y gestión de usuarios. |
 | Runner SQL | Propuesta de usar `node-pg-migrate` con archivos SQL. C00 debe comprobar numeración, aplicación a base vacía, repetición, fallo y compatibilidad con la conexión de Neon antes de adoptarlo. Los rangos del roadmap reservan numeración por change. |
 | Solapamientos | C05 evalúa una restricción de exclusión de PostgreSQL y debe proteger reservas concurrentes por profesional y sillón/box. |
 | Estados y bloqueos | El flujo base prioriza crear, consultar, reprogramar y cancelar. Confirmación, asistencia, ausencia y bloqueos son extensiones de agenda si queda tiempo. Sus transiciones, permisos y política ante turnos ya ocupados se definen en el spec. |
@@ -16,7 +16,7 @@
 
 ## Aclaraciones cerradas
 
-- IN-01. El SaaS aísla consultorios desde el MVP. IN-02. Historia clínica y cobros siguen en etapas posteriores. IN-03. La auto-reserva queda fuera de la entrega base.
+- IN-01. El SaaS aísla consultorios desde el MVP. IN-02. Historia clínica y cobros siguen en etapas posteriores. IN-03. **Cerrada (2026-11-18, DD-16):** el paciente no es un rol ni tiene cuenta en el MVP; es un actor externo con registro mínimo (nombre y al menos un contacto, datos ficticios) que crea recepción. La reserva online y la auto-reserva quedan fuera de la entrega base.
 
 - El equipo informó que la cátedra autorizó el nuevo stack y amplió la modalidad a un máximo de seis integrantes. El equipo actual es de cinco.
 - El equipo informó que probó PostgreSQL 18 con Neon. La versión objetivo es 18 en ambos entornos.
