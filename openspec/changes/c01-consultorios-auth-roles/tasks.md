@@ -16,11 +16,11 @@
 
 ## 3. Consultorios y administración de usuarios
 
-- [ ] 3.1 Escribir primero un test fallido que haga `POST /consultorios` sin autenticación y espere HTTP 404.
-- [ ] 3.2 Implementar el aprovisionamiento inicial de consultorio mediante seed o script interno sin ruta pública de alta; verificar que el test de `POST /consultorios` devuelve 404 y que el mecanismo interno aprovisiona un tenant.
-- [ ] 3.3 Escribir primero tests fallidos para `POST /usuarios` (201), incluyendo que falle si falta email o contraseña; `GET /usuarios` (200 solo del tenant autenticado), `GET /usuarios/:id` (200 propio y 404 ajeno), rol no autorizado (403), email duplicado (409) y `consultorioId` del body ignorado.
-- [ ] 3.4 Implementar `POST /usuarios`, `GET /usuarios` y `GET /usuarios/:id`; permitir creación solo a `ADMIN_CONSULTORIO` con cualquiera de los tres roles, derivar el tenant de `req.auth`, responder 404 por ID de otro tenant y 409 por email duplicado. Verificar los tests escritos en 3.3.
-- [ ] 3.5 Documentar la interfaz HTTP y el límite de permisos de C01; verificar rutas, códigos HTTP y que no se documenten permisos de turnos, pacientes ni agenda.
+- [x] 3.1 Escribir primero un test que haga `POST /consultorios` sin autenticación y espere HTTP 404.
+- [x] 3.2 Implementar el aprovisionamiento inicial de consultorio mediante script interno sin ruta pública de alta; verificar que `POST /consultorios` devuelve 404 y que el mecanismo interno aprovisiona un tenant.
+- [x] 3.3 Escribir primero tests fallidos para `POST /usuarios` (201), incluyendo que falle si falta email o contraseña; `GET /usuarios` (200 solo del tenant autenticado), `GET /usuarios/:id` (200 propio y 404 ajeno), rol no autorizado (403), email duplicado (409) y `consultorioId` del body ignorado.
+- [x] 3.4 Implementar `POST /usuarios`, `GET /usuarios` y `GET /usuarios/:id`; permitir creación solo a `ADMIN_CONSULTORIO` con cualquiera de los tres roles, derivar el tenant de `req.auth`, responder 404 por ID de otro tenant y 409 por email duplicado. Verificar los tests escritos en 3.3.
+- [x] 3.5 Documentar la interfaz HTTP y el límite de permisos de C01; verificar rutas, códigos HTTP y que no se documenten permisos de turnos, pacientes ni agenda.
 
 ## 4. Verificación integrada
 

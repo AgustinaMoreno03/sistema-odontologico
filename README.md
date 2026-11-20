@@ -238,12 +238,29 @@ Las rutas siguen la capa `rutas → servicios → dominio → repositorios`
 (DD-13): la capa de rutas solo parsea HTTP; la validación de negocio vive
 en `servicios`.
 
+## Gestión de usuarios (C01)
+
+- `POST /usuarios` requiere un JWT de `ADMIN_CONSULTORIO` y un cuerpo con
+  `email`, `password` y `rol` (`ADMIN_CONSULTORIO`, `ODONTOLOGO` o `RECEPCION`).
+  Devuelve HTTP 201; campos requeridos ausentes o inválidos devuelven 400,
+  un rol autenticado sin permiso devuelve 403 y un email duplicado devuelve
+  409. El `consultorioId` siempre se toma de `req.auth`; el valor del body se
+  ignora. La respuesta nunca incluye la contraseña ni su hash.
+- `GET /usuarios` requiere autenticación y devuelve solo usuarios del
+  consultorio del token.
+- `GET /usuarios/:id` devuelve usuarios del mismo consultorio; un ID ajeno o
+  inexistente devuelve 404.
+- `POST /consultorios` no está disponible (404). Para el aprovisionamiento
+  operativo interno, `npm run crear-consultorio` crea un tenant y muestra su
+  ID; no agrega permisos de pacientes, turnos ni agenda.
+
 ## Scripts
 
 | Comando | Definición exacta (`package.json`) | Qué hace |
 |---|---|---|
 | `npm start` | `node --env-file=.env src/server.js` | Levanta la API (fail-fast sin `DATABASE_URL`/`JWT_SECRET` válidos) |
 | `npm run migrate` | `node --env-file=.env ./node_modules/node-pg-migrate/bin/node-pg-migrate.js up --config-file migrations.config.js` | Aplica las migraciones SQL de `db/migrations/` en orden ascendente |
+| `npm run crear-consultorio` | `node --env-file=.env scripts/crear-consultorio.js` | Aprovisiona un consultorio inicial por mecanismo interno |
 | `npm test` | `node --env-file=.env ./node_modules/vitest/vitest.mjs run` | Corre la suite completa (única puerta de integración) |
 
 ## Estructura por capas (DD-13)

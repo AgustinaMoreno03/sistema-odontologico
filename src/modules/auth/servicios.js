@@ -6,7 +6,12 @@ import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:cry
 import { promisify } from 'node:util';
 import { ApiError } from '../../errores.js';
 import { claimsRequeridosCompletos, esRolValido, extraerContexto } from './dominio.js';
-import { buscarCredencialesPorEmail } from './repositorios.js';
+import {
+  buscarCredencialesPorEmail,
+  buscarUsuarioPorId,
+  crearUsuario,
+  listarUsuariosPorConsultorio,
+} from './repositorios.js';
 
 // Design D2: algoritmo fijo y explícito — `alg: "none"` o cualquier otro
 // (RS256, HS512…) se rechaza en la verificación (spec auth R1).
@@ -67,6 +72,54 @@ export async function iniciarSesion(email, password) {
     { algorithm: ALGORITMO_PERMITIDO, expiresIn: TIEMPO_TOKEN_SEGUNDOS }
   );
   return { token };
+}
+
+function usuarioPublico(usuario) {
+  return {
+    usuarioId: usuario.id,
+    consultorioId: usuario.consultorio_id,
+    rol: usuario.rol,
+    email: usuario.email,
+  };
+}
+
+/** Alta tenant-scoped: la identidad autenticada es la única fuente del tenant. */
+export async function crearUsuarioEnConsultorio(auth, datos) {
+  if (auth.rol !== 'ADMIN_CONSULTORIO') {
+    throw new ApiError(403, 'ROL_NO_AUTORIZADO', 'No tiene permiso para administrar usuarios');
+  }
+  const email = typeof datos?.email === 'string' ? datos.email.trim() : '';
+  const password = datos?.password;
+  const rol = datos?.rol;
+  if (!email || typeof password !== 'string' || password.length === 0 || !esRolValido(rol)) {
+    throw new ApiError(400, 'SOLICITUD_INVALIDA', 'Email, contraseña y rol son obligatorios');
+  }
+
+  const passwordHash = await hashearPassword(password);
+  try {
+    const usuario = await crearUsuario({
+      consultorioId: auth.consultorioId,
+      rol,
+      email,
+      passwordHash,
+    });
+    return usuarioPublico(usuario);
+  } catch (error) {
+    if (error.code === '23505' && error.constraint === 'usuario_email_unique') {
+      throw new ApiError(409, 'EMAIL_DUPLICADO', 'El email ya está registrado');
+    }
+    throw error;
+  }
+}
+
+export async function listarUsuarios(auth) {
+  return (await listarUsuariosPorConsultorio(auth.consultorioId)).map(usuarioPublico);
+}
+
+export async function obtenerUsuario(auth, usuarioId) {
+  const usuario = await buscarUsuarioPorId(auth.consultorioId, usuarioId);
+  if (!usuario) throw new ApiError(404, 'USUARIO_NO_ENCONTRADO', 'Usuario no encontrado');
+  return usuarioPublico(usuario);
 }
 
 /** 401 único y genérico (D6): jamás distingue firma / estructura / caducidad. */
