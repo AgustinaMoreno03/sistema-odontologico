@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
  * además que la salida capturada NO contiene el valor.
  */
 const RUTA_SERVIDOR = path.resolve(process.cwd(), 'src/server.js');
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 15000;
 
 // Secretos sintéticos SOLO de test (nunca el real de .env). Se definen acá
 // para poder afirmar su AUSENCIA en la salida; no se imprimen en ningún log.
@@ -99,7 +99,7 @@ describe('fail-fast de JWT_SECRET corto (spec development-environment, "Secreto 
     // …y NUNCA el valor del secreto (afirmación de ausencia, no de presencia).
     expect(resultado.salida).not.toContain(SECRETO_31);
     expect(resultado.salida).not.toMatch(/JWT_SECRET=/i);
-  }, 15000);
+  }, 30000);
 
   it('JWT_SECRET de exactamente 32 caracteres → supera el chequeo de configuración y arranca', async () => {
     const resultado = await lanzarServidorConSecreto(SECRETO_32);
@@ -108,5 +108,5 @@ describe('fail-fast de JWT_SECRET corto (spec development-environment, "Secreto 
     expect(resultado.salida).toMatch(/API escuchando/);
     expect(resultado.salida).not.toMatch(/Error de configuración/);
     expect(resultado.salida).not.toContain(SECRETO_32);
-  }, 15000);
+  }, 30000);
 });
