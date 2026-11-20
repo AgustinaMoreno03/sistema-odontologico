@@ -1,0 +1,25 @@
+{
+  "name": "odontologia-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API del Sistema de Gestión Odontológica — monolito modular Express 5 (JavaScript) + PostgreSQL 18",
+  "type": "module",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "migrate": "node --env-file=.env ./node_modules/node-pg-migrate/bin/node-pg-migrate.js up --config-file migrations.config.js",
+    "test": "node --env-file=.env ./node_modules/vitest/vitest.mjs run"
+  },
+  "dependencies": {
+    "express": "^5.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "node-pg-migrate": "^9.0.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.2",
+    "vitest": "^5.1.1"
+  }
+}
