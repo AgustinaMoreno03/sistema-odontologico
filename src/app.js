@@ -1,5 +1,6 @@
 import express from 'express';
 import { manejadorErrores } from './errores.js';
+import { rutasPrestaciones } from './modules/catalogo/prestaciones/rutas.js';
 import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
 
@@ -21,6 +22,8 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
   // Body JSON en todas las rutas (parseo HTTP puro; la validación de
   // entrada vive en la capa de rutas de cada módulo).
   app.use(express.json());
+
+  app.use('/api/prestaciones', rutasPrestaciones);
 
   // Única ruta pública y exenta de autenticación (auth R2).
   app.use('/health', crearRouterSalud({ chequearBase: chequearInyectado }));
