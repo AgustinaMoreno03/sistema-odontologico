@@ -124,6 +124,18 @@ describe('API de prestaciones', () => {
     expect(escritura.status).toBe(403);
   });
 
+  it.each(['RECEPCION', 'ODONTOLOGO'])('GET permite lectura y PUT no modifica para %s', async (rol) => {
+    const { app, repositorio } = crearAppDePrestaciones();
+    const antes = repositorio.datos.find(({ id }) => id === PRESTACION_A);
+
+    const lectura = await request(app).get('/api/prestaciones').set('Authorization', `Bearer ${token(CONSULTORIO_A, rol)}`);
+    const escritura = await request(app).put(`/api/prestaciones/${PRESTACION_A}`).set('Authorization', `Bearer ${token(CONSULTORIO_A, rol)}`).send({ duracionMin: 90 });
+
+    expect(lectura.status).toBe(200);
+    expect(escritura.status).toBe(403);
+    expect(repositorio.datos.find(({ id }) => id === PRESTACION_A)).toEqual(antes);
+  });
+
   it('PUT edita, rechaza duplicado, id ajeno y duración inválida, y aplica borrado lógico', async () => {
     const { app } = crearAppDePrestaciones();
     const editada = await request(app).put(`/api/prestaciones/${PRESTACION_A}`).set('Authorization', `Bearer ${token()}`).send({ duracionMin: 90 });

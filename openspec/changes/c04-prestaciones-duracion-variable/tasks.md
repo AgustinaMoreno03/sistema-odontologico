@@ -27,7 +27,7 @@
 ## 4. Integración de la ola 1
 
 - [x] 4.1 Coordinar y montar las rutas desde `src/modules/catalogo/prestaciones/`; en `src/app.js` agregar únicamente una línea de import y una de `app.use`, en orden alfabético y antes del manejador de errores, sin sobrescribir rutas de C01/C02/C03.
-- [ ] 4.2 Actualizar coordinadamente `tests/esquema.test.js`, que pertenece a C00, para reflejar la migración 040 y la tabla `prestacion`; verificar `npm test` contra PostgreSQL real desde cero.
+- [x] 4.2 Actualizar coordinadamente `tests/esquema.test.js`, que pertenece a C00, para reflejar la migración 040 y la tabla `prestacion`; verificar `npm test` contra PostgreSQL real desde cero.
 - [x] 4.3 Ejecutar la verificación integrada `npm test` y comprobar cada escenario del spec —feliz, error de negocio y borde—, aislamiento tenant y contrato de C05, usando únicamente datos ficticios; no modificar `tests/setup` ni `tests/helpers`.
 
 > Nota 4.2: no necesaria en este APPLY; Agustina ya corrigió `tests/esquema.test.js` en `main`. Se verificó `npm test` contra PostgreSQL real desde cero sin modificar ese archivo.

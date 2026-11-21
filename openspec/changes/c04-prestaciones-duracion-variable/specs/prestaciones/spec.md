@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define el catálogo multi-tenant de prestaciones con duración variable y el contrato estable que agenda/turnos utilizará para calcular el fin de un turno.
+Define el catálogo multi-tenant de prestaciones con duración variable y el contrato estable que C05 utilizará al crear turnos.
 
 ## ADDED Requirements
 
@@ -112,11 +112,3 @@ El módulo `catalogo` SHALL exponer `obtenerPrestacionParaTurno({ prestacionId, 
 - **GIVEN** que existe una prestación inactiva con ese `prestacionId` en el consultorio autenticado
 - **WHEN** C05 invoca `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` para crear un turno nuevo
 - **THEN** recibe `null`, rechaza la creación por ese resultado y no utiliza ninguna `duracionMin`
-
-### Requirement: Usar la duración publicada para nuevos turnos
-C05 SHALL rechazar una prestación no utilizable únicamente cuando el resultado del contrato sea `null` y usar `duracionMin` de la prestación retornada para calcular `fin = inicio + duracionMin`.
-
-#### Scenario: C05 calcula el fin con una prestación activa
-- **GIVEN** que el contrato retorna una prestación activa con `duracionMin`
-- **WHEN** C05 crea un turno nuevo
-- **THEN** calcula `fin` sumando `duracionMin` a `inicio`

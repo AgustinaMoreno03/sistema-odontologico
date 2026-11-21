@@ -36,6 +36,8 @@ La API expondrá `GET /api/prestaciones`, `POST /api/prestaciones` y `PUT /api/p
 
 El contrato de catálogo que C05 consumirá seguirá la convención de C03: `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` devuelve `Promise<{ id, nombre, duracionMin, activo } | null>`. Devuelve `null` para una prestación inexistente, ajena al consultorio o inactiva; C05 solo debe chequear `null`. El fin del turno se calculará al crear el turno; cambiar luego la prestación no actualizará turnos existentes.
 
+Contrato de C05: al crear el turno, C05 calcula `fin = inicio + duracionMin` usando la prestación activa retornada por el contrato.
+
 ### D4 — Supuestos funcionales explicitados
 
 Los siguientes son **supuestos de C04**, no reglas tomadas de la KB, salvo donde se cita expresamente:
