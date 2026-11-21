@@ -12,9 +12,9 @@
 
 ## 2. Dominio, servicios y autorización
 
-- [ ] 2.1 Implementar las validaciones de dominio para nombre de hasta 100 caracteres y `duracionMin` entero entre 1 y 480; ejecutar los tests de los escenarios de validación y confirmar respuestas 400 sin persistencia parcial.
-- [ ] 2.2 Implementar servicios para crear, listar, editar, consultar por id y marcar `activo=false`, autorizando escritura solo para `ADMIN_CONSULTORIO`; mantener la lectura de `RECEPCION` y `ODONTOLOGO` como supuesto explícito de C04 y verificar los escenarios de roles.
-- [ ] 2.3 Implementar `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` con resultado `Promise<{ id, nombre, duracionMin, activo } | null>`; retornar `null` para prestación inexistente, de otro consultorio o inactiva, y verificar esos escenarios.
+- [x] 2.1 Implementar las validaciones de dominio para nombre de hasta 100 caracteres y `duracionMin` entero entre 1 y 480; ejecutar los tests de los escenarios de validación y confirmar respuestas 400 sin persistencia parcial.
+- [x] 2.2 Implementar servicios para crear, listar, editar, consultar por id y marcar `activo=false`, autorizando escritura solo para `ADMIN_CONSULTORIO`; mantener la lectura de `RECEPCION` y `ODONTOLOGO` como supuesto explícito de C04 y verificar los escenarios de roles.
+- [x] 2.3 Implementar `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` con resultado `Promise<{ id, nombre, duracionMin, activo } | null>`; retornar `null` para prestación inexistente, de otro consultorio o inactiva, y verificar esos escenarios.
 
 ## 3. API pública y pruebas de escenarios
 
