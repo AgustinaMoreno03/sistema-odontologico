@@ -10,7 +10,7 @@ El alta inicial de consultorios se hace mediante un seed o comando operativo. Es
 
 El permiso administrativo y la condición de profesional se representan por separado. Una misma persona puede administrar el consultorio y tener una ficha profesional vinculada. La interfaz de autenticación devuelve `{ usuarioId, consultorioId, rol }` y la autorización profesional se resuelve dentro del consultorio a partir de la identidad autenticada.
 
-El paciente solicita turnos o cancelaciones al consultorio. La auto-reserva queda fuera de la entrega base de seis días.
+El paciente no tiene cuenta ni rol en el sistema (DD-16): es un actor externo con registro mínimo — nombre y al menos un contacto, siempre datos ficticios — que crea y gestiona recepción. Solicita turnos o cancelaciones al consultorio. La reserva online y la auto-reserva quedan fuera de la entrega base de seis días.
 
 ## Historia clínica posterior al MVP
 
