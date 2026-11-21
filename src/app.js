@@ -1,5 +1,6 @@
 import express from 'express';
 import { manejadorErrores } from './errores.js';
+import { crearRouterPacientes } from './modules/pacientes/rutas.js';
 import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
 
@@ -24,6 +25,7 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
 
   // Única ruta pública y exenta de autenticación (auth R2).
   app.use('/health', crearRouterSalud({ chequearBase: chequearInyectado }));
+  app.use('/api/pacientes', crearRouterPacientes());
 
   // Manejador de errores centralizado — SIEMPRE al final (design D6).
   app.use(manejadorErrores);
