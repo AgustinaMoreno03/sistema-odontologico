@@ -7,7 +7,7 @@ Define el catálogo multi-tenant de prestaciones con duración variable y el con
 ## ADDED Requirements
 
 ### Requirement: Crear prestaciones válidas dentro del consultorio
-El sistema SHALL permitir crear una prestación con nombre de hasta 100 caracteres y `duracionMin` entero entre 1 y 480, asociándola exclusivamente al consultorio autenticado.
+El sistema SHALL permitir crear una prestación con nombre de hasta 100 caracteres y `duracionMin` entero entre 1 y 480 inclusive, asociándola exclusivamente al consultorio autenticado.
 
 #### Scenario: Alta válida
 - **GIVEN** un usuario `ADMIN_CONSULTORIO` autenticado y un nombre no usado en su consultorio
@@ -63,6 +63,8 @@ El sistema SHALL exponer `GET /api/prestaciones`, resolver el consultorio desde 
 ### Requirement: Editar prestaciones y aplicar borrado lógico
 El sistema SHALL exponer `PUT /api/prestaciones/{id}` para actualizar una prestación existente o marcarla inactiva mediante `activo=false`; no SHALL existir hard-delete.
 
+Según `knowledge-base/03_actores_y_roles.md`, solo `ADMIN_CONSULTORIO` administra el catálogo. Que `RECEPCION` y `ODONTOLOGO` puedan leer prestaciones es un supuesto de C04, no una afirmación explícita de esa fuente.
+
 #### Scenario: Edición por el administrador
 - **GIVEN** una prestación activa del consultorio autenticado y un usuario `ADMIN_CONSULTORIO`
 - **WHEN** envía `PUT /api/prestaciones/{id}` con un `duracionMin` válido o cambios de los campos editables
@@ -94,19 +96,27 @@ El sistema SHALL exponer `PUT /api/prestaciones/{id}` para actualizar una presta
 - **THEN** responde `400` y conserva la prestación sin cambios
 
 ### Requirement: Publicar el contrato de duración para C05
-El módulo `catalogo` SHALL exponer la función `obtenerPrestacionParaTurno(consultorioId, id)`, que recibe dos parámetros string (`consultorioId` e `id`) y retorna una prestación del tenant con `{ id, nombre, duracionMin, activo }`, o `null` si no existe en ese consultorio. C05 SHALL rechazar prestaciones inactivas antes de crear turnos nuevos y usar `duracionMin` de una prestación activa para calcular `fin = inicio + duracionMin`.
+El módulo `catalogo` SHALL exponer `obtenerPrestacionParaTurno({ prestacionId, consultorioId })`, siguiendo la convención de interfaz de C03, con ambos identificadores string y resultado `Promise<{ id, nombre, duracionMin, activo } | null>`. SHALL retornar `null` si la prestación no existe, pertenece a otro consultorio o está inactiva.
 
 #### Scenario: C05 obtiene una prestación activa
 - **GIVEN** una prestación activa perteneciente al consultorio autenticado
-- **WHEN** agenda/turnos solicita la prestación por su `id` mediante el contrato de catálogo
+- **WHEN** agenda/turnos invoca `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` mediante el contrato de catálogo
 - **THEN** recibe `duracionMin` positivo y los datos de la prestación del mismo consultorio
 
 #### Scenario: Prestación inexistente o de otro consultorio
 - **GIVEN** un `id` que no existe en el consultorio autenticado o pertenece a otro consultorio
-- **WHEN** C05 invoca `obtenerPrestacionParaTurno(consultorioId, id)`
+- **WHEN** C05 invoca `obtenerPrestacionParaTurno({ prestacionId: id, consultorioId })`
 - **THEN** recibe `null` y no obtiene ninguna duración del otro consultorio
 
 #### Scenario: Prestación inactiva no utilizable para nuevos turnos
-- **GIVEN** que `obtenerPrestacionParaTurno(consultorioId, id)` retorna una prestación con `activo=false`
-- **WHEN** C05 intenta usarla para crear un turno nuevo
-- **THEN** C05 rechaza la creación y no utiliza su `duracionMin`
+- **GIVEN** que existe una prestación inactiva con ese `prestacionId` en el consultorio autenticado
+- **WHEN** C05 invoca `obtenerPrestacionParaTurno({ prestacionId, consultorioId })` para crear un turno nuevo
+- **THEN** recibe `null`, rechaza la creación por ese resultado y no utiliza ninguna `duracionMin`
+
+### Requirement: Usar la duración publicada para nuevos turnos
+C05 SHALL rechazar una prestación no utilizable únicamente cuando el resultado del contrato sea `null` y usar `duracionMin` de la prestación retornada para calcular `fin = inicio + duracionMin`.
+
+#### Scenario: C05 calcula el fin con una prestación activa
+- **GIVEN** que el contrato retorna una prestación activa con `duracionMin`
+- **WHEN** C05 crea un turno nuevo
+- **THEN** calcula `fin` sumando `duracionMin` a `inicio`
