@@ -3,6 +3,7 @@ import { manejadorErrores } from './errores.js';
 import { rutasPrestaciones } from './modules/catalogo/prestaciones/rutas.js';
 import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
+import { crearRouterCatalogo } from './modules/catalogo/index.js';
 
 /**
  * Crea la instancia de la app Express 5 (JavaScript plano, sin TypeScript).
@@ -27,6 +28,9 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
 
   // Única ruta pública y exenta de autenticación (auth R2).
   app.use('/health', crearRouterSalud({ chequearBase: chequearInyectado }));
+
+  // Módulo catalogo (C02): rutas bajo /api con la autenticación de C00.
+  app.use('/api', crearRouterCatalogo());
 
   // Manejador de errores centralizado — SIEMPRE al final (design D6).
   app.use(manejadorErrores);
