@@ -20,15 +20,16 @@ function mapearPrestaciones(filas) {
  * Acceso persistente al catálogo de prestaciones.
  * Todas las operaciones reciben el consultorio y lo aplican en SQL.
  */
-export function crearRepositorioPrestaciones({ cliente = new pg.Client({ connectionString: process.env.DATABASE_URL }) }) {
-  const administrarCliente = !cliente._connected;
+export function crearRepositorioPrestaciones({ cliente } = {}) {
+  const clienteExterno = Boolean(cliente);
 
   async function conCliente(operacion) {
-    if (administrarCliente) await cliente.connect();
+    const conexion = cliente ?? new pg.Client({ connectionString: process.env.DATABASE_URL });
+    if (!clienteExterno) await conexion.connect();
     try {
-      return await operacion(cliente);
+      return await operacion(conexion);
     } finally {
-      if (administrarCliente) await cliente.end().catch(() => {});
+      if (!clienteExterno) await conexion.end().catch(() => {});
     }
   }
 

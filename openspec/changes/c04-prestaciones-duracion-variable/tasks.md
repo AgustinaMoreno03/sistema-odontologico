@@ -18,17 +18,19 @@
 
 ## 3. API pública y pruebas de escenarios
 
-- [ ] 3.1 Implementar `GET /api/prestaciones`, `POST /api/prestaciones` y `PUT /api/prestaciones/{id}` respetando la forma de errores `{ error: { code, message } }`; verificar el escenario de alta válida y los DTOs.
-- [ ] 3.2 Implementar y testear el listado ordenado, la inclusión de inactivas y el filtro `?activo=true`; cubrir los escenarios de listado ordenado, aislamiento y filtro de activas.
-- [ ] 3.3 Implementar y testear el borrado lógico; cubrir que `activo=false` conserva la fila y no hace hard-delete.
-- [ ] 3.4 Implementar y testear los escenarios de PUT con nombre duplicado (`409`), id de otro consultorio (`404`) y duración fuera de rango (`400`), además de edición válida (`200`).
-- [ ] 3.5 Documentar y testear el contrato `obtenerPrestacionParaTurno({ prestacionId, consultorioId })`, incluyendo que C05 decide únicamente por `null` y no usa prestaciones inactivas para turnos nuevos.
+- [x] 3.1 Implementar `GET /api/prestaciones`, `POST /api/prestaciones` y `PUT /api/prestaciones/{id}` respetando la forma de errores `{ error: { code, message } }`; verificar el escenario de alta válida y los DTOs.
+- [x] 3.2 Implementar y testear el listado ordenado, la inclusión de inactivas y el filtro `?activo=true`; cubrir los escenarios de listado ordenado, aislamiento y filtro de activas.
+- [x] 3.3 Implementar y testear el borrado lógico; cubrir que `activo=false` conserva la fila y no hace hard-delete.
+- [x] 3.4 Implementar y testear los escenarios de PUT con nombre duplicado (`409`), id de otro consultorio (`404`) y duración fuera de rango (`400`), además de edición válida (`200`).
+- [x] 3.5 Documentar y testear el contrato `obtenerPrestacionParaTurno({ prestacionId, consultorioId })`, incluyendo que C05 decide únicamente por `null` y no usa prestaciones inactivas para turnos nuevos.
 
 ## 4. Integración de la ola 1
 
-- [ ] 4.1 Coordinar y montar las rutas desde `src/modules/catalogo/prestaciones/`; en `src/app.js` agregar únicamente una línea de import y una de `app.use`, en orden alfabético y antes del manejador de errores, sin sobrescribir rutas de C01/C02/C03.
+- [x] 4.1 Coordinar y montar las rutas desde `src/modules/catalogo/prestaciones/`; en `src/app.js` agregar únicamente una línea de import y una de `app.use`, en orden alfabético y antes del manejador de errores, sin sobrescribir rutas de C01/C02/C03.
 - [ ] 4.2 Actualizar coordinadamente `tests/esquema.test.js`, que pertenece a C00, para reflejar la migración 040 y la tabla `prestacion`; verificar `npm test` contra PostgreSQL real desde cero.
-- [ ] 4.3 Ejecutar la verificación integrada `npm test` y comprobar cada escenario del spec —feliz, error de negocio y borde—, aislamiento tenant y contrato de C05, usando únicamente datos ficticios; no modificar `tests/setup` ni `tests/helpers`.
+- [x] 4.3 Ejecutar la verificación integrada `npm test` y comprobar cada escenario del spec —feliz, error de negocio y borde—, aislamiento tenant y contrato de C05, usando únicamente datos ficticios; no modificar `tests/setup` ni `tests/helpers`.
+
+> Nota 4.2: no necesaria en este APPLY; Agustina ya corrigió `tests/esquema.test.js` en `main`. Se verificó `npm test` contra PostgreSQL real desde cero sin modificar ese archivo.
 
 ## Workflow follow-up
 
