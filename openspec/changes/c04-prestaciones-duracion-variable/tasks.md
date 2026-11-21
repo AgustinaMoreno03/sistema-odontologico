@@ -2,13 +2,13 @@
 
 ## 1. Contrato y migración de prestaciones
 
-- [ ] 1.1 Crear primero el test de integración del escenario "Alta válida"; verificar que falla antes de implementar.
-- [ ] 1.2 Crear primero los tests de integración de "Duración fuera del rango permitido" y "Duración no entera"; verificar que fallan antes de implementar.
-- [ ] 1.3 Crear primero el test de integración de "Nombre demasiado largo"; verificar que falla antes de implementar.
-- [ ] 1.4 Crear primero los tests de integración de "Nombre duplicado en el mismo consultorio" y "Mismo nombre en otro consultorio"; verificar que fallan antes de implementar.
-- [ ] 1.5 Crear primero la migración y sus tests de aplicación desde cero y reejecución; verificar que fallan antes de implementar.
-- [ ] 1.6 Crear `db/migrations/040_prestaciones.sql` dentro del rango exclusivo `040–049`, con tabla `prestacion`, FK a `consultorio`, unicidad `(consultorio_id, nombre)`, `duracion_min` entero entre 1 y 480 inclusive, `activo` y timestamps; verificar aplicación desde cero y reejecución sin duplicados.
-- [ ] 1.7 Implementar el repositorio de prestaciones con SQL parametrizado y filtro obligatorio por `consultorio_id`; verificar con los tests de aislamiento que un consultorio no lee ni modifica registros de otro.
+- [x] 1.1 Crear primero el test de integración del escenario "Alta válida"; verificar que falla antes de implementar.
+- [x] 1.2 Crear primero los tests de integración de "Duración fuera del rango permitido" y "Duración no entera"; verificar que fallan antes de implementar.
+- [x] 1.3 Crear primero el test de integración de "Nombre demasiado largo"; verificar que falla antes de implementar.
+- [x] 1.4 Crear primero los tests de integración de "Nombre duplicado en el mismo consultorio" y "Mismo nombre en otro consultorio"; verificar que fallan antes de implementar.
+- [x] 1.5 Crear primero la migración y sus tests de aplicación desde cero y reejecución; verificar que fallan antes de implementar.
+- [x] 1.6 Crear `db/migrations/040_prestaciones.sql` dentro del rango exclusivo `040–049`, con tabla `prestacion`, FK a `consultorio`, unicidad `(consultorio_id, nombre)`, `duracion_min` entero entre 1 y 480 inclusive, `activo` y timestamps; verificar aplicación desde cero y reejecución sin duplicados.
+- [x] 1.7 Implementar el repositorio de prestaciones con SQL parametrizado y filtro obligatorio por `consultorio_id`; verificar con los tests de aislamiento que un consultorio no lee ni modifica registros de otro.
 
 ## 2. Dominio, servicios y autorización
 
