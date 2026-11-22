@@ -1,0 +1,156 @@
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/pacientes-migracion.test.js
+
+
+ ❯ tests/pacientes-migracion.test.js (8 tests | 8 failed) 518ms
+   ❯ C03: esquema de pacientes (8)
+     × guarda la ficha mínima con teléfono y asigna sus valores iniciales 82ms
+     × acepta un paciente con email como único contacto 46ms
+     × rechaza una ficha sin ningún contacto 165ms
+     × rechaza un nombre compuesto solo por espacios 44ms
+     × impide emails equivalentes por mayúsculas y espacios en el mismo consultorio 45ms
+     × permite el mismo email en otro consultorio y múltiples emails ausentes 43ms
+     × rechaza una referencia a un consultorio inexistente 45ms
+     × habilita unaccent para comparar nombres sin tildes 47ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > guarda la ficha mínima con teléfono y asigna sus valores iniciales
+error: no existe la relación «paciente»
+ ❯ node_modules/pg/lib/client.js:694:17
+ ❯ tests/pacientes-migracion.test.js:50:23
+     48|
+     49|   it('guarda la ficha mínima con teléfono y asigna sus valores iniciales', async () => {
+     50|     const resultado = await insertarPaciente();
+       |                       ^
+     51|     expect(resultado.rows).toHaveLength(1);
+     52|     expect(resultado.rows[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > acepta un paciente con email como único contacto
+error: no existe la relación «paciente»
+ ❯ node_modules/pg/lib/client.js:694:17
+ ❯ tests/pacientes-migracion.test.js:65:23
+     63|
+     64|   it('acepta un paciente con email como único contacto', async () => {
+     65|     const resultado = await insertarPaciente({
+       |                       ^
+     66|       telefono: null,
+     67|       email: 'ana@example.com',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza una ficha sin ningún contacto
+AssertionError: expected error: no existe la relación «paciente» { …(15) } to match object { code: '23514' }
+(17 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "23514",
++ DatabaseError {
++   "code": "42P01",
+  }
+
+ ❯ tests/pacientes-migracion.test.js:76:6
+     74|     await expect(
+     75|       insertarPaciente({ telefono: null, email: null })
+     76|     ).rejects.toMatchObject({ code: '23514' });
+       |      ^
+     77|   });
+     78|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza un nombre compuesto solo por espacios
+AssertionError: expected error: no existe la relación «paciente» { …(15) } to match object { code: '23514' }
+(17 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "23514",
++ DatabaseError {
++   "code": "42P01",
+  }
+
+ ❯ tests/pacientes-migracion.test.js:82:6
+     80|     await expect(
+     81|       insertarPaciente({ nombre: '   ' })
+     82|     ).rejects.toMatchObject({ code: '23514' });
+       |      ^
+     83|   });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > impide emails equivalentes por mayúsculas y espacios en el mismo consultorio
+error: no existe la relación «paciente»
+ ❯ node_modules/pg/lib/client.js:694:17
+ ❯ tests/pacientes-migracion.test.js:86:5
+     84|
+     85|   it('impide emails equivalentes por mayúsculas y espacios en el mismo consultorio', async () => {
+     86|     await insertarPaciente({ email: 'ana@example.com' });
+       |     ^
+     87|
+     88|     await expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > permite el mismo email en otro consultorio y múltiples emails ausentes
+error: no existe la relación «paciente»
+ ❯ node_modules/pg/lib/client.js:694:17
+ ❯ tests/pacientes-migracion.test.js:94:5
+     92|
+     93|   it('permite el mismo email en otro consultorio y múltiples emails ausentes', async () => {
+     94|     await insertarPaciente({ email: 'ana@example.com' });
+       |     ^
+     95|     await insertarPaciente({
+     96|       consultorioId: consultorioB,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza una referencia a un consultorio inexistente
+AssertionError: expected error: no existe la relación «paciente» { …(15) } to match object { code: '23503' }
+(17 matching properties omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "code": "23503",
++ DatabaseError {
++   "code": "42P01",
+  }
+
+ ❯ tests/pacientes-migracion.test.js:112:6
+    110|     await expect(
+    111|       insertarPaciente({ consultorioId: randomUUID() })
+    112|     ).rejects.toMatchObject({ code: '23503' });
+       |      ^
+    113|   });
+    114|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/pacientes-migracion.test.js > C03: esquema de pacientes > habilita unaccent para comparar nombres sin tildes
+error: no existe la función unaccent(text)
+ ❯ node_modules/pg/lib/client.js:694:17
+ ❯ tests/pacientes-migracion.test.js:116:23
+    114|
+    115|   it('habilita unaccent para comparar nombres sin tildes', async () => {
+    116|     const resultado = await cliente.query(
+       |                       ^
+    117|       'SELECT unaccent($1::text) AS nombre',
+    118|       ['José Álvarez']
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed (8)
+   Start at  20:53:49
+   Duration  2.91s (tests 65%, setup 19%, import 9%, transform 5%, worker 2%)

@@ -65,7 +65,7 @@ El sistema SHALL permitir buscar pacientes del consultorio autenticado por coinc
 
 ### Requirement: Normalización del teléfono
 
-El sistema SHALL quitar espacios, guiones y paréntesis del teléfono, conservar un único signo + inicial cuando esté informado y conservar los dígitos y el código de país recibido. SHALL aplicar la misma normalización al buscar por teléfono. SHALL rechazar valores con otros caracteres o sin dígitos.
+El sistema SHALL quitar espacios, guiones y paréntesis del teléfono, conservar un único signo + inicial cuando esté informado y conservar los dígitos y el código de país recibido. SHALL aplicar la misma normalización al buscar por teléfono. SHALL tratar como ausente un teléfono compuesto solo por separadores permitidos y rechazar caracteres ajenos al formato.
 
 #### Scenario: Teléfono internacional con separadores
 - **WHEN** recepción registra el teléfono ficticio "+54 (11) 0000-0000"
@@ -76,8 +76,16 @@ El sistema SHALL quitar espacios, guiones y paréntesis del teléfono, conservar
 - **THEN** el sistema guarda 1100000000 sin agregar un código de país
 
 #### Scenario: Teléfono inválido
-- **WHEN** recepción intenta registrar un teléfono con letras o únicamente separadores
+- **WHEN** recepción intenta registrar un teléfono con letras
 - **THEN** el sistema rechaza el alta e informa que el teléfono es inválido
+
+#### Scenario: Teléfono sin dígitos con email válido
+- **WHEN** recepción registra un paciente con nombre, teléfono "()" y email ana@example.com
+- **THEN** el sistema trata el teléfono como ausente, guarda NULL y permite el alta con el email
+
+#### Scenario: Teléfono sin dígitos como único contacto
+- **WHEN** recepción registra un paciente con nombre, teléfono "()" y sin email
+- **THEN** el sistema rechaza el alta porque falta un contacto
 
 ### Requirement: Búsqueda por contacto
 
@@ -92,6 +100,11 @@ El sistema SHALL buscar por coincidencia completa del teléfono normalizado o de
 - **GIVEN** un paciente de A con email ana@example.com
 - **WHEN** recepción de A busca " ANA@EXAMPLE.COM "
 - **THEN** la respuesta incluye su ficha
+
+#### Scenario: Teléfono local y teléfono internacional diferentes
+- **GIVEN** un paciente del consultorio A con teléfono +541100000000
+- **WHEN** recepción de A busca 1100000000 y ningún otro campo de la ficha coincide
+- **THEN** la búsqueda excluye esa ficha porque no se infieren códigos de país o área
 
 ### Requirement: Aislamiento de fichas entre consultorios
 
@@ -147,11 +160,11 @@ El módulo de pacientes SHALL ofrecer a los módulos consumidores una comprobaci
 
 ### Requirement: Campos de la ficha básica
 
-La ficha SHALL contener id UUID, consultorio_id UUID referido a consultorio(id), nombre obligatorio, apellido opcional, telefono opcional, email opcional, activo booleano y creado_en como instante UTC. El sistema SHALL asignar id, consultorio_id, activo y creado_en. Se requiere al menos un contacto.
+La ficha SHALL contener id UUID, consultorio_id UUID referido a consultorio(id), nombre obligatorio, apellido opcional, telefono opcional, email opcional y creado_en como instante UTC. El sistema SHALL asignar id, consultorio_id y creado_en. Se requiere al menos un contacto.
 
 #### Scenario: Campos asignados al crear la ficha
 - **WHEN** recepción registra un paciente válido con nombre y teléfono
-- **THEN** el sistema asigna un UUID, el consultorio autenticado, activo verdadero y la fecha de creación UTC, conservando los datos básicos recibidos
+- **THEN** el sistema asigna un UUID, el consultorio autenticado y la fecha de creación UTC, conservando los datos básicos recibidos
 
 ### Requirement: Límite de búsqueda
 

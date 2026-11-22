@@ -4,7 +4,7 @@
 
 La motivación y el alcance están en proposal.md. El comportamiento esperado está en specs/pacientes/spec.md.
 
-C03 depende de C00 para el arranque, la conexión a PostgreSQL, el runner de migraciones y el middleware de autenticación. Agustina confirmó el contrato de C00 y comunicó que está implementado y probado en su copia, con la rama todavía pendiente de publicación. El login y la emisión de tokens corresponden a C01.
+C00 ya está integrado desde upstream/main. Su suite base pasó 47 tests en esta máquina. El login y la emisión de tokens corresponden a C01.
 
 Las tablas usan nombres en singular e identificadores UUID. La tabla consultorio existe desde la migración 001 de C00.
 
@@ -61,7 +61,6 @@ Proponer los siguientes campos para la migración de C03:
 | apellido | Texto opcional |
 | telefono | Texto opcional |
 | email | Texto opcional |
-| activo | Booleano, inicialmente verdadero |
 | creado_en | timestamptz, instante de creación |
 
 Separar nombre y apellido facilita la búsqueda por ambos campos que pidió Agustina. El apellido queda opcional porque el alta mínima exige nombre y contacto.
@@ -76,9 +75,9 @@ Recortar espacios exteriores del email y guardarlo en minúsculas. PostgreSQL ga
 
 La normalización del servicio mantiene los valores consistentes y el índice protege la unicidad incluso ante escrituras que usen otras mayúsculas. Traducir su violación a 409.
 
-Para teléfono, quitar espacios, guiones y paréntesis. Conservar los dígitos y un único signo + inicial cuando esté informado. Rechazar otros caracteres o un valor sin dígitos. Un contacto compuesto solo por espacios se trata como ausente antes de validar.
+Para teléfono, quitar espacios, guiones y paréntesis. Conservar los dígitos y un único signo + inicial cuando esté informado. Rechazar caracteres ajenos al formato. Si quedan únicamente separadores permitidos y ningún dígito, normalizar a NULL. El alta requiere entonces un email válido como contacto. Un contacto compuesto solo por espacios se trata como ausente antes de validar.
 
-Ejemplo ficticio: "+54 (11) 0000-0000" se guarda como "+541100000000". Un teléfono local conserva sus dígitos. Agregar país o área requiere una regla posterior acordada.
+Ejemplo ficticio: "+54 (11) 0000-0000" se guarda como "+541100000000". Un teléfono local conserva sus dígitos. Agregar país o área requiere una regla posterior acordada. +541100000000 y 1100000000 se consideran teléfonos diferentes para la búsqueda.
 
 Aplicar las mismas normalizaciones en la búsqueda por contacto.
 
@@ -109,7 +108,7 @@ unaccent no es inmutable. Para el MVP, aplicar la función en la consulta y usar
 
 Si el volumen exige optimización, evaluar columnas normalizadas y un índice adecuado mediante una decisión posterior. El diseño inicial conserva las funciones reales de PostgreSQL y evita declarar artificialmente inmutable a unaccent.
 
-Buscar teléfono por coincidencia completa normalizada y email por coincidencia completa recortada y en minúsculas. Una consulta textual para nombres debe seguir funcionando aunque su contenido no sea un teléfono válido.
+Buscar teléfono por coincidencia completa normalizada. Comparar email mediante lower(btrim(email)) = lower(btrim($parametro)), con un parámetro SQL, usando la misma expresión del índice único. Una consulta textual para nombres debe seguir funcionando aunque su contenido no sea un teléfono válido.
 
 Agrupar todas las alternativas bajo el filtro obligatorio consultorio_id. Utilizar parámetros SQL y escapar comodines para interpretar literalmente el texto buscado.
 
@@ -148,7 +147,7 @@ La restricción de unicidad permanece garantizada en PostgreSQL. Para priorizar 
 
 ## Risks / Trade-offs
 
-- Contrato de C00 confirmado pero rama todavía sin publicar. Contrastar imports, conexión y helper de tests con su versión integrada antes de Apply.
+- Cambios posteriores en C00. Revisar compatibilidad al integrar nuevas versiones de main.
 - Disponibilidad local de unaccent. Verificar su creación mediante el runner y una búsqueda con datos ficticios.
 - Emails equivalentes por mayúsculas. Normalizar en el servicio y garantizar unicidad con el índice de PostgreSQL.
 - Consultas parciales costosas con crecimiento de datos. Mantener el alcance inicial y evaluar paginación e índices cuando se conozca el volumen.
@@ -173,6 +172,60 @@ La migración 001 no habilita unaccent. La migración propia de C03 debe ejecuta
 
 Cada test o grupo de tests de C03 crea consultorios ficticios propios con UUID distintos. La limpieza elimina primero sus pacientes y después sus consultorios, siempre filtrando por sus identificadores. Evitar DELETE global y TRUNCATE sobre tablas compartidas.
 
-tests/esquema.test.js contiene tres incompatibilidades con pruebas paralelas: espera únicamente 001 en el historial, cuenta todos los usuarios y elimina todos los usuarios y consultorios. Coordinar con Agustina su corrección antes de ejecutar la suite integrada: comprobar el historial frente a las migraciones presentes en db/migrations/, consultar solo su fixture y limpiar solo sus datos. Los cambios en tests/setup corresponden a C00.
+La versión integrada de tests/esquema.test.js ya admite más migraciones y consulta y limpia únicamente su fixture. Pasó junto con las pruebas de pacientes. tests/setup permanece bajo responsabilidad de C00.
 
 El cierre documental del setup se basa en lectura del código publicado. La verificación ejecutable con paciente y unaccent corresponde a Apply.
+
+## Resultado del primer bloque de Apply
+
+La migración 030 habilita unaccent y crea paciente con los campos del spec. Cada contacto informado debe contener un carácter distinto de espacio. La restricción conjunta exige al menos un contacto. El servicio normalizará los contactos ausentes a NULL.
+
+Se eliminó activo por carecer de un caso de uso en C03 y el índice por nombre que no favorecía la búsqueda parcial. El UUID lo genera el servicio. La base conserva el índice único de email normalizado y el índice por consultorio y teléfono.
+
+La disponibilidad de unaccent 1.1 en Neon PostgreSQL 18 fue verificada únicamente en la documentación oficial. Su funcionamiento en Neon queda pendiente del primer despliegue. Localmente, la extensión se creó mediante la migración y la prueba de tildes pasó.
+
+La suite completa pasó 58 tests: 47 de C00 y 11 del esquema de pacientes. Los tres tests agregados por contactos en blanco y eliminación de activo fallaron primero y pasaron tras corregir la migración.
+
+## Verify final de C03
+
+Verificado el 22/11/2026, después de integrar upstream/main ff01d6c con C01, C02 y C04 (commit de integración 9b7d1fb).
+
+Dos ejecuciones consecutivas finales de la suite completa mediante npm.cmd test, con reportero JSON, aprobaron 283 de 283 tests en 41 archivos cada una. Los reportes registran fecha y duración reales. Las dos ejecuciones anteriores con C02 y C04 habían aprobado 265 tests, antes de integrar C01.
+
+### Cobertura revisada
+
+- C03 aporta 60 tests, incluidos 11 de migración, 8 de existencia, 19 de alta, 21 de búsqueda y 1 de actualización de una base con C00 existente y reejecución del runner.
+- El alta cubre cada rol según knowledge-base/03_actores_y_roles.md. ADMIN_CONSULTORIO y RECEPCION reciben 201 y ODONTOLOGO recibe 403.
+- La búsqueda cubre nombres y apellidos parciales sin tildes ni mayúsculas, contactos normalizados, límite fijo de 50 y caracteres literales.
+- El aislamiento cubre pacientes de otro consultorio y selección de consultorio por body, query y encabezados. Los repositorios reciben el consultorio autenticado y usan SQL parametrizado.
+- La interfaz existePaciente comprueba pertenencia mediante ambos UUID, devuelve false ante paciente ajeno o inexistente y lanza ApiError 400 VALIDACION para identificadores inválidos.
+- Los fixtures usan consultorios propios. Se revisaron los filtros de limpieza y el rollback. La suite con C02 y C04 pasó con archivos concurrentes; la verificación final con C01 pasó con fileParallelism: false, configuración incorporada por main.
+- La documentación está en src/modules/pacientes/README.md. La interfaz fue publicada al equipo y su código está en la rama feature/C03-pacientes del fork de Leandro.
+
+### Integración y archivos compartidos
+
+El conflicto en src/app.js se resolvió conservando catálogo, prestaciones y pacientes. Frente al main integrado, C03 agrega exclusivamente su import y su app.use antes del manejador de errores.
+
+La primera ejecución integrada detectó dos fallos de C02. tests/catalogo-migracion-runner.test.js esperaba únicamente 001 y 020 aunque ejecutaba todas las migraciones. Con autorización expresa de Leandro, se cambió la expectativa para cotejar el historial completo con los archivos SQL presentes. Se conservaron las verificaciones de datos, esquema y repetición. Las dos ejecuciones posteriores quedaron en verde.
+
+package.json, package-lock.json, tests/setup y los helpers existentes coinciden con el main integrado. La revisión de formato mediante git diff --check pasó.
+
+### Evidencias
+
+- docs/evidencias/c03/migracion-rojo-original.txt
+- docs/evidencias/c03/busqueda-rojo-original.txt
+- docs/evidencias/c03/npm-test-final.txt, ejecución histórica de 107 tests antes de integrar C02 y C04.
+- docs/evidencias/c03/integracion-main-1.json, diagnóstico inicial con dos fallos.
+- docs/evidencias/c03/integracion-main-verificada-1.json
+- docs/evidencias/c03/integracion-main-verificada-2.json
+- docs/evidencias/c03/integracion-c01-verificada-1.json
+- docs/evidencias/c03/integracion-c01-verificada-2.json
+- docs/evidencias/c03/verify-integracion.txt, resumen fechado de las ejecuciones aprobadas.
+
+### Hallazgos y límites
+
+La auditoría recibida el 21/11/2026 informó tres vulnerabilidades moderadas en node-pg-migrate y sus dependencias glob y minimatch. Ese reporte no informó vulnerabilidades altas ni críticas. El tratamiento corresponde coordinarlo con el equipo responsable de C00. C03 conserva las dependencias acordadas.
+
+unaccent 1.1 para PostgreSQL 18 en Neon está verificado solo en documentación. Su ejecución en Neon se comprobará durante el primer despliegue. Las pruebas de PostgreSQL local sí ejecutan la extensión.
+
+Esta verificación corresponde al backend local. El PR requiere revisión de Agustina antes de la integración a main. El archivado del change queda para el cierre posterior del flujo.

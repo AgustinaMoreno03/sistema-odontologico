@@ -1,6 +1,7 @@
 import express from 'express';
 import { manejadorErrores } from './errores.js';
 import { rutasPrestaciones } from './modules/catalogo/prestaciones/rutas.js';
+import { crearRouterPacientes } from './modules/pacientes/rutas.js';
 import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
 import { rutasAuth, rutasUsuarios } from './modules/auth/rutas.js';
@@ -34,6 +35,7 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
 
   // Módulo catalogo (C02): rutas bajo /api con la autenticación de C00.
   app.use('/api', crearRouterCatalogo());
+  app.use('/api/pacientes', crearRouterPacientes());
 
   // Manejador de errores centralizado — SIEMPRE al final (design D6).
   app.use(manejadorErrores);

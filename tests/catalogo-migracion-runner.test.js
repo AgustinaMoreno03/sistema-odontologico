@@ -19,6 +19,10 @@ const raiz = process.cwd();
 const bin = path.join(raiz, 'node_modules', 'node-pg-migrate', 'bin', 'node-pg-migrate.js');
 const NOMBRE_SCRATCH = 'odontologia_c02_runner_test';
 const dirTemporal = path.join(os.tmpdir(), 'opencode', 'odontologia-c02-runner');
+const migracionesEsperadas = fs.readdirSync(path.join(raiz, 'db', 'migrations'))
+  .filter((archivo) => /^\d+_.+\.sql$/.test(archivo))
+  .map((archivo) => path.basename(archivo, '.sql'))
+  .sort();
 
 function urlScratch() {
   const url = new URL(obtenerUrlBaseTest());
@@ -114,9 +118,7 @@ describe('020_catalogo aplicada por el runner oficial (schema-migrations)', () =
     const segunda = ejecutarRunnerTodasLasMigraciones();
     expect(segunda.status, `${segunda.stdout ?? ''}${segunda.stderr ?? ''}`).toBe(0);
     expect(await tablasCatalogo()).toEqual(['profesional', 'sillon_box']);
-    expect((await historial()).filter((nombre) =>
-      ['001_esquema_inicial', '020_catalogo', '040_prestaciones'].includes(nombre)
-    )).toEqual(['001_esquema_inicial', '020_catalogo', '040_prestaciones']);
+    expect(await historial()).toEqual(migracionesEsperadas);
   }, 60_000);
 
   it('la segunda ejecución del runner es no-op y no pierde los datos existentes', async () => {
@@ -137,8 +139,6 @@ describe('020_catalogo aplicada por el runner oficial (schema-migrations)', () =
 
     const datos = await consultas('SELECT nombre FROM profesional ORDER BY nombre');
     expect(datos).toEqual([{ nombre: 'Dra. Rita Núñez' }]);
-    expect((await historial()).filter((nombre) =>
-      ['001_esquema_inicial', '020_catalogo', '040_prestaciones'].includes(nombre)
-    )).toEqual(['001_esquema_inicial', '020_catalogo', '040_prestaciones']);
+    expect(await historial()).toEqual(migracionesEsperadas);
   }, 60_000);
 });
