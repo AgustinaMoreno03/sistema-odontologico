@@ -1,0 +1,274 @@
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/pacientes-busqueda.test.js
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ ❯ tests/pacientes-busqueda.test.js (21 tests | 21 failed) 1762ms
+   ❯ C03: GET /api/pacientes (21)
+     × permite buscar fichas básicas a RECEPCION 116ms
+     × permite buscar fichas básicas a ADMIN_CONSULTORIO 169ms
+     × permite buscar fichas básicas a ODONTOLOGO 62ms
+     × busca parcialmente sin distinguir tildes ni mayúsculas: JOSE 55ms
+     × busca parcialmente sin distinguir tildes ni mayúsculas: ALVAR 55ms
+     × devuelve lista vacía cuando no hay coincidencias 54ms
+     × busca teléfono con +54 y separadores 56ms
+     × no equipara automáticamente un teléfono internacional con uno local 53ms
+     × compara email usando las mismas reglas de espacios y mayúsculas del índice 56ms
+     × excluye fichas ajenas al buscar por Ana 55ms
+     × excluye fichas ajenas al buscar por 1100000000 55ms
+     × excluye fichas ajenas al buscar por ana@example.com 55ms
+     × interpreta literalmente el carácter % 158ms
+     × interpreta literalmente el carácter _ 53ms
+     × interpreta literalmente el carácter \ 54ms
+     × trata un intento de inyección como texto de búsqueda 53ms
+     × limita a 50 y mantiene el orden aunque el cliente solicite más 76ms
+     × rechaza un texto de búsqueda inválido: "" 54ms
+     × rechaza un texto de búsqueda inválido: "   " 159ms
+     × rechaza un texto de búsqueda inválido: "Ana" 155ms
+     × rechaza búsqueda sin token 158ms
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a RECEPCION
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a ADMIN_CONSULTORIO
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a ODONTOLOGO
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:69:26
+     67|       const id = await insertar();
+     68|       const res = await buscar('Ana', {}, rol);
+     69|       expect(res.status).toBe(200);
+       |                          ^
+     70|       expect(res.body.map((fila) => fila.id)).toEqual([id]);
+     71|       expect(res.body[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca parcialmente sin distinguir tildes ni mayúsculas: JOSE
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca parcialmente sin distinguir tildes ni mayúsculas: ALVAR
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:82:26
+     80|       const id = await insertar({ nombre: 'José', apellido: 'Álvarez' });
+     81|       const res = await buscar(texto);
+     82|       expect(res.status).toBe(200);
+       |                          ^
+     83|       expect(res.body).toHaveLength(1);
+     84|       expect(res.body[0]).toMatchObject({ id, nombre: 'José', apellido: 'Álvarez' });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > devuelve lista vacía cuando no hay coincidencias
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:91:24
+     89|     await insertar();
+     90|     const res = await buscar('Inexistente');
+     91|     expect(res.status).toBe(200);
+       |                        ^
+     92|     expect(res.body).toEqual([]);
+     93|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca teléfono con +54 y separadores
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:98:24
+     96|     const id = await insertar({ telefono: '+541100000000' });
+     97|     const res = await buscar('+54 (11) 0000-0000');
+     98|     expect(res.status).toBe(200);
+       |                        ^
+     99|     expect(res.body.map((fila) => fila.id)).toEqual([id]);
+    100|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > no equipara automáticamente un teléfono internacional con uno local
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:105:24
+    103|     await insertar({ telefono: '+541100000000' });
+    104|     const res = await buscar('1100000000');
+    105|     expect(res.status).toBe(200);
+       |                        ^
+    106|     expect(res.body).toEqual([]);
+    107|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > compara email usando las mismas reglas de espacios y mayúsculas del índice
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:112:24
+    110|     const id = await insertar({ email: ' ANA@EXAMPLE.COM ' });
+    111|     const res = await buscar(' ana@example.com ');
+    112|     expect(res.status).toBe(200);
+       |                        ^
+    113|     expect(res.body.map((fila) => fila.id)).toEqual([id]);
+    114|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por Ana
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por 1100000000
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por ana@example.com
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:121:26
+    119|       await insertar({ consultorioId: consultorioB, email: 'ana@example.com' });
+    120|       const res = await buscar(texto, { consultorioId: consultorioB });
+    121|       expect(res.status).toBe(200);
+       |                          ^
+    122|       expect(res.body).toEqual([]);
+    123|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter %
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter _
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter \
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:131:24
+    129|
+    130|     const res = await buscar(texto);
+    131|     expect(res.status).toBe(200);
+       |                        ^
+    132|     expect(res.body.map((fila) => fila.id)).toEqual([id]);
+    133|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > trata un intento de inyección como texto de búsqueda
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:138:24
+    136|     await insertar();
+    137|     const res = await buscar("' OR 1=1 --");
+    138|     expect(res.status).toBe(200);
+       |                        ^
+    139|     expect(res.body).toEqual([]);
+    140|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > limita a 50 y mantiene el orden aunque el cliente solicite más
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:153:24
+    151|
+    152|     const res = await buscar('Serie', { limit: 1000 });
+    153|     expect(res.status).toBe(200);
+       |                        ^
+    154|     expect(res.body.map((fila) => fila.id)).toEqual(idsOrdenados.slice(0, 50));
+    155|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: ""
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: "   "
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: "Ana"
+AssertionError: expected 404 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:161:26
+    159|     async (texto) => {
+    160|       const res = await buscar(texto);
+    161|       expect(res.status).toBe(422);
+       |                          ^
+    162|       expect(res.body.error.code).toBe('DATOS_INVALIDOS');
+    163|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza búsqueda sin token
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/pacientes-busqueda.test.js:168:24
+    166|   it('rechaza búsqueda sin token', async () => {
+    167|     const res = await request(app).get('/api/pacientes').query({ q: 'Ana' });
+    168|     expect(res.status).toBe(401);
+       |                        ^
+    169|     expect(res.body).toEqual({
+    170|       error: { code: 'TOKEN_INVALIDO', message: 'No autorizado' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  21 failed (21)
+   Start at  01:16:50
+   Duration  3.80s (tests 73%, import 17%, setup 6%, transform 4%, worker 1%)

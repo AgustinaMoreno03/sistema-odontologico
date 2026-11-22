@@ -1,0 +1,53 @@
+Verificación C03 — 2026-11-21 11:56:39 -03:00
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ ✓ tests/config-conexion-invalida.test.js (2 tests) 1278ms
+   ✓ conexión inválida (spec schema-migrations, "Cadena malformada o credenciales inválidas") (2)
+     ✓ cadena malformada (puerto inválido) → exit ≠ 0 y el mensaje no filtra la contraseña ni la cadena completa 571ms
+     ✓ credenciales inválidas (contraseña incorrecta) → exit ≠ 0 y el mensaje no filtra la contraseña ni la cadena completa 704ms
+ ✓ tests/auth-config.test.js (2 tests) 1713ms
+   ✓ fail-fast de JWT_SECRET (spec development-environment, "Secreto del JWT ausente o vacío") (2)
+     ✓ JWT_SECRET ausente → el proceso termina con código distinto de cero, sin arrancar 953ms
+     ✓ JWT_SECRET vacío ("") → el proceso termina con código distinto de cero, sin arrancar 756ms
+ ✓ tests/auth-secret.test.js (2 tests) 1748ms
+   ✓ fail-fast de JWT_SECRET corto (spec development-environment, "Secreto del JWT demasiado corto") (2)
+     ✓ JWT_SECRET de 31 caracteres → NO arranca: exit ≠ 0, mensaje del mínimo 32 y sin el valor del secreto 973ms
+     ✓ JWT_SECRET de exactamente 32 caracteres → supera el chequeo de configuración y arranca 771ms
+ ✓ tests/pacientes-existencia.test.js (8 tests) 1289ms
+ ✓ tests/config-database-url.test.js (1 test) 1117ms
+   ✓ fail-fast de DATABASE_URL (spec development-environment, "Variable de entorno requerida ausente") (1)
+     ✓ DATABASE_URL ausente → exit ≠ 0, mensaje que nombra la variable, sin stack ni cadenas de conexión 1113ms
+ ✓ tests/pacientes-migracion.test.js (11 tests) 1304ms
+ ✓ tests/pacientes-alta.test.js (19 tests) 3022ms
+   ✓ C03: POST /api/pacientes (19)
+     ✓ permite alta con nombre y teléfono a RECEPCION 313ms
+     ✓ permite el mismo email en consultorios diferentes 448ms
+ ✓ tests/esquema.test.js (3 tests) 250ms
+ ✓ tests/pacientes-actualizacion.test.js (1 test) 4716ms
+   ✓ C03 aplica 030 sobre C00 existente y repetir el runner conserva datos e historial 4713ms
+ ✓ tests/pacientes-busqueda.test.js (21 tests) 4182ms
+   ✓ C03: GET /api/pacientes (21)
+     ✓ permite buscar fichas básicas a RECEPCION 317ms
+     ✓ limita a 50 y mantiene el orden aunque el cliente solicite más 326ms
+ ✓ tests/auth-helper.test.js (4 tests) 96ms
+ ✓ tests/health.test.js (5 tests) 330ms
+ ✓ tests/auth.test.js (21 tests) 359ms
+ ✓ tests/errores.test.js (3 tests) 52ms
+ ✓ tests/runner-migraciones.test.js (4 tests) 8539ms
+   ✓ runner de migraciones (schema-migrations) (4)
+     ✓ SQL inválido → exit ≠ 0, transacción revocada y sin registro en el historial 3960ms
+     ✓ 002 pendiente tras 010 aplicado → fallo visible con exit ≠ 0, sin aplicarla fuera de orden ni ignorarla 1854ms
+     ✓ re-ejecución sin pendientes → exit 0, esquema sin cambios e historial sin duplicados 1716ms
+     ✓ cadena estilo Neon (sslmode + parámetros extra) aceptada por el runner y por la API 1005ms
+
+ Test Files  15 passed (15)
+      Tests  107 passed (107)
+   Start at  11:56:40
+   Duration  11.99s (tests 77%, import 13%, setup 9%, transform 1%, worker 1%)
+
+Código de salida de npm test: 0
