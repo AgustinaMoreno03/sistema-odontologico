@@ -31,18 +31,18 @@ El consultorio odontológico no tiene un sistema único que resuelva la gestión
 - **Recepción/Administración**: administra la agenda general, cobros y recordatorios.
 - **Administrador del sistema**: configura usuarios, permisos, consultorios y reportes.
 
-**[CAMBIO posterior]** El plan §5.2 define roles del sistema: `ADMIN_CONSULTORIO`, `ODONTOLOGO`, `RECEPCION` + `SUPERADMIN` interno (alta de consultorios, seed/script en MVP). **No figura el rol `PACIENTE`** → ver IN-03 (sección 6): la auto-reserva del paciente está cuestionada hasta confirmarlo con la líder.
+**[CAMBIO posterior]** El plan §5.2 define roles del sistema: `ADMIN_CONSULTORIO`, `ODONTOLOGO`, `RECEPCION` + `SUPERADMIN` interno (alta de consultorios, seed/script en MVP). **No figura el rol `PACIENTE`** → ver IN-03 (sección 5): la auto-reserva del paciente está cuestionada hasta confirmarlo con la líder.
 
 ### 2.3 Casos de uso
 
-1. Como **paciente**, quiero reservar o cancelar un turno para no depender de llamadas o mensajes de WhatsApp. *(cuestionado por IN-03 — ver sección 6)*
+1. Como **paciente**, quiero reservar o cancelar un turno para no depender de llamadas o mensajes de WhatsApp. *(cuestionado por IN-03 — ver sección 5)*
 2. Como **odontólogo**, quiero ver mi agenda del día y registrar la atención con su cobro para tener el control al día. *(cobros: post-lanzamiento)*
 3. Como **recepción**, quiero administrar la agenda general y los cobros para coordinar al equipo. *(cobros: post-lanzamiento)*
 4. Como **administrador**, quiero gestionar usuarios y permisos para que cada rol vea solo lo que le corresponde.
 
 ### 2.4 Competidores
 
-Seis soluciones investigadas por búsqueda web (2026-11-17) y documentadas en `discovery/sources/`: **Dentalink, OCLÜ, Dentaly, Clinic Cloud, Open Dental, Dentrix**. Ver análisis completo en la sección 4. Dos verificaciones de nombres: "ClinicCloud" existe como **Clinic Cloud** (Doctoralia) y **Dentix** no es software sino una red DSO de +100 clínicas que contrató Clinic Cloud; "Programa Dental" no se pudo verificar y se descartó.
+Quince soluciones investigadas: 6 por búsqueda web directa (2026-11-17), documentadas en `discovery/sources/` (**Dentalink, OCLÜ, Dentaly, Clinic Cloud, Open Dental, Dentrix**), y 9 agregadas el 2026-11-22 desde la fuente #8 (**Odonthia, Bilog, DentalCore, Odonto.ar, DentalSoft, DentalTec, Órbita, Doctocliq, Dentidesk**). Ver análisis completo en la sección 4. Dos verificaciones de nombres: "ClinicCloud" existe como **Clinic Cloud** (Doctoralia) y **Dentix** no es software sino una red DSO de +100 clínicas que contrató Clinic Cloud; "Programa Dental" no se pudo verificar y se descartó.
 
 ### 2.5 Funcionalidades necesarias (MVP — innegociables en el Discovery original)
 
@@ -100,7 +100,7 @@ Respuesta inicial del usuario: "no hay". En el gate final se registraron y confi
 
 | # | Pregunta | Estado vigente (2026-11-17) |
 |---|---|---|
-| 1 | ¿Un solo consultorio o multi-sede/multi-odontólogo desde ya? | **Resuelta**: SaaS multi-tenant desde el inicio con `tenant_id` (plan §2, DD-09). Queda abierta la variante de la sección 6: alcance del multi-tenant dentro de la nota de la cátedra. |
+| 1 | ¿Un solo consultorio o multi-sede/multi-odontólogo desde ya? | **Resuelta**: SaaS multi-tenant desde el inicio con `tenant_id` (plan §2, DD-09). Queda abierta la variante de la sección 5: alcance del multi-tenant dentro de la nota de la cátedra. |
 | 2 | ¿Cloud o local (on-premise)? | **Parcialmente resuelta**: local hasta terminar el MVP; después Vercel/Render/Neon (plan §2, DD-10). Quedan: límites reales de los planes gratuitos y backups de datos sensibles. |
 | 3 | ¿Cobros con comprobante fiscal real o registro interno? | Abierta — hoy solo registro interno (RN-COB-01); los cobros están fuera del MVP. |
 | 4 | ¿WhatsApp Business API o primero email? | Abierta — recordatorios fuera del MVP. |
@@ -128,68 +128,39 @@ Respuesta inicial del usuario: "no hay". En el gate final se registraron y confi
 
 ### 4.1 Comparativa de competidores
 
-| Competidor | Región | Pricing (publicado al 2026-11-17) | Diferenciadores |
+| Competidor | Región | Pricing | Diferenciadores |
 |---|---|---|---|
 | **Dentalink** | Chile / LatAm (+15.000 clientes, +20 países) | Desde USD 35 / 50 / 75 por mes (Esencial/Pro/Titanium, Argentina, 1 profesional; con equipo: a cotizar). Chile: desde $35.000 CLP IVA incl. | Líder auto-declarado en LatAm; odontograma + obras sociales en todos los planes; IA incluida; sin contratos; financiación de pacientes y multicentro en planes superiores |
 | **OCLÜ** | Argentina / España / LatAm | ARS 35.000 / 55.000 / 80.000 + IVA por mes (CORE/STUDIO/SIGNATURE) o desde USD 25/mes; add-ons aparte; anual 10% off | Mismo plan-base para todos (se paga por tamaño de clínica); permisos por rol con auditoría; chat interno vs. WhatsApp grupal; facturación ARCA; migración asistida |
 | **Dentaly** | Argentina | ARS 35.000/mes (Pro, 1 profesional), ARS 100.000/mes (Clínica), Multisede a cotizar; prueba 14 días sin tarjeta | Simplicidad ("sin funciones de relleno"), precio transparente en pesos, soporte por WhatsApp con los fundadores, sin créditos por mensaje |
 | **Clinic Cloud** | España (grupo Doctoralia) | 29 / 49 / 79 € + IVA por mes (Mini/Pro/Max); Enterprise a convenir; odontograma solo en Max | Ecosistema Doctoralia (visibilidad + reserva online), IA clínica (suite Noa), RGPD/ISO 27001; facturación española (no ARCA) |
 | **Open Dental** | EE.UU. / internacional | Publicado: US$ 199/mes por ubicación (12 meses, hasta 3 providers) → US$ 149/mes; +US$ 20 por provider extra; eServices US$ 165/mes; nube y conversión aparte | Único PMS mayor con lista de precios completa; DB MySQL abierta + API; self-hosted (control del dato); foco en insurance claims (modelo EE.UU.) |
-| **Dentrix** | EE.UU. (Henry Schein One) | **(no público)** — pide demo; paquetes y suites a cotizar | 30+ años de estándar del sector, 35.000+ prácticas, ecosistema partners (API Exchange), on-premise vs. cloud (Ascend), servicios IT |
+| **Dentrix** | EE.UU. (Henry Schein One) | **No evidenciado** — el sitio oficial no publica precios (pide demo; paquetes y suites a cotizar). Montos de terceros (~USD 75-110/mes) descartados: anécdotas de foros, no precio oficial | 30+ años de estándar del sector, 35.000+ prácticas, ecosistema partners (API Exchange), on-premise vs. cloud (Ascend), servicios IT |
+| **Odonthia** | Argentina | Gratis / ARS 74.500 / ARS 153.700 por mes con IVA (US$ 47 / 97 en el resto de LATAM); el plan gratis no vence (la IA y el WhatsApp automático se pagan) | Gestión gratis sin límite de pacientes; odontograma FDI y agenda con reserva online incluso en el plan gratis; sin liquidación de obras sociales ni facturación ARCA |
+| **Bilog** | Argentina | **No evidenciado** para planes de pago — el sitio no publica precios (Freemium sin costo; Lite y Premium a cotizar) | Más de 20 años en el mercado y +1.500 clínicas/consultorios declarados; fuerte en liquidación de obras sociales y auditoría para gerenciadoras; Freemium hasta 50 pacientes y 1 profesional con odontograma; apps iOS/Android |
+| **DentalCore** | Argentina (La Plata) | USD 50/mes con 2 usuarios + USD 10 por usuario extra; sin plan gratis (garantía de devolución de 14 días) | Apoyo a la decisión clínica ("17 motores clínicos" según su sitio); obras sociales con liquidación por período y facturación ARCA |
+| **Odonto.ar** | Argentina | USD 29 / 49 / 99 por mes; prueba de 30 días | Cálculo de obras sociales, turnos online y WhatsApp |
+| **DentalSoft** | Argentina (La Plata y Rosario) | ARS 30.000/mes (1 profesional) / ARS 60.000/mes; gratis 3 meses hasta 50 turnos por mes | +300 clínicas declaradas; obras sociales con liquidación. Ojo: hay homónimos en Chile y México — este es el de dentalsoft.com.ar |
+| **DentalTec** | Argentina (San Juan) | **No evidenciado** — el sitio no publica el precio del software (sí packs de WhatsApp de USD 9 a 48; demo a pedido) | Validación de prácticas en tiempo real con 15 obras sociales (OSDE, Swiss Medical, Sancor); facturación ARCA; foco en círculos e instituciones odontológicas |
+| **Órbita** | Argentina (La Plata) | **No evidenciado** — el sitio no publica precios (demo de 30 minutos) | Bot de IA para WhatsApp que agenda turnos combinado con la gestión del consultorio; migración sin costo desde otros sistemas |
+| **Doctocliq** | Perú (facturación para Perú, México, Colombia, Ecuador y Rep. Dominicana; sin obras sociales ni facturación argentina) | USD 0 / 19 / 29 / 49 por mes (plan gratis: 30 pacientes o citas por mes, 1 doctor) | Freemium regional con odontograma y periodontograma en el plan gratis; app móvil; todos los planes, para 1 doctor |
+| **Dentidesk** | Chile | **No evidenciado** — el sitio no publica precios (prueba de 15 días) | Fichas por especialidad y gestión multisucursal; recordatorios por correo electrónico; el sitio no menciona Argentina |
+
+> **Nota sobre la tabla:** filas 1–6 relevadas por fetch directo de los sitios oficiales el 2026-11-17; filas 7–15 agregadas el 2026-11-22 a partir del relevamiento del 09/10/2026 de la fuente #8 (blog de Odonthia — comparativa autorreferencial que incluye su propio producto). Toda celda sin dato verificable dice literal **«No evidenciado»**. Precios y funciones cambian: re-verificar en el sitio oficial antes de citarlos fuera de este informe.
 
 ### 4.2 Posicionamiento
 
 - **El status quo es el competidor real**: planilla/Excel, cuaderno y WhatsApp siguen siendo con lo que compite cualquier solución, y los competidores lo usan como gancho de venta — Dentaly abre con "¿Tu consultorio todavía vive entre Excel, Calendar y papel?" (https://www.dentaly.com.ar/), Clinic Cloud ofrece migración gratuita desde papel/Excel (https://clinic-cloud.com/) y OCLÜ vende contra "usar Excel más el WhatsApp personal" (https://oclucrm.com/). Nuestra ventaja de adopción debe medirse contra esa alternativa gratis, no solo contra otros software.
-- **Un MVP estudiantil no compite en features ni en precio, sino en simplicidad y alcance**: la categoría es densa y barata (la comparativa independiente de Odonthia lista ~8 competidores locales con precios publicados — Odonthia gratis/ARS 20.900/46.900, Bilog freemium, DentalCore USD 50, Odonto.ar USD 29-99, DentalSoft ARS 30.000/60.000; fuente: https://odonthia.com/blog/mejores-software-odontologicos-argentina-2026, relevamiento del 09/10/2026). Contra ese piso de precio, nuestro diferenciador es la promesa de simplicidad (el mismo ángulo que Dentaly) y un alcance acotado y verificable.
+- **Un MVP estudiantil no compite en features ni en precio, sino en simplicidad y alcance**: la categoría es densa y barata. La comparativa del blog de Odonthia (fuente #8; autorreferencial, porque lista su propio producto; relevamiento del 09/10/2026, https://odonthia.com/blog/mejores-software-odontologicos-argentina-2026) lista 13 sistemas y alimenta las filas 7–15 de la tabla §4.1: incluye planes gratuitos o freemium (Odonthia, Bilog), con precios que llegan a ARS 60.000/mes (DentalSoft) y USD 50/mes (DentalCore), y la suite regional Dentalink desde USD 35/mes. Contra ese piso de precio, nuestro diferenciador es la promesa de simplicidad (el mismo ángulo que Dentaly) y un alcance acotado y verificable.
 - **Benchmark mínimo esperado en LatAm**: agenda por profesional, odontograma, historia clínica, presupuestos/cobros, confirmación/recordatorio por WhatsApp y control de obras sociales (según Dentalink y OCLÜ). Nuestro MVP es un **subconjunto deliberado** de ese estándar: no es una suite completa y no pretende serlo — el informe lo declara explícitamente para evitar expectativas de feature parity.
 - **OCLÜ es el competidor de alcance más parecido** (agenda, turnos, pacientes, historia clínica, cobros y RBAC con auditoría) — nuestra diferenciación no puede venir de features.
 - **Dentrix y Open Dental** definen el "producto completo" de la categoría, pero sus modelos (insurance claims, on-premise, managed IT) no se trasladan a Argentina; se usan como referentes, no como benchmark de precio.
 
 ---
 
-## 5. Verificación de fuentes
+## 5. Riesgos y preguntas abiertas (consolidado)
 
-Fecha de consulta de todas las fuentes externas: **2026-11-17** (investigación de la fase `discovery-research`).
-
-### 5.1 Fuentes externas (competidores)
-
-| # | Fuente | URL | Qué afirmación respalda | Estado de verificación |
-|---|---|---|---|---|
-| 1 | Nota Dentalink | https://www.softwaredentalink.com/ar/planes (variante CL: https://www.softwaredentalink.com/cl/planes) | Pricing Esencial/Pro/Titanium USD 35/50/75 (AR) y $35.000 CLP (CL); +15.000 clientes; odontograma + obras sociales en todos los planes; IA incluida | **Verificada en la nota** (fetch de la página de planes, 2026-11-17). Precios "desde" para 1 profesional; con equipo: **(no público)** |
-| 2 | Nota OCLÜ | https://oclucrm.com/ | Pricing ARS 35.000/55.000/80.000 + IVA; "desde USD 25/mes"; planes por tamaño de clínica; permisos con auditoría; discurso contra "Excel + WhatsApp personal" | **Verificada en la nota** (fetch del home, 2026-11-17). Ojo moneda: pesos + IVA, valor a re-verificar por devaluación |
-| 3 | Nota Dentaly | https://www.dentaly.com.ar/ | Pricing ARS 35.000 (Pro) / 100.000 (Clínica); gancho "Excel, Calendar y papel"; prueba 14 días; simplicidad como diferenciador | **Verificada parcialmente**: el fetch devolvió contenido vacío (SPA Vite+React); los datos salen del contenido indexado por búsqueda web (2026-11-17). Re-verificar precios en la página antes de citarlos fuera de la nota |
-| 4 | Nota Clinic Cloud | https://clinic-cloud.com/tarifas (home: https://clinic-cloud.com/) | Pricing 29/49/79 € + IVA; odontograma solo en Max; migración gratuita desde papel/Excel; ecosistema Doctoralia; RGPD/ISO 27001 | **Verificada en la nota** (fetch de tarifas, 2026-11-17). Al 2026-11-17 promo Black Friday 50% 3 meses |
-| 5 | Nota Open Dental | https://www.opendental.com/site/fees.html (home: https://www.opendental.com/) | US$ 199 → 149/mes por ubicación; +US$ 20/provider; eServices US$ 165/mes; DB MySQL abierta + API; self-hosted | **Verificada en la nota** (fetch de la lista oficial de fees, 2026-11-17). Ellos mismos advierten que las fees cambian cada pocos años |
-| 6 | Nota Dentrix | https://www.dentrix.com/ | "All-in-one platform", 35.000+ prácticas, 30+ años de estándar, API Exchange, on-premise vs. Ascend (nube) | **Verificada en la nota**; pricing **no público** en el sitio oficial → se registra como "(no público)". Montos de terceros (~USD 75-110/mes) descartados: anécdotas de foros, no precio oficial |
-| 7 | Blog Clinic Cloud (verificación de nombre) | https://clinic-cloud.com/blog/dentix-elige-clinic-cloud-como-software-gestion-clinicas | "Dentix" no es software: es una red DSO de +100 clínicas (España/Italia/Colombia) que contrató Clinic Cloud | **Verificada en la nota** (2026-11-17) |
-| 8 | Comparativa Odonthia | https://odonthia.com/blog/mejores-software-odontologicos-argentina-2026 | Mercado argentino fragmentado: ~8 competidores locales con precios publicados (Odonthia, Bilog, DentalCore, Odonto.ar, DentalSoft, etc.) | **Verificada en la nota**; relevamiento propio de la fuente del **09/10/2026** (fecha de la fuente, no de nuestra consulta) |
-
-### 5.2 Fuentes primarias internas
-
-| # | Fuente | Qué afirmación respalda | Estado |
-|---|---|---|---|
-| 9 | **Entrevista con la líder (Q&A de la fase Discovery / Mode B de la KB)** — fuente primaria | Problema, usuarios, casos de uso, reglas de negocio confirmadas al aprobar el resumen, riesgos ("todo" como preocupación), stack fijo, alcance del MVP, decisión de recorte de historia clínica y cobros (IN-02) | **Fuente primaria: entrevista con la líder** (respuestas registradas en `discovery/discovery.md` y `knowledge-base/`); no es una fuente pública, es el relato autoritativo del requisito |
-| 10 | `discovery/discovery.md` (2026-11-16) | Los 11 puntos tal como se cerraron en la fase | Documento interno del repo, sin URL pública |
-| 11 | `docs/plan-ejecucion.md` (2026-11-17) | Decisiones vigentes: multi-tenant, PostgreSQL, Vercel/Render/Neon, monolito modular, roles §5.2, reglas §10, preguntas §12, riesgos §13 | Documento interno del repo, sin URL pública |
-| 12 | `knowledge-base/` (01, 03, 04, 09, 10) | Consistencias y contradicciones IN-01/IN-02/IN-03, alcance v1.0, DD-06/09/10/11/12/13 | Documentos internos del repo |
-
-### 5.3 Afirmaciones SIN respaldo de fuente — **"No evidenciado"**
-
-| Afirmación | Estado |
-|---|---|
-| Magnitud del problema (cuánto tiempo se pierde, cuántas doble reservas hay por semana en consultorios reales) | **No evidenciado** — no hay métricas de campo ni fuentes citadas; es el relato del Q&A, cualitativo |
-| Tamaño del mercado odontológico argentino (cantidad de consultorios, ticket promedio) | **No evidenciado** — no se investigó; no usar para proyecciones |
-| Que un MVP "más simple" efectivamente logre adopción sobre Excel/cuaderno/WhatsApp | **No evidenciado** — es la hipótesis central de la adopción, sin validar con usuarios reales |
-| "Programa Dental" como competidor | **No evidenciado** — no se pudo verificar como producto independiente; **descartado** |
-| Montos de Dentrix citados en foros (~USD 75-110/mes) | **No evidenciado** — anecdóticos, no precio oficial; no usar |
-| Límites vigentes de los planes gratuitos de Vercel/Render/Neon | **No evidenciado** — el plan §9 exige verificarlos en las páginas oficiales antes de desplegar |
-| Requisitos de la cátedra sobre alcance (multi-tenant como requisito propio o del trabajo) | **No evidenciado** — pendiente de confirmación (plan §12) |
-
----
-
-## 6. Riesgos y preguntas abiertas (consolidado)
-
-### 6.1 Riesgos
+### 5.1 Riesgos
 
 | # | Riesgo | Origen | Mitigación actual |
 |---|---|---|---|
@@ -202,7 +173,7 @@ Fecha de consulta de todas las fuentes externas: **2026-11-17** (investigación 
 | R7 | Diferencias local/nube; arranque en frío de planes gratuitos | Plan §13 | PostgreSQL en ambos + Flyway versionado; arranque en frío aceptado para validación, documentado en README |
 | R8 | **Riesgo de datos sensibles** (auditoría/backups de historia clínica) aún sin definir | Discovery §11.6 | Sin audit trail por DD-06; definir el mínimo antes de entrar historia clínica |
 
-### 6.2 Preguntas abiertas
+### 5.2 Preguntas abiertas
 
 **De la KB / plan §12 (prioridad alta):**
 
@@ -221,7 +192,7 @@ Fecha de consulta de todas las fuentes externas: **2026-11-17** (investigación 
 
 ---
 
-## 7. Anexos
+## 6. Anexos
 
 - **Discovery completo (11 puntos):** [`discovery/discovery.md`](../discovery/discovery.md)
 - **Notas de competidores:**
@@ -236,4 +207,44 @@ Fecha de consulta de todas las fuentes externas: **2026-11-17** (investigación 
 
 ---
 
-*Informe generado el 2026-11-17 a partir de la fase `discovery-research`. Sin datos reales de pacientes (los ejemplos de pacientes son ficticios por regla del proyecto).*
+## 7. Verificación de fuentes
+
+Fecha de consulta de todas las fuentes externas: **2026-11-17** (investigación de la fase `discovery-research`), salvo la ampliación de la tabla §4.1, hecha el **2026-11-22** con datos de la fuente #8 (relevamiento propio de esa fuente del 09/10/2026).
+
+### 7.1 Fuentes externas (competidores)
+
+| # | Fuente | URL | Qué afirmación respalda | Estado de verificación |
+|---|---|---|---|---|
+| 1 | Nota Dentalink | https://www.softwaredentalink.com/ar/planes (variante CL: https://www.softwaredentalink.com/cl/planes) | Pricing Esencial/Pro/Titanium USD 35/50/75 (AR) y $35.000 CLP (CL); +15.000 clientes; odontograma + obras sociales en todos los planes; IA incluida | **Verificada en la nota** (fetch de la página de planes, 2026-11-17). Precios "desde" para 1 profesional; con equipo: **(no público)** |
+| 2 | Nota OCLÜ | https://oclucrm.com/ | Pricing ARS 35.000/55.000/80.000 + IVA; "desde USD 25/mes"; planes por tamaño de clínica; permisos con auditoría; discurso contra "Excel + WhatsApp personal" | **Verificada en la nota** (fetch del home, 2026-11-17). Ojo moneda: pesos + IVA, valor a re-verificar por devaluación |
+| 3 | Nota Dentaly | https://www.dentaly.com.ar/ | Pricing ARS 35.000 (Pro) / 100.000 (Clínica); gancho "Excel, Calendar y papel"; prueba 14 días; simplicidad como diferenciador | **Verificada parcialmente**: el fetch devolvió contenido vacío (SPA Vite+React); los datos salen del contenido indexado por búsqueda web (2026-11-17). Re-verificar precios en la página antes de citarlos fuera de la nota |
+| 4 | Nota Clinic Cloud | https://clinic-cloud.com/tarifas (home: https://clinic-cloud.com/) | Pricing 29/49/79 € + IVA; odontograma solo en Max; migración gratuita desde papel/Excel; ecosistema Doctoralia; RGPD/ISO 27001 | **Verificada en la nota** (fetch de tarifas, 2026-11-17). Al 2026-11-17 promo Black Friday 50% 3 meses |
+| 5 | Nota Open Dental | https://www.opendental.com/site/fees.html (home: https://www.opendental.com/) | US$ 199 → 149/mes por ubicación; +US$ 20/provider; eServices US$ 165/mes; DB MySQL abierta + API; self-hosted | **Verificada en la nota** (fetch de la lista oficial de fees, 2026-11-17). Ellos mismos advierten que las fees cambian cada pocos años |
+| 6 | Nota Dentrix | https://www.dentrix.com/ | "All-in-one platform", 35.000+ prácticas, 30+ años de estándar, API Exchange, on-premise vs. Ascend (nube) | **Verificada en la nota**; pricing **no público** en el sitio oficial → en la tabla §4.1 se registra como **No evidenciado**. Montos de terceros (~USD 75-110/mes) descartados: anécdotas de foros, no precio oficial |
+| 7 | Blog Clinic Cloud (verificación de nombre) | https://clinic-cloud.com/blog/dentix-elige-clinic-cloud-como-software-gestion-clinicas | "Dentix" no es software: es una red DSO de +100 clínicas (España/Italia/Colombia) que contrató Clinic Cloud | **Verificada en la nota** (2026-11-17) |
+| 8 | Comparativa Odonthia | https://odonthia.com/blog/mejores-software-odontologicos-argentina-2026 | Base de las filas 7–15 de la tabla §4.1: 9 sistemas (Odonthia, Bilog, DentalTec, DentalCore, Odonto.ar, DentalSoft, Órbita, Doctocliq, Dentidesk) dentro de su relevamiento de 13 (suma además Dentalink, Clinic Cloud, AgendaPro y Dendoo) | **Verificada en la nota**; relevamiento propio de la fuente del **09/10/2026** (fecha de la fuente, no de nuestra consulta); re-consultada el **2026-11-22** para ampliar la tabla §4.1. Fuente autorreferencial: es el blog de Odonthia e incluye su propio producto |
+
+### 7.2 Fuentes primarias internas
+
+| # | Fuente | Qué afirmación respalda | Estado |
+|---|---|---|---|
+| 9 | **Entrevista con la líder (Q&A de la fase Discovery / Mode B de la KB)** — fuente primaria | Problema, usuarios, casos de uso, reglas de negocio confirmadas al aprobar el resumen, riesgos ("todo" como preocupación), stack fijo, alcance del MVP, decisión de recorte de historia clínica y cobros (IN-02) | **Fuente primaria: entrevista con la líder** (respuestas registradas en `discovery/discovery.md` y `knowledge-base/`); no es una fuente pública, es el relato autoritativo del requisito |
+| 10 | `discovery/discovery.md` (2026-11-16) | Los 11 puntos tal como se cerraron en la fase | Documento interno del repo, sin URL pública |
+| 11 | `docs/plan-ejecucion.md` (2026-11-17) | Decisiones vigentes: multi-tenant, PostgreSQL, Vercel/Render/Neon, monolito modular, roles §5.2, reglas §10, preguntas §12, riesgos §13 | Documento interno del repo, sin URL pública |
+| 12 | `knowledge-base/` (01, 03, 04, 09, 10) | Consistencias y contradicciones IN-01/IN-02/IN-03, alcance v1.0, DD-06/09/10/11/12/13 | Documentos internos del repo |
+
+### 7.3 Afirmaciones SIN respaldo de fuente — **"No evidenciado"**
+
+| Afirmación | Estado |
+|---|---|
+| Magnitud del problema (cuánto tiempo se pierde, cuántas doble reservas hay por semana en consultorios reales) | **No evidenciado** — no hay métricas de campo ni fuentes citadas; es el relato del Q&A, cualitativo |
+| Tamaño del mercado odontológico argentino (cantidad de consultorios, ticket promedio) | **No evidenciado** — no se investigó; no usar para proyecciones |
+| Que un MVP "más simple" efectivamente logre adopción sobre Excel/cuaderno/WhatsApp | **No evidenciado** — es la hipótesis central de la adopción, sin validar con usuarios reales |
+| "Programa Dental" como competidor | **No evidenciado** — no se pudo verificar como producto independiente; **descartado** |
+| Montos de Dentrix citados en foros (~USD 75-110/mes) | **No evidenciado** — anecdóticos, no precio oficial; no usar |
+| Límites vigentes de los planes gratuitos de Vercel/Render/Neon | **No evidenciado** — el plan §9 exige verificarlos en las páginas oficiales antes de desplegar |
+| Requisitos de la cátedra sobre alcance (multi-tenant como requisito propio o del trabajo) | **No evidenciado** — pendiente de confirmación (plan §12) |
+
+---
+
+*Informe generado el 2026-11-17 a partir de la fase `discovery-research`; corregido y ampliado el 2026-11-22 (tabla §4.1 a 15 sistemas y «Verificación de fuentes» movida al final). Sin datos reales de pacientes (los ejemplos de pacientes son ficticios por regla del proyecto).*
