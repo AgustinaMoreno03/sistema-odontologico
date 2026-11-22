@@ -59,7 +59,7 @@
       "Pagos (Mercado Pago / transferencias / tarjetas) — cobro de sesiones"
     ],
     "restricciones": [
-      "Stack fijo (no negociable): Frontend TypeScript vanilla + diseño responsivo; Backend Spring Boot + Gradle",
+      "Stack fijo (no negociable): Frontend React 19 con Vite (JavaScript) + diseño responsivo; Backend Node.js con Express 5 (JavaScript)",
       "Plazo o presupuesto acotado — condiciona el alcance del MVP",
       "Datos sensibles / compliance: historia clínica = datos de salud (confidencialidad, backups, auditoría)"
     ],
@@ -85,7 +85,7 @@
       "system_type": "SaaS multi-tenant (web application, modular monolith + static frontend)",
       "domain": "odontología — gestión de consultorio",
       "scale": "multi-tenant — múltiples consultorios (< 50 usuarios por tenant)",
-      "stack": ["Spring Boot", "Gradle", "PostgreSQL", "TypeScript vanilla"],
+      "stack": ["Node.js", "Express 5", "PostgreSQL 18", "React 19 con Vite"],
       "needs_infra": true,
       "problem": "El consultorio odontológico no tiene un sistema único que resuelva a la vez la gestión del consultorio (agenda, pacientes, historia clínica, cobros) y los turnos para los pacientes; hoy se resuelve con planillas, cuaderno, WhatsApp y la memoria del odontólogo."
     },
@@ -131,66 +131,6 @@
     "created_by": "find-skill",
     "recommended": [
       {
-        "name": "java-springboot",
-        "repo": "github/awesome-copilot",
-        "installs": 22100,
-        "why": "Official GitHub skill covering Java/Spring Boot patterns; core of the fixed Spring Boot + Gradle backend stack."
-      },
-      {
-        "name": "springboot-patterns",
-        "repo": "affaan-m/ecc",
-        "installs": 15000,
-        "why": "Spring Boot architecture and layering patterns that fit a modular monolith (agenda, pacientes, cobros, usuarios modules)."
-      },
-      {
-        "name": "springboot-security",
-        "repo": "affaan-m/ecc",
-        "installs": 13700,
-        "why": "Spring Security patterns for login and RBAC by role (odontólogo, recepción, admin, paciente)."
-      },
-      {
-        "name": "spring-boot-security-jwt",
-        "repo": "giuseppe-trisciuoglio/developer-kit",
-        "installs": 4300,
-        "why": "Concrete JWT authentication recipe for the REST API auth flow."
-      },
-      {
-        "name": "springboot-tdd",
-        "repo": "affaan-m/ecc",
-        "installs": 12900,
-        "why": "TDD workflow for Spring Boot services; supports the required tenant-isolation and business-rule tests."
-      },
-      {
-        "name": "springboot-verification",
-        "repo": "affaan-m/ecc",
-        "installs": 12100,
-        "why": "Verification loop for backend changes; helps a student team prove each change works before merging."
-      },
-      {
-        "name": "jpa-patterns",
-        "repo": "affaan-m/ecc",
-        "installs": 12500,
-        "why": "JPA/Hibernate persistence patterns for PostgreSQL entities and tenant-scoped queries."
-      },
-      {
-        "name": "spring-boot-rest-api-standards",
-        "repo": "giuseppe-trisciuoglio/developer-kit",
-        "installs": 4400,
-        "why": "REST API design standards (resources, status codes, errors) for the single REST contract between backend and TS frontend."
-      },
-      {
-        "name": "spring-boot-openapi-documentation",
-        "repo": "giuseppe-trisciuoglio/developer-kit",
-        "installs": 4200,
-        "why": "OpenAPI/SpringDoc documentation so the vanilla TS frontend has a discoverable API contract."
-      },
-      {
-        "name": "java-junit",
-        "repo": "github/awesome-copilot",
-        "installs": 11900,
-        "why": "JUnit testing guidance for the unit/integration test suite including tenant-isolation tests."
-      },
-      {
         "name": "multi-tenant-architecture",
         "repo": "mblode/agent-skills",
         "installs": 1900,
@@ -206,13 +146,13 @@
         "name": "docker-compose-patterns",
         "repo": "docker",
         "installs": 2700,
-        "why": "Official Docker skill for the local dev environment with Docker (PostgreSQL + Flyway + backend)."
+        "why": "Official Docker skill for the local dev environment with Docker (PostgreSQL 18 + migraciones SQL numeradas + backend)."
       },
       {
         "name": "multi-stage-dockerfile",
         "repo": "github/awesome-copilot",
         "installs": 31700,
-        "why": "Multi-stage Dockerfile patterns for packaging the Spring Boot app for local Docker runs."
+        "why": "Multi-stage Dockerfile patterns for packaging backend services into lean container images."
       },
       {
         "name": "security-review",
@@ -230,7 +170,7 @@
         "name": "frontend-design",
         "repo": "anthropics",
         "installs": 1100000,
-        "why": "Anthropics' frontend design guidance for the minimal TypeScript vanilla responsive UI."
+        "why": "Anthropics' frontend design guidance for the minimal React 19 responsive UI."
       },
       {
         "name": "nodejs-backend-patterns",
