@@ -7,5 +7,6 @@ export default defineConfig({
   test: {
     globalSetup: './tests/setup/global-setup.js',
     setupFiles: ['./tests/setup/setup.js'],
+    fileParallelism: false,
   },
 });

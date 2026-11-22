@@ -3,6 +3,7 @@ import { manejadorErrores } from './errores.js';
 import { rutasPrestaciones } from './modules/catalogo/prestaciones/rutas.js';
 import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
+import { rutasAuth, rutasUsuarios } from './modules/auth/rutas.js';
 import { crearRouterCatalogo } from './modules/catalogo/index.js';
 
 /**
@@ -28,6 +29,8 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
 
   // Única ruta pública y exenta de autenticación (auth R2).
   app.use('/health', crearRouterSalud({ chequearBase: chequearInyectado }));
+  app.use('/auth', rutasAuth);
+  app.use('/usuarios', rutasUsuarios);
 
   // Módulo catalogo (C02): rutas bajo /api con la autenticación de C00.
   app.use('/api', crearRouterCatalogo());

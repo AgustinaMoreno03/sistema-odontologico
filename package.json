@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node --env-file=.env src/server.js",
     "migrate": "node --env-file=.env ./node_modules/node-pg-migrate/bin/node-pg-migrate.js up --config-file migrations.config.js",
+    "crear-consultorio": "node --env-file=.env scripts/crear-consultorio.js",
     "test": "node --env-file=.env ./node_modules/vitest/vitest.mjs run"
   },
   "dependencies": {
