@@ -114,7 +114,9 @@ describe('020_catalogo aplicada por el runner oficial (schema-migrations)', () =
     const segunda = ejecutarRunnerTodasLasMigraciones();
     expect(segunda.status, `${segunda.stdout ?? ''}${segunda.stderr ?? ''}`).toBe(0);
     expect(await tablasCatalogo()).toEqual(['profesional', 'sillon_box']);
-    expect(await historial()).toEqual(['001_esquema_inicial', '020_catalogo']);
+    expect((await historial()).filter((nombre) =>
+      ['001_esquema_inicial', '020_catalogo', '040_prestaciones'].includes(nombre)
+    )).toEqual(['001_esquema_inicial', '020_catalogo', '040_prestaciones']);
   }, 60_000);
 
   it('la segunda ejecución del runner es no-op y no pierde los datos existentes', async () => {
@@ -135,6 +137,8 @@ describe('020_catalogo aplicada por el runner oficial (schema-migrations)', () =
 
     const datos = await consultas('SELECT nombre FROM profesional ORDER BY nombre');
     expect(datos).toEqual([{ nombre: 'Dra. Rita Núñez' }]);
-    expect(await historial()).toEqual(['001_esquema_inicial', '020_catalogo']);
+    expect((await historial()).filter((nombre) =>
+      ['001_esquema_inicial', '020_catalogo', '040_prestaciones'].includes(nombre)
+    )).toEqual(['001_esquema_inicial', '020_catalogo', '040_prestaciones']);
   }, 60_000);
 });
