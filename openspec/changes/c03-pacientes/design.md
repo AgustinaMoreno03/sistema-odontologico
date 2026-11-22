@@ -188,9 +188,9 @@ La suite completa pasó 58 tests: 47 de C00 y 11 del esquema de pacientes. Los t
 
 ## Verify final de C03
 
-Verificado el 22/11/2026, después de integrar upstream/main f7ef81d con C02 y C04.
+Verificado el 22/11/2026, después de integrar upstream/main ff01d6c con C01, C02 y C04 (commit de integración 9b7d1fb).
 
-Dos ejecuciones consecutivas de la suite completa mediante npm.cmd test, con reportero JSON, aprobaron 265 de 265 tests cada una. Los reportes registran fecha y duración reales.
+Dos ejecuciones consecutivas finales de la suite completa mediante npm.cmd test, con reportero JSON, aprobaron 283 de 283 tests en 41 archivos cada una. Los reportes registran fecha y duración reales. Las dos ejecuciones anteriores con C02 y C04 habían aprobado 265 tests, antes de integrar C01.
 
 ### Cobertura revisada
 
@@ -199,7 +199,7 @@ Dos ejecuciones consecutivas de la suite completa mediante npm.cmd test, con rep
 - La búsqueda cubre nombres y apellidos parciales sin tildes ni mayúsculas, contactos normalizados, límite fijo de 50 y caracteres literales.
 - El aislamiento cubre pacientes de otro consultorio y selección de consultorio por body, query y encabezados. Los repositorios reciben el consultorio autenticado y usan SQL parametrizado.
 - La interfaz existePaciente comprueba pertenencia mediante ambos UUID, devuelve false ante paciente ajeno o inexistente y lanza ApiError 400 VALIDACION para identificadores inválidos.
-- Los fixtures usan consultorios propios. Se revisaron los filtros de limpieza y el rollback, y la suite integrada pasó con los archivos concurrentes.
+- Los fixtures usan consultorios propios. Se revisaron los filtros de limpieza y el rollback. La suite con C02 y C04 pasó con archivos concurrentes; la verificación final con C01 pasó con fileParallelism: false, configuración incorporada por main.
 - La documentación está en src/modules/pacientes/README.md. La interfaz fue publicada al equipo y su código está en la rama feature/C03-pacientes del fork de Leandro.
 
 ### Integración y archivos compartidos
@@ -218,7 +218,9 @@ package.json, package-lock.json, tests/setup y los helpers existentes coinciden 
 - docs/evidencias/c03/integracion-main-1.json, diagnóstico inicial con dos fallos.
 - docs/evidencias/c03/integracion-main-verificada-1.json
 - docs/evidencias/c03/integracion-main-verificada-2.json
-- docs/evidencias/c03/verify-integracion.txt, resumen fechado de ambas ejecuciones aprobadas.
+- docs/evidencias/c03/integracion-c01-verificada-1.json
+- docs/evidencias/c03/integracion-c01-verificada-2.json
+- docs/evidencias/c03/verify-integracion.txt, resumen fechado de las ejecuciones aprobadas.
 
 ### Hallazgos y límites
 

@@ -1,7 +1,9 @@
 # Verify C03 — 2026-11-22
 
-Main integrado: f7ef81d
-Commit de integración: 0925a35
+Main final integrado: ff01d6c (C01, C02 y C04)
+Commit de integración final: 9b7d1fb
 
 - integracion-main-verificada-1.json — 2026-11-22 11:30:35 -03:00 — 265/265 tests, 37 archivos, 0 fallos.
 - integracion-main-verificada-2.json — 2026-11-22 11:31:30 -03:00 — 265/265 tests, 37 archivos, 0 fallos.
+- integracion-c01-verificada-1.json — 2026-11-22 11:35:46 -03:00 — 283/283 tests, 41 archivos, 0 fallos.
+- integracion-c01-verificada-2.json — 2026-11-22 11:38:47 -03:00 — 283/283 tests, 41 archivos, 0 fallos.
