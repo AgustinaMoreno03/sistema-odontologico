@@ -167,11 +167,8 @@ const COLUMNAS_TURNO = [
   'inicio',
   'fin',
   'duracion_min',
-    'estado',
-    'creado_en',
-    'cancelado_en',
-    'cancelado_por',
-    'solicitado_por',
+  'estado',
+  'creado_en',
 ];
 
 // Columnas con VALOR en el INSERT (`id` y `creado_en` nacen solos en la 050).
@@ -287,8 +284,5 @@ export async function crearTurnoPartida(fixture, overrides = {}) {
     duracionMin: fila.duracion_min,
     estado: fila.estado,
     creadoEn: fila.creado_en,
-    canceladoEn: fila.cancelado_en,
-    canceladoPor: fila.cancelado_por,
-    solicitadoPor: fila.solicitado_por,
   };
 }

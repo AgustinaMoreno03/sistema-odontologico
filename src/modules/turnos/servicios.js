@@ -9,10 +9,6 @@ import {
   validarInicio,
   calcularFin,
   errorEstadoInvalido,
-  validarSolicitadoPor,
-  errorTurnoYaCancelado,
-  errorTurnoPasado,
-  errorEstadoNoCancelable,
 } from './dominio.js';
 import { crearRepositorioTurnos } from './repositorio.js';
 import { existePaciente } from '../pacientes/index.js';
@@ -157,29 +153,6 @@ export async function reprogramarTurno({ turnoId, inicio, consultorioId, usuario
         inicio: fechaInicio,
         fin: calcularFin(fechaInicio, turnoBloqueado.duracionMin),
       };
-    }
-  );
-}
-
-/** Cancela un turno futuro permitido y registra auditoría del token. */
-export async function cancelarTurno({
-  turnoId,
-  consultorioId,
-  usuarioId,
-  solicitadoPor,
-}) {
-  validarUuid(turnoId, 'id');
-  validarSolicitadoPor(solicitadoPor);
-  return repositorioTurnos.cancelarTurno(
-    { turnoId, consultorioId, canceladoPor: usuarioId, solicitadoPor },
-    (turno, ahora) => {
-      if (turno.estado === 'CANCELADO') throw errorTurnoYaCancelado();
-      if (!['PENDIENTE', 'CONFIRMADO'].includes(turno.estado)) {
-        throw errorEstadoNoCancelable();
-      }
-      if (new Date(turno.inicio).getTime() <= new Date(ahora).getTime()) {
-        throw errorTurnoPasado();
-      }
     }
   );
 }
