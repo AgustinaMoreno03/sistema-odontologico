@@ -152,6 +152,26 @@ export function errorTurnoNoEncontrado() {
   return new ApiError(404, 'TURNO_NO_ENCONTRADO', 'Turno no encontrado');
 }
 
+/** Valida el origen de la solicitud de cancelación. */
+export function validarSolicitadoPor(valor) {
+  if (valor !== 'PACIENTE' && valor !== 'CONSULTORIO') {
+    throw new ApiError(400, 'VALIDACION', "'solicitadoPor' debe ser PACIENTE o CONSULTORIO");
+  }
+  return valor;
+}
+
+export function errorTurnoYaCancelado() {
+  return new ApiError(409, 'TURNO_YA_CANCELADO', 'El turno ya está cancelado');
+}
+
+export function errorTurnoPasado() {
+  return new ApiError(409, 'TURNO_PASADO', 'No se puede cancelar un turno que ya comenzó');
+}
+
+export function errorEstadoNoCancelable() {
+  return new ApiError(409, 'ESTADO_INVALIDO', 'El estado del turno no permite cancelarlo');
+}
+
 /**
  * Error de estado: solo los turnos `PENDIENTE` se reprograman (RN-AG-10);
  * `CONFIRMADO`, `ATENDIDO`, `AUSENTE` o `CANCELADO` → este 409 sin

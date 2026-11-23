@@ -10,7 +10,7 @@ import { obtenerUrlAdmin, obtenerUrlBaseTest } from './setup/urls.js';
 
 /**
  * C05/C06 — verificación de las migraciones `050_turno.sql` y
- * `060_cancelar_turno.sql`.
+ * `110_cancelar_turno.sql`.
  *
  * Parte A: el runner OFICIAL (`npm run migrate`, node-pg-migrate +
  * migrations.config.js) aplica la secuencia completa `001 → 010 → 020 → 030
@@ -114,15 +114,14 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
 
     expect(res.status, `${res.stdout ?? ''}${res.stderr ?? ''}`).toBe(0);
     const trazas = await historial(urlScratch());
-    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050 → 060 → 070.
+    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050 → 070 → 110.
     expect(trazas).toEqual(migracionesEsperadas);
     expect(trazas).toContain('050_turno');
     expect(trazas.indexOf('050_turno')).toBeGreaterThan(trazas.indexOf('040_prestaciones'));
-    expect(trazas).toContain('060_cancelar_turno');
-    expect(trazas.indexOf('060_cancelar_turno')).toBeGreaterThan(trazas.indexOf('050_turno'));
-    // C07 (task 2.2): la 070 corre DESPUÉS de los cambios de cancelación.
+    // C07 (070) precede C06 (110) por las bases existentes ya migradas.
     expect(trazas).toContain('070_reprogramar_turno');
-    expect(trazas.indexOf('070_reprogramar_turno')).toBeGreaterThan(trazas.indexOf('060_cancelar_turno'));
+    expect(trazas).toContain('110_cancelar_turno');
+    expect(trazas.indexOf('110_cancelar_turno')).toBeGreaterThan(trazas.indexOf('070_reprogramar_turno'));
 
     expect(await tablas(urlScratch())).toContain('turno');
 

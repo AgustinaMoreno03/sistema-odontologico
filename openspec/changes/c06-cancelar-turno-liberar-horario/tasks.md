@@ -7,16 +7,16 @@
 ## 2. Migración y auditoría
 
 - [x] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración. `cancelado_en` ya existe desde 050.
-- [x] 2.2 GREEN: crear una migración forward-only `060_cancelar_turno.sql` con los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar aplicación en base vacía en orden ascendente y re-ejecución sin pendientes.
+- [x] 2.2 GREEN: renumerar la migración C06 como `110_cancelar_turno.sql`, agregando solo los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar aplicación en base vacía en orden ascendente (001→050→070→110) y re-ejecución sin pendientes.
 - [x] 2.3 Actualizar fixtures/helpers de turnos con datos ficticios de cancelación y limpieza filtrada por IDs propios; verificar que las pruebas de esquema y las pruebas de humo pasan.
 
 ## 3. Repositorio y dominio
 
-- [ ] 3.1 RED: escribir pruebas del repositorio para cancelación transaccional, aislamiento por `consultorio_id`, turno inexistente/ajeno, turno ya cancelado sin alterar auditoría, rechazo de estados `ATENDIDO`/`AUSENTE`, aceptación de `PENDIENTE`/`CONFIRMADO`, inicio pasado y auditoría persistida; verificar fallos esperados contra PostgreSQL real.
-- [ ] 3.2 GREEN: implementar la lectura `FOR UPDATE`, validaciones bajo lock y UPDATE parametrizado con reloj UTC de PostgreSQL en `src/modules/turnos/repositorio.js`; verificar todos los casos de 3.1 en verde.
-- [ ] 3.3 RED: agregar pruebas de dominio/servicio para UUID, `solicitadoPor` (`PACIENTE`/`CONSULTORIO`) y errores 409 de cancelación repetida/turno pasado; verificar que fallan antes de implementar esas reglas.
-- [ ] 3.4 GREEN: implementar validación y coordinación del caso de uso en dominio/servicio; verificar las pruebas de 3.3 en verde.
-- [ ] 3.5 Documentar la firma y errores del caso de uso en `src/modules/turnos/README.md`; verificar que la interfaz descrita corresponde a los tests y al DTO de cancelación.
+- [x] 3.1 RED: escribir pruebas del repositorio para cancelación transaccional, aislamiento por `consultorio_id`, turno inexistente/ajeno, turno ya cancelado sin alterar auditoría, rechazo de estados `ATENDIDO`/`AUSENTE`, aceptación de `PENDIENTE`/`CONFIRMADO`, inicio pasado y auditoría persistida; verificar fallos esperados contra PostgreSQL real.
+- [x] 3.2 GREEN: implementar la lectura `FOR UPDATE`, validaciones bajo lock y UPDATE parametrizado con reloj UTC de PostgreSQL en `src/modules/turnos/repositorio.js`; verificar todos los casos de 3.1 en verde.
+- [x] 3.3 RED: agregar pruebas de dominio/servicio para UUID, `solicitadoPor` (`PACIENTE`/`CONSULTORIO`) y errores 409 de cancelación repetida/turno pasado; verificar que fallan antes de implementar esas reglas.
+- [x] 3.4 GREEN: implementar validación y coordinación del caso de uso en dominio/servicio; verificar las pruebas de 3.3 en verde.
+- [x] 3.5 Documentar la firma y errores del caso de uso en `src/modules/turnos/README.md`; verificar que la interfaz descrita corresponde a los tests y al DTO de cancelación.
 
 ## 4. Ruta HTTP
 
@@ -34,7 +34,7 @@
 ## 6. Verificación final
 
 - [ ] 6.1 Ejecutar `npm test` contra PostgreSQL real, incluyendo cobertura de todos los escenarios de la delta spec y concurrencia; verificar salida en verde.
-- [ ] 6.2 Verificar migraciones 001→050→060→070 en base vacía y en una base existente con el esquema anterior a 060; confirmar que runner aplica en orden ascendente y detecta fuera de orden según `schema-migrations`. Para una base local que ya tenía 070, seguir “Recuperación: recrear la base local” del README.
+- [ ] 6.2 Verificar migraciones 001→050→070→110 en base vacía y continuación sobre base existente con 070 aplicada; confirmar que el runner respeta el orden ascendente según `schema-migrations`.
 - [ ] 6.3 Revisar `git diff` para confirmar que solo cambian los archivos del módulo turnos, su migración nueva, tests/fixtures y la spec documentados; comprobar tenant desde token y datos exclusivamente ficticios.
 
 ## Workflow follow-up
