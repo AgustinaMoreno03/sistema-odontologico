@@ -34,14 +34,14 @@ Ver `proposal.md` para el motivo y `specs/turnos/spec.md` para el contrato obser
 ## Risks / Trade-offs
 
 - **[Estado OpenSpec de C05]** C05 está en `main` con 379 tests en verde, según confirmación de Agus; OpenSpec aún lo muestra in-progress porque falta archivar su carpeta → tomar la dependencia como cumplida, sin esperar ese archivo administrativo.
-- **[Orden de migraciones con C07/070]** Si 070 ya fue aplicada en algún entorno antes de que se integre 060, el runner debe detectar y aplicar la versión inferior pendiente de forma segura → usar migración nueva del rango 060–069, verificar el comportamiento del runner en base vacía y base con 070 aplicada, y coordinar el orden ascendente de despliegue. No ejecutar ni reordenar migraciones automáticamente durante C06.
+- **[Orden de migraciones con C07/070]** El runner debe fallar visiblemente si 060 queda pendiente después de 070 (spec `schema-migrations`); no se desactiva la validación de orden. En entornos locales que ya tenían aplicada 070, recuperar según `README.md`, sección “Recuperación: recrear la base local”: `docker compose down -v`, recrear la base y aplicar las migraciones en orden, usando solo datos ficticios. Aún no hay entorno desplegado; en el primer despliegue 060 se aplica antes que 070 en la secuencia ascendente.
 - **[Carrera entre cancelaciones simultáneas]** Sin serialización se podría sobrescribir la auditoría inicial → lock transaccional y test concurrente de idempotencia; solo la primera solicitud modifica la fila.
 - **[Borde temporal]** Una comparación con la hora de la aplicación puede diferir de la base → comparar con reloj UTC de PostgreSQL dentro de la transacción y probar el límite `inicio <= ahora`.
 
 ## Migration Plan
 
-1. Tras completar C05, aplicar la nueva migración 060 en secuencia numérica junto a las migraciones existentes; no editar archivos versionados.
-2. Ejecutar las pruebas contra PostgreSQL real, incluyendo liberación y las migraciones en una base vacía y una que ya tenga 070.
+1. Aplicar 060 después de 050 y antes de 070 en orden ascendente; no editar archivos versionados.
+2. Ejecutar las pruebas contra PostgreSQL real, incluyendo liberación, aplicación desde base vacía, re-ejecución sin pendientes y continuación desde el esquema previo a 060.
 3. Rollback operativo: no borrar auditoría ni editar la 060 ya integrada; si se necesita revertir el comportamiento, publicar una migración forward-only y retirar/desplegar la ruta en un cambio coordinado.
 
 ## UI Mockups

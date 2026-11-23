@@ -6,9 +6,9 @@
 
 ## 2. Migración y auditoría
 
-- [ ] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración. `cancelado_en` ya existe desde 050.
-- [ ] 2.2 GREEN: crear una migración forward-only `060_cancelar_turno.sql` con los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar migración y re-ejecución en base vacía y con 070 ya aplicada.
-- [ ] 2.3 Actualizar fixtures/helpers de turnos con datos ficticios de cancelación y limpieza filtrada por IDs propios; verificar que las pruebas de esquema y las pruebas de humo pasan.
+- [x] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración. `cancelado_en` ya existe desde 050.
+- [x] 2.2 GREEN: crear una migración forward-only `060_cancelar_turno.sql` con los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar aplicación en base vacía en orden ascendente y re-ejecución sin pendientes.
+- [x] 2.3 Actualizar fixtures/helpers de turnos con datos ficticios de cancelación y limpieza filtrada por IDs propios; verificar que las pruebas de esquema y las pruebas de humo pasan.
 
 ## 3. Repositorio y dominio
 
@@ -34,7 +34,7 @@
 ## 6. Verificación final
 
 - [ ] 6.1 Ejecutar `npm test` contra PostgreSQL real, incluyendo cobertura de todos los escenarios de la delta spec y concurrencia; verificar salida en verde.
-- [ ] 6.2 Verificar migraciones 001→050→060→070 en base vacía y migración 060 pendiente con 070 ya aplicada; confirmar que el runner detecta y procesa la versión inferior pendiente sin editar migraciones anteriores.
+- [ ] 6.2 Verificar migraciones 001→050→060→070 en base vacía y en una base existente con el esquema anterior a 060; confirmar que runner aplica en orden ascendente y detecta fuera de orden según `schema-migrations`. Para una base local que ya tenía 070, seguir “Recuperación: recrear la base local” del README.
 - [ ] 6.3 Revisar `git diff` para confirmar que solo cambian los archivos del módulo turnos, su migración nueva, tests/fixtures y la spec documentados; comprobar tenant desde token y datos exclusivamente ficticios.
 
 ## Workflow follow-up

@@ -4,7 +4,7 @@
 
 ### Requirement: Cancelar un turno por PATCH /api/turnos/:id/cancelar
 
-El sistema SHALL permitir a `RECEPCION` y `ADMIN_CONSULTORIO` cancelar turnos `PENDIENTE` o `CONFIRMADO` mediante `PATCH /api/turnos/:id/cancelar`, usando `solicitadoPor` (`PACIENTE` o `CONSULTORIO`) y el consultorio y usuario operador autenticados. Los estados `ATENDIDO`, `AUSENTE` y `CANCELADO` SHALL responder 409 `ESTADO_INVALIDO`.
+El sistema SHALL permitir a `RECEPCION` y `ADMIN_CONSULTORIO` cancelar turnos `PENDIENTE` o `CONFIRMADO` mediante `PATCH /api/turnos/:id/cancelar`, usando `solicitadoPor` (`PACIENTE` o `CONSULTORIO`) y el consultorio y usuario operador autenticados. `ATENDIDO` y `AUSENTE` SHALL responder 409 `ESTADO_INVALIDO`; `CANCELADO` SHALL responder 409 `TURNO_YA_CANCELADO`.
 
 #### Scenario: Cancelación exitosa con auditoría
 - **GIVEN** un turno ficticio futuro del consultorio A y un usuario `RECEPCION` autenticado en A
@@ -16,8 +16,8 @@ El sistema SHALL permitir a `RECEPCION` y `ADMIN_CONSULTORIO` cancelar turnos `P
 - **WHEN** envía una solicitud de cancelación con `solicitadoPor` válido
 - **THEN** responde 403 con código `SIN_PERMISO` y el turno no se modifica
 
-#### Scenario: Estados no cancelables
-- **GIVEN** un turno futuro del consultorio A en estado `ATENDIDO`, `AUSENTE` o `CANCELADO`
+#### Scenario: Turnos atendidos o ausentes no se cancelan
+- **GIVEN** un turno futuro del consultorio A en estado `ATENDIDO` o `AUSENTE`
 - **WHEN** recepción solicita cancelarlo con `solicitadoPor` válido
 - **THEN** responde 409 con código `ESTADO_INVALIDO` y conserva el estado y la auditoría existentes
 
