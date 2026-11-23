@@ -9,9 +9,9 @@ El consultorio necesita registrar las cancelaciones solicitadas por pacientes si
 - Agregar `PATCH /api/turnos/:id/cancelar`, siguiendo el estilo de ruta de C07: validación de forma, autorización y caso de uso en capas.
 - Permitir cancelar a `RECEPCION` y `ADMIN_CONSULTORIO`; `ODONTOLOGO` recibe 403.
 - Exigir `solicitadoPor` con valor `PACIENTE` o `CONSULTORIO`; ausencia o valor inválido responde 400.
-- Cambiar el estado a `CANCELADO` conservando el turno y guardar instante UTC, usuario operador derivado de `req.auth` y solicitante. Repetir una cancelación responde 409 sin alterar la auditoría original.
+- Cambiar el estado de un turno `PENDIENTE` a `CANCELADO` conservando el turno y guardar fecha UTC, usuario operador derivado de `req.auth` y solicitante. Repetir una cancelación responde 409 sin alterar la auditoría original; `CONFIRMADO`, `ATENDIDO` y `AUSENTE` quedan fuera de alcance.
 - Responder 404 si el turno no existe en el consultorio autenticado y 409 si su inicio ya ocurrió.
-- Incorporar una migración nueva del rango 060–069, sin editar migraciones existentes.
+- Incorporar una migración nueva del rango 060–069 para los datos de auditoría faltantes; `050_turno.sql` ya define `cancelado_en`. No editar migraciones existentes.
 - Actualizar el contrato principal de turnos para incluir cancelación y retirar esa funcionalidad de su lista de exclusiones.
 
 ## Capabilities

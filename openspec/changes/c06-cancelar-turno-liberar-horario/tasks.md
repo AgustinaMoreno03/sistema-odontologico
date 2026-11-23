@@ -2,17 +2,17 @@
 
 ## 1. Gate de dependencia
 
-- [ ] 1.1 Antes de iniciar implementación, verificar en OpenSpec y en la rama/base compartida que C05 está completo, archivado y con su suite aprobada; registrar la referencia de verificación. Si C05 sigue incompleto, detener apply sin tocar código ni migraciones.
+- [x] 1.1 Confirmar la dependencia C05: Agus confirmó que está integrado en `main` con 379 tests en verde; OpenSpec figura in-progress solo porque falta archivar la carpeta. Se toma la dependencia como cumplida.
 
 ## 2. Migración y auditoría
 
-- [ ] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_en`, `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración.
-- [ ] 2.2 GREEN: crear una migración forward-only `060_cancelar_turno.sql` con los campos de auditoría y sus constraints, sin editar 001–050 ni 070; verificar migración y re-ejecución en base vacía y con 070 ya aplicada.
+- [ ] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración. `cancelado_en` ya existe desde 050.
+- [ ] 2.2 GREEN: crear una migración forward-only `060_cancelar_turno.sql` con los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar migración y re-ejecución en base vacía y con 070 ya aplicada.
 - [ ] 2.3 Actualizar fixtures/helpers de turnos con datos ficticios de cancelación y limpieza filtrada por IDs propios; verificar que las pruebas de esquema y las pruebas de humo pasan.
 
 ## 3. Repositorio y dominio
 
-- [ ] 3.1 RED: escribir pruebas del repositorio para cancelación transaccional, aislamiento por `consultorio_id`, turno no encontrado, turno ya cancelado sin alterar auditoría, inicio pasado y auditoría persistida; verificar fallos esperados contra PostgreSQL real.
+- [ ] 3.1 RED: escribir pruebas del repositorio para cancelación transaccional, aislamiento por `consultorio_id`, turno inexistente/ajeno, turno ya cancelado sin alterar auditoría, rechazo de estados `ATENDIDO`/`AUSENTE`, aceptación de `PENDIENTE`/`CONFIRMADO`, inicio pasado y auditoría persistida; verificar fallos esperados contra PostgreSQL real.
 - [ ] 3.2 GREEN: implementar la lectura `FOR UPDATE`, validaciones bajo lock y UPDATE parametrizado con reloj UTC de PostgreSQL en `src/modules/turnos/repositorio.js`; verificar todos los casos de 3.1 en verde.
 - [ ] 3.3 RED: agregar pruebas de dominio/servicio para UUID, `solicitadoPor` (`PACIENTE`/`CONSULTORIO`) y errores 409 de cancelación repetida/turno pasado; verificar que fallan antes de implementar esas reglas.
 - [ ] 3.4 GREEN: implementar validación y coordinación del caso de uso en dominio/servicio; verificar las pruebas de 3.3 en verde.
@@ -20,7 +20,7 @@
 
 ## 4. Ruta HTTP
 
-- [ ] 4.1 RED: agregar pruebas HTTP para recepción/admin autorizados, `ODONTOLOGO` 403, `solicitadoPor` ausente/inválido 400, UUID inválido 400 y turno de otro consultorio 404; verificar que fallan antes de implementar la ruta.
+- [ ] 4.1 RED: agregar pruebas HTTP para recepción/admin autorizados, `ODONTOLOGO` 403, `solicitadoPor` ausente/inválido 400, UUID inválido 400, turno inexistente/ajeno 404 `TURNO_NO_ENCONTRADO`, turno repetido 409 `TURNO_YA_CANCELADO`, pasado 409 `TURNO_PASADO` y estados `ATENDIDO`/`AUSENTE` 409 `ESTADO_INVALIDO`; verificar que fallan antes de implementar la ruta.
 - [ ] 4.2 GREEN: agregar `PATCH /api/turnos/:id/cancelar` siguiendo el patrón de C07, derivando consultorio y operador solo de `req.auth`, con errores y DTO acordes al contrato; verificar las pruebas HTTP en verde.
 
 ## 5. Integración, liberación y concurrencia

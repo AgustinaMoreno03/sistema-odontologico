@@ -20,20 +20,20 @@ Ver `proposal.md` para el motivo y `specs/turnos/spec.md` para el contrato obser
 1. **Ruta hermana de C07.** Agregar `PATCH /:id/cancelar` en `src/modules/turnos/rutas.js`, con validación de UUID y `solicitadoPor`, guardia de roles `RECEPCION`/`ADMIN_CONSULTORIO` y contexto de tenant/operador desde `req.auth`. Mantener la ruta como capa HTTP y delegar el caso de uso a `servicios.js`.
    - Alternativa descartada: endpoint genérico de cambio de estado; permitiría transiciones no definidas por C06.
 
-2. **Cancelación atómica bajo bloqueo de fila.** El repositorio localizará el turno usando `id + consultorio_id` y bloqueará la fila durante la comprobación del estado y del inicio y el `UPDATE`. Una repetición o turno pasado produce 409 antes de modificar datos. El UPDATE guarda `estado = 'CANCELADO'`, `cancelado_en` usando reloj UTC de la base, `cancelado_por` del token y `solicitado_por` validado.
-   - Asumimos que “ya pasó” significa `inicio <= instante actual UTC` al procesar la cancelación. Cualquier estado distinto de `CANCELADO` es cancelable si el turno todavía no comenzó; C05/C07 no definen una restricción adicional por estado.
+2. **Cancelación atómica bajo bloqueo de fila.** El repositorio localizará el turno usando `id + consultorio_id` y bloqueará la fila durante la comprobación del estado y del inicio y el `UPDATE`. Se cancelarán `PENDIENTE` y `CONFIRMADO`; `ATENDIDO` y `AUSENTE` producen 409 `ESTADO_INVALIDO`, igual que el turno `CANCELADO` ya no cancelable. Una repetición produce 409 `TURNO_YA_CANCELADO`; el inicio pasado produce 409 `TURNO_PASADO`. Ninguno modifica datos. El UPDATE guarda `estado = 'CANCELADO'`, reutiliza `cancelado_en` existente de la 050 con reloj UTC de la base, y persiste `cancelado_por` del token y `solicitado_por` validado.
+   - Decisión aprobada: “ya pasó” significa `inicio <= instante actual UTC` al procesar la cancelación.
    - Alternativa descartada: leer y luego actualizar sin lock; dos solicitudes concurrentes podrían reemplazar la auditoría original.
 
-3. **Auditoría con columnas nuevas.** Usar `cancelado_en TIMESTAMPTZ`, `cancelado_por UUID` con FK a `usuario(id)` y `solicitado_por` restringido a `PACIENTE`/`CONSULTORIO`. Crear una migración forward-only `060_cancelar_turno.sql`; no reutilizar ni editar 050 o 070.
+3. **Auditoría con columnas nuevas.** La 050 ya declara `cancelado_en TIMESTAMPTZ`; la migración forward-only `060_cancelar_turno.sql` agregará `cancelado_por UUID` con FK a `usuario(id)` y `solicitado_por` restringido a `PACIENTE`/`CONSULTORIO`. No reutilizar ni editar 050 o 070.
    - Alternativa descartada: sobrecargar las columnas de reprogramación de 070; mezclan eventos diferentes y no conservan ambas auditorías.
 
-4. **Códigos de error específicos.** Mantener `400 VALIDACION`, `403 SIN_PERMISO`, `404 TURNO_NO_ENCONTRADO` y distinguir los 409 mediante `TURNO_YA_CANCELADO` y `TURNO_PASADO`. Así el cliente puede mostrar el motivo concreto sin exponer información de otros consultorios.
+4. **Códigos de error específicos.** Mantener `400 VALIDACION`, `403 SIN_PERMISO` y `404 TURNO_NO_ENCONTRADO` tanto para UUID inexistente como para turno de otro consultorio, igual que C07. Usar `409 ESTADO_INVALIDO` para `ATENDIDO`/`AUSENTE` (convención C07) y, según el contrato explícito de C06, `409 TURNO_YA_CANCELADO` y `409 TURNO_PASADO` para las otras condiciones.
 
 5. **Actualizar el propósito de la spec principal al integrar.** El delta añade requisitos de cancelación en el capability existente `turnos`. Al archivar, actualizar `openspec/specs/turnos/spec.md` para que el propósito ya no diga que cancelación queda fuera de alcance; conservar allí el alcance de bloqueos y listado según C08.
 
 ## Risks / Trade-offs
 
-- **[C05 aún incompleto]** La implementación de C06 depende de la tabla, las restricciones parciales y el contrato de creación de C05 → bloquear apply hasta que C05 esté completo y aprobado; no basta con que exista la migración 050.
+- **[Estado OpenSpec de C05]** C05 está en `main` con 379 tests en verde, según confirmación de Agus; OpenSpec aún lo muestra in-progress porque falta archivar su carpeta → tomar la dependencia como cumplida, sin esperar ese archivo administrativo.
 - **[Orden de migraciones con C07/070]** Si 070 ya fue aplicada en algún entorno antes de que se integre 060, el runner debe detectar y aplicar la versión inferior pendiente de forma segura → usar migración nueva del rango 060–069, verificar el comportamiento del runner en base vacía y base con 070 aplicada, y coordinar el orden ascendente de despliegue. No ejecutar ni reordenar migraciones automáticamente durante C06.
 - **[Carrera entre cancelaciones simultáneas]** Sin serialización se podría sobrescribir la auditoría inicial → lock transaccional y test concurrente de idempotencia; solo la primera solicitud modifica la fila.
 - **[Borde temporal]** Una comparación con la hora de la aplicación puede diferir de la base → comparar con reloj UTC de PostgreSQL dentro de la transacción y probar el límite `inicio <= ahora`.
