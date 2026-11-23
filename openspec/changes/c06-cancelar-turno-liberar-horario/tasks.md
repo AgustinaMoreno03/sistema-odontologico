@@ -20,8 +20,8 @@
 
 ## 4. Ruta HTTP
 
-- [ ] 4.1 RED: agregar pruebas HTTP para recepción/admin autorizados, `ODONTOLOGO` 403, `solicitadoPor` ausente/inválido 400, UUID inválido 400, turno inexistente/ajeno 404 `TURNO_NO_ENCONTRADO`, turno repetido 409 `TURNO_YA_CANCELADO`, pasado 409 `TURNO_PASADO` y estados `ATENDIDO`/`AUSENTE` 409 `ESTADO_INVALIDO`; verificar que fallan antes de implementar la ruta.
-- [ ] 4.2 GREEN: agregar `PATCH /api/turnos/:id/cancelar` siguiendo el patrón de C07, derivando consultorio y operador solo de `req.auth`, con errores y DTO acordes al contrato; verificar las pruebas HTTP en verde.
+- [x] 4.1 RED: agregar pruebas HTTP para recepción/admin autorizados, `ODONTOLOGO` 403, `solicitadoPor` ausente/inválido 400, UUID inválido 400, turno inexistente/ajeno 404 `TURNO_NO_ENCONTRADO`, turno repetido 409 `TURNO_YA_CANCELADO`, pasado 409 `TURNO_PASADO` y estados `ATENDIDO`/`AUSENTE` 409 `ESTADO_INVALIDO`; verificar que fallan antes de implementar la ruta.
+- [x] 4.2 GREEN: agregar `PATCH /api/turnos/:id/cancelar` siguiendo el patrón de C07, derivando consultorio y operador solo de `req.auth`, con errores y DTO acordes al contrato; verificar las pruebas HTTP en verde.
 
 ## 5. Integración, liberación y concurrencia
 
