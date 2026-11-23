@@ -136,3 +136,33 @@ export function errorSolapamiento(recurso) {
     detalle ?? 'El turno se solapa con otro turno existente en este consultorio'
   );
 }
+
+// C07 (design D4): mensajes seguros y GENÉRICOS — el 404 no distingue
+// "no existe" de "es de otro consultorio" (una sola señal, como Decisión 4
+// de C05) y jamás incluye identificadores ni datos de otro tenant.
+
+/**
+ * Error de turno inexistente o ajeno al consultorio autenticado: el
+ * `WHERE consultorio_id` del `SELECT … FOR UPDATE` los trata igual
+ * (RN-TEN-01/RN-TEN-02) y un rol sin permiso no llega acá (403 en la ruta).
+ *
+ * @returns {ApiError} 404 TURNO_NO_ENCONTRADO con mensaje seguro
+ */
+export function errorTurnoNoEncontrado() {
+  return new ApiError(404, 'TURNO_NO_ENCONTRADO', 'Turno no encontrado');
+}
+
+/**
+ * Error de estado: solo los turnos `PENDIENTE` se reprograman (RN-AG-10);
+ * `CONFIRMADO`, `ATENDIDO`, `AUSENTE` o `CANCELADO` → este 409 sin
+ * modificar el turno.
+ *
+ * @returns {ApiError} 409 ESTADO_INVALIDO con mensaje seguro
+ */
+export function errorEstadoInvalido() {
+  return new ApiError(
+    409,
+    'ESTADO_INVALIDO',
+    'Solo los turnos en estado PENDIENTE pueden reprogramarse'
+  );
+}

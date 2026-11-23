@@ -113,10 +113,13 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
 
     expect(res.status, `${res.stdout ?? ''}${res.stderr ?? ''}`).toBe(0);
     const trazas = await historial(urlScratch());
-    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050.
+    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050 → 070.
     expect(trazas).toEqual(migracionesEsperadas);
     expect(trazas).toContain('050_turno');
     expect(trazas.indexOf('050_turno')).toBeGreaterThan(trazas.indexOf('040_prestaciones'));
+    // C07 (task 2.2): la 070 entra por readdir dinámico y corre DESPUÉS de la 050.
+    expect(trazas).toContain('070_reprogramar_turno');
+    expect(trazas.indexOf('070_reprogramar_turno')).toBeGreaterThan(trazas.indexOf('050_turno'));
 
     expect(await tablas(urlScratch())).toContain('turno');
 
@@ -128,6 +131,7 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
     expect(extensiones).toHaveLength(1);
 
     // Columnas de design.md D2: cinco recursos + intervalo + duración + estado + timestamps.
+    // C07 (070): más la auditoría de reprogramación (reprogramado_en/por).
     const columnas = await consultas(
       urlScratch(),
       "SELECT column_name FROM information_schema.columns " +
@@ -147,6 +151,8 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
         'estado',
         'creado_en',
         'cancelado_en',
+        'reprogramado_en',
+        'reprogramado_por',
       ].sort()
     );
 
@@ -185,13 +191,18 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
   it('base existente solo con las migraciones previas → el runner aplica la 050 sin renumerar nada', async () => {
     await crearBaseScratchVacia();
 
-    // Simula una base de dev que ya venía con 001…040 aplicadas.
+    // Simula una base de dev que ya venía con 001…040 aplicadas: SOLO las
+    // migraciones numeradas ANTERIORES a la 050. Con la 070 presente (C07),
+    // copiarla acá haría fallar el runner (`turno` todavía no existe).
+    const previas = fs
+      .readdirSync(path.join(raiz, 'db', 'migrations'))
+      .filter((archivo) => {
+        const numero = archivo.match(/^(\d+)_.+\.sql$/);
+        return numero !== null && Number(numero[1]) < 50;
+      });
     const dirPrevias = path.join(dirTemporal, 'solo-previas');
     fs.rmSync(dirPrevias, { recursive: true, force: true });
     fs.mkdirSync(dirPrevias, { recursive: true });
-    const previas = fs
-      .readdirSync(path.join(raiz, 'db', 'migrations'))
-      .filter((archivo) => /^\d+_.+\.sql$/.test(archivo) && !archivo.startsWith('050_'));
     for (const archivo of previas) {
       fs.copyFileSync(path.join(raiz, 'db', 'migrations', archivo), path.join(dirPrevias, archivo));
     }

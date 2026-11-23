@@ -1,9 +1,15 @@
-// Capa de servicios del módulo turnos (DD-13): caso de uso `crearTurno`.
-// Orquesta las deps de otros módulos SIN tocar sus tablas (regla dura 10) y
-// SIN lógica de negocio propia (las reglas viven en el dominio). C07
-// reutilizará esta interfaz en lugar de copiarla (CHANGES.md:172).
+// Capa de servicios del módulo turnos (DD-13): casos de uso `crearTurno` y
+// `reprogramarTurno`. Orquesta las deps de otros módulos SIN tocar sus
+// tablas (regla dura 10) y SIN lógica de negocio propia (las reglas viven
+// en el dominio). C07 reutiliza la interfaz de C05 en lugar de copiarla
+// (CHANGES.md:172).
 import { ApiError } from '../../errores.js';
-import { validarUuid, validarInicio, calcularFin } from './dominio.js';
+import {
+  validarUuid,
+  validarInicio,
+  calcularFin,
+  errorEstadoInvalido,
+} from './dominio.js';
 import { crearRepositorioTurnos } from './repositorio.js';
 import { existePaciente } from '../pacientes/index.js';
 import { existeProfesional, existeSillonBox, obtenerCatalogo } from '../catalogo/index.js';
@@ -108,4 +114,45 @@ export async function crearTurno(
     fin,
     duracionMin: prestacion.duracionMin, // duración usada al crearse (RN-AG-07)
   });
+}
+
+/**
+ * Reprograma un turno `PENDIENTE` del consultorio autenticado (spec C07:
+ * RN-AG-09, RN-AG-10).
+ *
+ * Orden de errores (design D4): 400 `VALIDACION` defensivo de forma →
+ * repositorio: 404 `TURNO_NO_ENCONTRADO` (sin fila por `id + consultorio_id`)
+ * → callback BAJO EL LOCK: 409 `ESTADO_INVALIDO` si el estado ya no es
+ * `PENDIENTE` → pre-check excluyendo el turno: 409 `SOLAPAMIENTO`.
+ * Cualquier fallo hace ROLLBACK y el turno conserva su horario anterior
+ * (RN-AG-09).
+ *
+ * @param {object} parametros
+ * @param {string} parametros.turnoId id del turno a mover
+ * @param {string} parametros.inicio ISO 8601 con timezone explícita
+ * @param {string} parametros.consultorioId SIEMPRE desde el token (regla dura 2)
+ * @param {string} parametros.usuarioId usuario del token, dueño de la
+ *   auditoría `reprogramado_por` (FK de la 070)
+ * @returns {Promise<object>} el turno reprogramado (DTO de la capa de rutas)
+ * @throws {ApiError} 400 / 404 / 409 según el spec
+ */
+export async function reprogramarTurno({ turnoId, inicio, consultorioId, usuarioId }) {
+  // 400 — forma defensiva (la ruta ya la validó; precedente C05).
+  validarUuid(turnoId, 'id');
+  const fechaInicio = validarInicio(inicio);
+
+  return repositorioTurnos.reprogramarTurno(
+    { turnoId, consultorioId, inicio: fechaInicio, reprogramadoPor: usuarioId },
+    // Callback PURO bajo el lock (design D2): sin I/O, re-ejecutable en el
+    // reintento de deadlock. Valida el estado y calcula `fin` con la
+    // duración CONGELADA al crearse (RN-AG-07) en intervalos `[)` UTC
+    // (RN-AG-06).
+    (turnoBloqueado) => {
+      if (turnoBloqueado.estado !== 'PENDIENTE') throw errorEstadoInvalido();
+      return {
+        inicio: fechaInicio,
+        fin: calcularFin(fechaInicio, turnoBloqueado.duracionMin),
+      };
+    }
+  );
 }

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { ApiError } from '../src/errores.js';
 import {
   calcularFin,
+  errorEstadoInvalido,
   errorSolapamiento,
+  errorTurnoNoEncontrado,
   traducirViolacionExclusion,
   validarInicio,
   validarUuid,
@@ -176,5 +178,62 @@ describe('dominio de turnos: errorSolapamiento (mensaje detallado del pre-check)
     expect(error).toMatchObject({ statusCode: 409, code: 'SOLAPAMIENTO' });
     expect(typeof error.message).toBe('string');
     expect(error.message.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * C07 task 3.1 — constructores nuevos de la reprogramación (design D4/D6):
+ * 404 TURNO_NO_ENCONTRADO (inexistente o de OTRO consultorio: mensaje
+ * seguro, sin exponer datos ajenos) y 409 ESTADO_INVALIDO (estado ≠
+ * PENDIENTE, RN-AG-10). Los validadores de forma siguen respondiendo
+ * 400 VALIDACION (spec S5).
+ */
+describe('dominio de turnos: errorTurnoNoEncontrado (C07, design D4)', () => {
+  it('devuelve ApiError 404 con code TURNO_NO_ENCONTRADO', () => {
+    const error = errorTurnoNoEncontrado();
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ statusCode: 404, code: 'TURNO_NO_ENCONTRADO' });
+    expect(typeof error.message).toBe('string');
+    expect(error.message.length).toBeGreaterThan(0);
+  });
+
+  it('no expone datos de otros consultorios en el mensaje (aislamiento)', () => {
+    const mensaje = errorTurnoNoEncontrado().message;
+    // Mensaje seguro: no contiene identificadores UUID ni nombres de recursos.
+    expect(mensaje).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    expect(mensaje).not.toMatch(/paciente|profesional|sill/i);
+  });
+});
+
+describe('dominio de turnos: errorEstadoInvalido (C07, design D4)', () => {
+  it('devuelve ApiError 409 con code ESTADO_INVALIDO', () => {
+    const error = errorEstadoInvalido();
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ statusCode: 409, code: 'ESTADO_INVALIDO' });
+    expect(typeof error.message).toBe('string');
+    expect(error.message.length).toBeGreaterThan(0);
+  });
+
+  it('los cuatro estados distintos de PENDIENTE comparten el mismo mensaje seguro', () => {
+    // RN-AG-10: CONFIRMADO/ATENDIDO/AUSENTE/CANCELADO → igual 409.
+    const mensajes = ['CONFIRMADO', 'ATENDIDO', 'AUSENTE', 'CANCELADO'].map(
+      () => errorEstadoInvalido().message
+    );
+    expect(new Set(mensajes).size).toBe(1);
+    expect(mensajes[0]).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  });
+});
+
+describe('dominio de turnos: los validadores de forma siguen en 400 VALIDACION (spec S5)', () => {
+  it('UUID malformado → 400 VALIDACION (incluye el :id del PATCH)', () => {
+    expect(() => validarUuid('no-es-un-uuid', 'id')).toThrowError(
+      expect.objectContaining({ statusCode: 400, code: 'VALIDACION' })
+    );
+  });
+
+  it('inicio sin timezone → 400 VALIDACION', () => {
+    expect(() => validarInicio('2026-12-01T15:00:00')).toThrowError(
+      expect.objectContaining({ statusCode: 400, code: 'VALIDACION' })
+    );
   });
 });

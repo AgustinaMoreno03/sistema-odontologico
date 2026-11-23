@@ -6,7 +6,7 @@ import { crearApp } from '../src/app.js';
 import { manejadorErrores } from '../src/errores.js';
 import { crearRouterTurnos } from '../src/modules/turnos/rutas.js';
 import { crearToken } from './helpers/tokens.js';
-import { conFixtureTurnos } from './helpers/turnos-fixtures.js';
+import { conFixtureTurnos, crearTurnoPartida } from './helpers/turnos-fixtures.js';
 
 /**
  * Spec turnos R1 + design D5 — capa HTTP de `POST /api/turnos`.
@@ -694,6 +694,486 @@ describe('Escenarios del spec — contra crearApp() real (Tanda D)', () => {
         expect(await conteo()).toBe(antes);
       },
       { rol: 'ODONTOLOGO' }
+    );
+  });
+});
+
+/**
+ * C07 task 6.1 — `PATCH /api/turnos/:id/reprogramar` en la capa HTTP
+ * (design D4/D6): SOLO forma (`:id` UUID + `inicio` ISO con timezone) y
+ * guardia de rol (`RECEPCION`/`ADMIN_CONSULTORIO`, RN-AG-03); el
+ * `consultorioId` y el `usuarioId` salen SOLO de `req.auth` (regla dura 2).
+ * Sin tocar `src/app.js` (el router ya estaba montado por C05).
+ */
+describe('PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1)', () => {
+  it('sin token → 401 TOKEN_INVALIDO', async () => {
+    const res = await request(appDeTurnos())
+      .patch(`/api/turnos/${randomUUID()}/reprogramar`)
+      .send({ inicio: '2026-12-01T15:00:00Z' });
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('TOKEN_INVALIDO');
+  });
+
+  it(':id malformado → 400 VALIDACION sin tocar la base', async () => {
+    await conFixtureTurnos(async ({ fixture, token }) => {
+      const turno = await crearTurnoPartida(fixture);
+
+      const res = await request(appDeTurnos())
+        .patch('/api/turnos/no-es-un-uuid/reprogramar')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ inicio: '2026-12-01T15:00:00Z' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDACION');
+      expect(res.body.error.message).toContain('id');
+
+      // El turno sigue en su horario original.
+      const { rows } = await fixture.consultar(
+        'SELECT inicio FROM turno WHERE id = $1',
+        [turno.id]
+      );
+      expect(new Date(rows[0].inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+    });
+  });
+
+  it('inicio sin timezone → 400 VALIDACION sin tocar la base', async () => {
+    await conFixtureTurnos(async ({ fixture, token }) => {
+      const turno = await crearTurnoPartida(fixture);
+
+      const res = await request(appDeTurnos())
+        .patch(`/api/turnos/${turno.id}/reprogramar`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ inicio: '2026-12-01T15:00:00' }); // sin zona horaria
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDACION');
+      expect(res.body.error.message).toContain('inicio');
+
+      const { rows } = await fixture.consultar(
+        'SELECT inicio FROM turno WHERE id = $1',
+        [turno.id]
+      );
+      expect(new Date(rows[0].inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+    });
+  });
+
+  it('rol ODONTOLOGO → 403 SIN_PERMISO (después de la forma, antes de tocar la base)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await crearTurnoPartida(fixture);
+
+        const res = await request(appDeTurnos())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('SIN_PERMISO');
+
+        // El turno no se modificó (ni horario ni auditoría).
+        const { rows } = await fixture.consultar(
+          'SELECT inicio, reprogramado_en FROM turno WHERE id = $1',
+          [turno.id]
+        );
+        expect(new Date(rows[0].inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(rows[0].reprogramado_en).toBeNull();
+      },
+      { rol: 'ODONTOLOGO' }
+    );
+  });
+
+  it('crearApp() expone el PATCH: con token válido e id malformado responde 400 (no 404)', async () => {
+    const res = await request(crearApp())
+      .patch('/api/turnos/no-es-un-uuid/reprogramar')
+      .set('Authorization', `Bearer ${tokenRecepcion()}`)
+      .send({ inicio: '2026-12-01T15:00:00Z' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDACION');
+  });
+});
+
+/**
+ * C07 tasks 7.1–7.8 — escenarios S1–S6 del spec + bordes de R2 y carrera,
+ * contra `crearApp()` REAL y PostgreSQL real. Los recursos del escenario
+ * salen del fixture (ficticios, regla dura 1); el token de recepción es el
+ * del fixture (mismo usuario ficticio que la FK `reprogramado_por`).
+ */
+describe('Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8)', () => {
+  /** Turno PENDIENTE de partida 10:00–10:30 UTC (misma duración que S1). */
+  async function turnoDePartida(fixture, overrides = {}) {
+    return crearTurnoPartida(fixture, {
+      inicio: '2026-12-01T10:00:00Z',
+      ...overrides,
+    });
+  }
+
+  async function leerTurno(fixture, turnoId) {
+    const { rows } = await fixture.consultar(
+      `SELECT inicio, fin, estado, reprogramado_en, reprogramado_por
+       FROM turno WHERE id = $1 AND consultorio_id = $2`,
+      [turnoId, fixture.consultorioId]
+    );
+    return rows[0] ?? null;
+  }
+
+  it('S1 — reprogramación exitosa: 200 con el mismo turno, 15:00–15:30 UTC y auditoría (task 7.1)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture);
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        // 200 con el MISMO turno y sus recursos (S1).
+        expect(res.status).toBe(200);
+        expect(res.body).toMatchObject({
+          id: turno.id,
+          pacienteId: fixture.pacienteId,
+          profesionalId: fixture.profesionalId,
+          sillonBoxId: fixture.sillonBoxId,
+          prestacionId: fixture.prestacionId,
+          duracionMin: 30,
+          estado: 'PENDIENTE',
+        });
+        // El DTO de la capa HTTP nunca expone el consultorio (design D6).
+        expect(res.body).not.toHaveProperty('consultorioId');
+
+        // inicio 15:00 UTC, fin 15:30 UTC (misma duración, RN-AG-07).
+        expect(new Date(res.body.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+        expect(new Date(res.body.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+
+        // Auditoría registrada (design D5).
+        expect(res.body.reprogramadoEn).toBeDefined();
+        expect(new Date(res.body.reprogramadoEn).toString()).not.toBe('Invalid Date');
+        expect(res.body.reprogramadoPor).toBe(fixture.usuarioId);
+
+        // …y persistida en la base, acotada al consultorio del token.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+        expect(fila.reprogramado_por).toBe(fixture.usuarioId);
+        expect(fila.reprogramado_en).toBeInstanceOf(Date);
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S2 — conflicto: 409 SOLAPAMIENTO y el turno conserva inicio 10:00 / fin 10:30 UTC (task 7.2)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture); // 10:00–10:30, recurso P
+        // Otro turno del MISMO profesional en 15:00–16:00 UTC (spec S2).
+        await turnoDePartida(fixture, { inicio: '2026-12-01T15:00:00Z', duracionMin: 60 });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:15:00Z' }); // cae DENTRO de 15:00–16:00
+
+        expect(res.status).toBe(409);
+        expect(res.body.error.code).toBe('SOLAPAMIENTO');
+
+        // RN-AG-09: conserva inicio 10:00 / fin 10:30 UTC y sin auditoría.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(fila.estado).toBe('PENDIENTE');
+        expect(fila.reprogramado_en).toBeNull();
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S3 — 404 TURNO_NO_ENCONTRADO: id inexistente y turno de otro consultorio, sin modificar filas (task 7.3)', async () => {
+    await conFixtureTurnos(async (a) => {
+      await conFixtureTurnos(async (b) => {
+        // Turno ajeno en B (10:00–10:30 UTC, spec S3) y uno propio en A para
+        // comprobar que NINGUNA fila se modifica (RN-TEN-01/RN-TEN-02).
+        const turnoAjeno = await crearTurnoPartida(b.fixture);
+        const turnoPropio = await turnoDePartida(a.fixture);
+
+        // (a) id inexistente → 404 TURNO_NO_ENCONTRADO.
+        const resInexistente = await request(crearApp())
+          .patch(`/api/turnos/${randomUUID()}/reprogramar`)
+          .set('Authorization', `Bearer ${a.token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+        expect(resInexistente.status).toBe(404);
+        expect(resInexistente.body.error.code).toBe('TURNO_NO_ENCONTRADO');
+
+        // (b) turno de OTRO consultorio → 404 idéntico (aislamiento por
+        // consultorio_id en el WHERE del FOR UPDATE, design D2).
+        const resAjeno = await request(crearApp())
+          .patch(`/api/turnos/${turnoAjeno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${a.token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+        expect(resAjeno.status).toBe(404);
+        expect(resAjeno.body.error.code).toBe('TURNO_NO_ENCONTRADO');
+
+        // Mensaje seguro: no filtra el id del turno ajeno (task 3.1).
+        expect(resAjeno.body.error.message).not.toContain(turnoAjeno.id);
+
+        // Ningún turno modificado: el ajeno conserva 10:00–10:30 UTC, sin
+        // auditoría y en su estado original…
+        const filaAjena = await b.fixture.consultar(
+          'SELECT inicio, fin, estado, reprogramado_en FROM turno WHERE id = $1',
+          [turnoAjeno.id]
+        );
+        expect(new Date(filaAjena.rows[0].inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(filaAjena.rows[0].fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(filaAjena.rows[0].estado).toBe('PENDIENTE');
+        expect(filaAjena.rows[0].reprogramado_en).toBeNull();
+
+        // …y en A sigue solo el turno de partida, intacto.
+        const filaPropia = await leerTurno(a.fixture, turnoPropio.id);
+        expect(new Date(filaPropia.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(filaPropia.reprogramado_en).toBeNull();
+        const countA = await a.fixture.consultar(
+          'SELECT COUNT(*)::int AS n FROM turno WHERE consultorio_id = $1',
+          [a.fixture.consultorioId]
+        );
+        expect(countA.rows[0].n).toBe(1);
+      });
+    });
+  });
+
+  it('S4 — turno CANCELADO → 409 ESTADO_INVALIDO y conserva horario y estado (task 7.4)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture, { estado: 'CANCELADO' });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' }); // horario libre, sin conflictos
+
+        expect(res.status).toBe(409);
+        expect(res.body.error.code).toBe('ESTADO_INVALIDO');
+
+        // RN-AG-10: conserva horario y estado originales.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(fila.estado).toBe('CANCELADO');
+        expect(fila.reprogramado_en).toBeNull();
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S4 — turno ATENDIDO → 409 ESTADO_INVALIDO y conserva horario y estado (task 7.4)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture, { estado: 'ATENDIDO' });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' }); // horario libre, sin conflictos
+
+        expect(res.status).toBe(409);
+        expect(res.body.error.code).toBe('ESTADO_INVALIDO');
+
+        // RN-AG-10: conserva horario y estado originales.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(fila.estado).toBe('ATENDIDO');
+        expect(fila.reprogramado_en).toBeNull();
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S5 — inicio sin zona horaria → 400 VALIDACION y el turno conserva su horario anterior (task 7.5)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture);
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00' }); // ISO sin timezone
+
+        expect(res.status).toBe(400);
+        expect(res.body.error.code).toBe('VALIDACION');
+        expect(res.body.error.message).toContain('inicio');
+
+        // El turno conserva su horario anterior (10:00–10:30 UTC).
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(fila.reprogramado_en).toBeNull();
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S5 — :id malformado → 400 VALIDACION nombrando el campo (task 7.5)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture);
+
+        const res = await request(crearApp())
+          .patch('/api/turnos/no-es-un-uuid/reprogramar')
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        expect(res.status).toBe(400);
+        expect(res.body.error.code).toBe('VALIDACION');
+        expect(res.body.error.message).toContain('id');
+
+        // El turno conserva su horario anterior.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(fila.reprogramado_en).toBeNull();
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('S6 — token ODONTOLOGO → 403 SIN_PERMISO y el turno no se modifica (task 7.6)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture);
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`) // rol ODONTOLOGO
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.error.code).toBe('SIN_PERMISO');
+
+        // El turno no se modifica (ni horario, ni estado, ni auditoría).
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+        expect(fila.estado).toBe('PENDIENTE');
+        expect(fila.reprogramado_en).toBeNull();
+
+        // Triangulación: el MISMO turno con el mismo inicio SÍ se reprograma
+        // con un rol permitido — el 403 fue por rol, no por el turno.
+        const tokenRecepcion = crearToken({
+          usuarioId: fixture.usuarioId,
+          consultorioId: fixture.consultorioId,
+          rol: 'RECEPCION',
+        });
+        const resPermitido = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${tokenRecepcion}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+        expect(resPermitido.status).toBe(200);
+      },
+      { rol: 'ODONTOLOGO' }
+    );
+  });
+
+  it('R2 — el turno que empieza justo cuando termina el reprogramado no bloquea ([), RN-AG-06) (task 7.7)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture); // 10:00–10:30 → se mueve a 15:00–15:30
+        // Vecino del MISMO profesional que empieza 15:30 (justo cuando termina).
+        await turnoDePartida(fixture, { inicio: '2026-12-01T15:30:00Z', duracionMin: 60 });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        expect(res.status).toBe(200);
+        expect(new Date(res.body.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+        expect(new Date(res.body.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('R2 — el turno que termina justo cuando empieza el reprogramado no bloquea ([), RN-AG-06) (task 7.7)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture); // 10:00–10:30 → se mueve a 15:00–15:30
+        // Vecino del MISMO profesional que termina 15:00 (justo cuando empieza).
+        await turnoDePartida(fixture, { inicio: '2026-12-01T14:30:00Z', duracionMin: 30 });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        expect(res.status).toBe(200);
+        expect(new Date(res.body.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+        expect(new Date(res.body.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('R2 — un turno CANCELADO en el nuevo rango no bloquea la reprogramación (task 7.7)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture); // 10:00–10:30 → se mueve a 15:15–15:45
+        // Vecino CANCELADO del MISMO profesional cubriendo el nuevo rango.
+        await turnoDePartida(fixture, {
+          inicio: '2026-12-01T15:00:00Z',
+          duracionMin: 60,
+          estado: 'CANCELADO',
+        });
+
+        const res = await request(crearApp())
+          .patch(`/api/turnos/${turno.id}/reprogramar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ inicio: '2026-12-01T15:15:00Z' });
+
+        expect(res.status).toBe(200);
+        expect(new Date(res.body.inicio).toISOString()).toBe('2026-12-01T15:15:00.000Z');
+        expect(new Date(res.body.fin).toISOString()).toBe('2026-12-01T15:45:00.000Z');
+
+        // El turno movido quedó auditado; el CANCELADO quedó intacto.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(fila.reprogramado_por).toBe(fixture.usuarioId);
+      },
+      { rol: 'RECEPCION' }
+    );
+  });
+
+  it('Carrera — dos PATCH idénticos en paralelo: dos 200 y un solo horario final (task 7.8)', async () => {
+    await conFixtureTurnos(
+      async ({ fixture, token }) => {
+        const turno = await turnoDePartida(fixture); // 10:00–10:30
+
+        const pedido = () =>
+          request(crearApp())
+            .patch(`/api/turnos/${turno.id}/reprogramar`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ inicio: '2026-12-01T15:00:00Z' });
+
+        // Dos PATCH idénticos disparados en paralelo (design D2: el
+        // SELECT … FOR UPDATE serializa ambos sobre la misma fila).
+        const [res1, res2] = await Promise.all([pedido(), pedido()]);
+
+        // Sin 500 y dos respuestas 2xx (el contrato exige 200 en ambas).
+        expect(res1.status).toBe(200);
+        expect(res2.status).toBe(200);
+
+        // Un SOLO horario final en la base: la fila quedó en 15:00–15:30 UTC.
+        const fila = await leerTurno(fixture, turno.id);
+        expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+        expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+        expect(fila.estado).toBe('PENDIENTE');
+        expect(fila.reprogramado_por).toBe(fixture.usuarioId);
+
+        // Y sigue siendo UNA sola fila para ese turno (sin duplicados).
+        const { rows } = await fixture.consultar(
+          'SELECT COUNT(*)::int AS n FROM turno WHERE id = $1',
+          [turno.id]
+        );
+        expect(rows[0].n).toBe(1);
+      },
+      { rol: 'RECEPCION' }
     );
   });
 });

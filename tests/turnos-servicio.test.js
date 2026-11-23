@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../src/errores.js';
-import { crearTurno } from '../src/modules/turnos/servicios.js';
-import { conFixtureTurnos } from './helpers/turnos-fixtures.js';
+import { crearTurno, reprogramarTurno } from '../src/modules/turnos/servicios.js';
+import { conFixtureTurnos, crearTurnoPartida } from './helpers/turnos-fixtures.js';
 
 /**
  * Spec turnos + design D3/D5 — servicio `crearTurno` con deps inyectables.
@@ -295,6 +295,178 @@ describe('crearTurno — 409 SOLAPAMIENTO contra la base real (una por restricci
       expect(error.statusCode).toBe(409);
       expect(error.code).toBe('SOLAPAMIENTO');
       expect(await contarTurnos(fixture)).toBe(1);
+    });
+  });
+});
+
+/**
+ * C07 task 5.1 — servicio `reprogramarTurno` contra PostgreSQL REAL
+ * (design D2/D3): validación de forma defensiva → 400; transacción del
+ * repositorio con callback que, BAJO EL LOCK, exige estado `PENDIENTE`
+ * (RN-AG-10) y calcula `fin = inicio + duracionMin` con la duración
+ * congelada al crearse (RN-AG-07, `[)` UTC RN-AG-06). Si algo falla, el
+ * turno conserva su horario anterior (RN-AG-09).
+ */
+describe('reprogramarTurno — servicio (C07 task 5.1)', () => {
+  async function leerTurno(fixture, turnoId) {
+    const { rows } = await fixture.consultar(
+      `SELECT inicio, fin, estado, reprogramado_en, reprogramado_por
+       FROM turno WHERE id = $1 AND consultorio_id = $2`,
+      [turnoId, fixture.consultorioId]
+    );
+    return rows[0] ?? null;
+  }
+
+  const args = (fixture, turnoId, overrides = {}) => ({
+    turnoId,
+    inicio: '2026-12-01T15:00:00Z',
+    consultorioId: fixture.consultorioId,
+    usuarioId: fixture.usuarioId,
+    ...overrides,
+  });
+
+  it('éxito: fin = inicio + 30 min con la duración congelada y auditoría del usuario', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture); // 10:00–10:30, 30 min
+
+      const resultado = await reprogramarTurno(args(fixture, turno.id));
+
+      // S1: el mismo turno, inicio 15:00 UTC, fin 15:30 UTC (misma duración).
+      expect(resultado).toMatchObject({ id: turno.id, duracionMin: 30, estado: 'PENDIENTE' });
+      expect(new Date(resultado.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+      expect(new Date(resultado.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+
+      // Auditoría (design D5): usuario del token + instante real.
+      expect(resultado.reprogramadoPor).toBe(fixture.usuarioId);
+      expect(resultado.reprogramadoEn).toBeInstanceOf(Date);
+
+      // Persistido en la base, acotado al consultorio del token.
+      const fila = await leerTurno(fixture, turno.id);
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T15:00:00.000Z');
+      expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T15:30:00.000Z');
+      expect(fila.reprogramado_por).toBe(fixture.usuarioId);
+      expect(fila.reprogramado_en).toBeInstanceOf(Date);
+    });
+  });
+
+  it('400 defensivo: turnoId malformado o inicio sin timezone → VALIDACION sin tocar la base', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture);
+
+      const errorId = await capturarError(
+        reprogramarTurno(args(fixture, 'no-es-un-uuid'))
+      );
+      expect(errorId).toBeInstanceOf(ApiError);
+      expect(errorId).toMatchObject({ statusCode: 400, code: 'VALIDACION' });
+
+      const errorInicio = await capturarError(
+        reprogramarTurno(args(fixture, turno.id, { inicio: '2026-12-01T15:00:00' }))
+      );
+      expect(errorInicio).toBeInstanceOf(ApiError);
+      expect(errorInicio).toMatchObject({ statusCode: 400, code: 'VALIDACION' });
+      expect(errorInicio.message).toContain('inicio');
+
+      // En ambos casos el turno quedó EXACTAMENTE como estaba.
+      const fila = await leerTurno(fixture, turno.id);
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+      expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+      expect(fila.reprogramado_en).toBeNull();
+    });
+  });
+
+  it('estado CANCELADO → 409 ESTADO_INVALIDO sin cambios (RN-AG-10)', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture, {
+        inicio: '2026-12-01T11:00:00Z',
+        estado: 'CANCELADO',
+      });
+
+      const error = await capturarError(reprogramarTurno(args(fixture, turno.id)));
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toMatchObject({ statusCode: 409, code: 'ESTADO_INVALIDO' });
+
+      const fila = await leerTurno(fixture, turno.id);
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T11:00:00.000Z');
+      expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T11:30:00.000Z');
+      expect(fila.estado).toBe('CANCELADO'); // estado original intacto
+      expect(fila.reprogramado_en).toBeNull();
+    });
+  });
+
+  it('estado ATENDIDO → 409 ESTADO_INVALIDO sin cambios (RN-AG-10, triangulación)', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture, {
+        inicio: '2026-12-01T12:00:00Z',
+        estado: 'ATENDIDO',
+      });
+
+      const error = await capturarError(reprogramarTurno(args(fixture, turno.id)));
+
+      expect(error).toMatchObject({ statusCode: 409, code: 'ESTADO_INVALIDO' });
+
+      const fila = await leerTurno(fixture, turno.id);
+      expect(fila.estado).toBe('ATENDIDO');
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T12:00:00.000Z');
+      expect(fila.reprogramado_en).toBeNull();
+    });
+  });
+
+  it('solape con otro turno → 409 SOLAPAMIENTO y conserva el horario anterior (RN-AG-09)', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture); // 10:00–10:30
+      // Otro turno con los MISMOS recursos en 15:00–15:30.
+      await crearTurnoPartida(fixture, { inicio: '2026-12-01T15:00:00Z' });
+
+      const error = await capturarError(
+        reprogramarTurno(args(fixture, turno.id, { inicio: '2026-12-01T15:15:00Z' }))
+      );
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toMatchObject({
+        statusCode: 409,
+        code: 'SOLAPAMIENTO',
+        message: expect.stringMatching(/profesional/i),
+      });
+
+      // El turno reprogramado conserva inicio 10:00 / fin 10:30 (S2).
+      const fila = await leerTurno(fixture, turno.id);
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+      expect(new Date(fila.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+      expect(fila.reprogramado_en).toBeNull();
+    });
+  });
+
+  it('turno inexistente o de OTRO consultorio → 404 TURNO_NO_ENCONTRADO sin modificar nada', async () => {
+    await conFixtureTurnos(async ({ fixture }) => {
+      const turno = await crearTurnoPartida(fixture);
+
+      // (i) id inexistente.
+      const inexistente = await capturarError(
+        reprogramarTurno(args(fixture, randomUUID()))
+      );
+      expect(inexistente).toMatchObject({ statusCode: 404, code: 'TURNO_NO_ENCONTRADO' });
+
+      // (ii) turno REAL del consultorio B: con el consultorio del token (A)
+      // el SELECT FOR UPDATE no encuentra fila → mismo 404 (RN-TEN-01).
+      const otro = await conFixtureTurnos(async ({ fixture: fixtureB }) => {
+        const turnoDeB = await crearTurnoPartida(fixtureB);
+        const error = await capturarError(
+          reprogramarTurno(args(fixture, turnoDeB.id))
+        );
+        expect(error).toMatchObject({ statusCode: 404, code: 'TURNO_NO_ENCONTRADO' });
+        return leerTurno(fixtureB, turnoDeB.id);
+      });
+
+      // El turno de B quedó intacto (inicio original, sin auditoría).
+      expect(new Date(otro.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+      expect(new Date(otro.fin).toISOString()).toBe('2026-12-01T10:30:00.000Z');
+      expect(otro.reprogramado_en).toBeNull();
+
+      // El turno de A también sigue igual.
+      const fila = await leerTurno(fixture, turno.id);
+      expect(new Date(fila.inicio).toISOString()).toBe('2026-12-01T10:00:00.000Z');
+      expect(fila.reprogramado_en).toBeNull();
     });
   });
 });
