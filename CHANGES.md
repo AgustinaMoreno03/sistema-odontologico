@@ -170,6 +170,7 @@ Cerrar C00–C08 y la verificación del flujo de turnos antes de ampliar agenda.
 - **Tamaño:** mediano.
 - **Módulos y archivos que toca:** `turnos` (mover horario/fecha revalidando **todas** las reglas de solapamiento sobre el nuevo rango — RN-AG-01/02/06, transaccional), `auth` para autorizar a recepción o administración (RN-AG-03).
 - **Riesgos:** misma validación que C05 pero sobre un turno existente (riesgo de duplicar lógica — reusar la interfaz de validación de C05, no copiarla); conflictos de archivo con C06/C08 en `turnos`.
+- **Estado:** completo, archivado el 2026-11-23 en `openspec/changes/archive/` (suite en verde, 421 tests). La reprogramación reutiliza la validación transaccional de solapamientos de C05 (excluyendo el turno que se mueve); el spec principal `turnos` queda creado con estos requisitos y C05 agrega los suyos al archivarse.
 
 ### C08 — Consulta de agenda diaria y semanal
 - **Gobernanza** · BAJA para consulta con permisos acordados.
