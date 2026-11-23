@@ -25,11 +25,11 @@
 
 ## 5. Integración, liberación y concurrencia
 
-- [ ] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva.
-- [ ] 5.2 GREEN: integrar la ruta, servicio y repositorio sin cambiar las restricciones de exclusión de C05; verificar que cancelar responde 200 y la nueva reserva responde 201, conservando ambos registros.
-- [ ] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar.
-- [ ] 5.4 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
-- [ ] 5.5 Actualizar `openspec/specs/turnos/spec.md` al integrar para que su propósito ya no enumere cancelación como fuera de alcance; verificar que quedan explícitos el alcance de reprogramación/cancelación y los límites vigentes de C08.
+- [x] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva.
+- [x] 5.2 GREEN: integrar la ruta, servicio y repositorio sin cambiar las restricciones de exclusión de C05; verificar que cancelar responde 200 y la nueva reserva responde 201, conservando ambos registros.
+- [x] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar.
+- [x] 5.4 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
+- [x] 5.5 Actualizar `openspec/specs/turnos/spec.md` al integrar para que su propósito ya no enumere cancelación como fuera de alcance; verificar que quedan explícitos el alcance de reprogramación/cancelación y los límites vigentes de C08.
 
 ## 6. Verificación final
 

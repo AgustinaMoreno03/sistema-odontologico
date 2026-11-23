@@ -173,4 +173,76 @@ describe('PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1)', () => {
       expect(res.body.error.code).toBe('VALIDACION');
     });
   });
+
+  it('libera el mismo horario, paciente, profesional y sillón para una nueva reserva (C06 5.1–5.2)', async () => {
+    await conFixtureTurnos(async ({ fixture, token }) => {
+      const inicio = '2030-02-20T10:00:00Z';
+      const turno = await crearTurnoPartida(fixture, { inicio });
+      const cuerpoAlta = {
+        pacienteId: fixture.pacienteId,
+        profesionalId: fixture.profesionalId,
+        sillonBoxId: fixture.sillonBoxId,
+        prestacionId: fixture.prestacionId,
+        inicio,
+      };
+
+      // Antes de cancelar, la reserva equivalente continúa bloqueada.
+      const bloqueado = await request(crearApp())
+        .post('/api/turnos')
+        .set('Authorization', `Bearer ${token}`)
+        .send(cuerpoAlta);
+      expect(bloqueado.status).toBe(409);
+      expect(bloqueado.body.error.code).toBe('SOLAPAMIENTO');
+
+      const cancelacion = await patch(crearApp(), turno.id, token);
+      expect(cancelacion.status).toBe(200);
+      expect(cancelacion.body.estado).toBe('CANCELADO');
+
+      const nuevaReserva = await request(crearApp())
+        .post('/api/turnos')
+        .set('Authorization', `Bearer ${token}`)
+        .send(cuerpoAlta);
+      expect(nuevaReserva.status).toBe(201);
+      expect(nuevaReserva.body.estado).toBe('PENDIENTE');
+
+      const { rows } = await fixture.consultar(
+        'SELECT id, estado FROM turno WHERE consultorio_id = $1 ORDER BY creado_en, id',
+        [fixture.consultorioId]
+      );
+      expect(rows).toHaveLength(2);
+      expect(rows.map((row) => row.estado).sort()).toEqual(['CANCELADO', 'PENDIENTE']);
+      expect(rows.map((row) => row.id)).toContain(turno.id);
+      expect(rows.map((row) => row.id)).toContain(nuevaReserva.body.id);
+    });
+  });
+
+  it('dos cancelaciones concurrentes serializan y conservan la auditoría ganadora (C06 5.3–5.4)', async () => {
+    await conFixtureTurnos(async ({ fixture, token }) => {
+      const turno = await crearTurnoPartida(fixture, { inicio: '2030-02-20T10:00:00Z' });
+      const enviar = (solicitadoPor) =>
+        request(crearApp())
+          .patch(`/api/turnos/${turno.id}/cancelar`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ solicitadoPor });
+
+      const [resA, resB] = await Promise.all([enviar('PACIENTE'), enviar('CONSULTORIO')]);
+      const respuestas = [resA, resB];
+      expect(respuestas.filter((res) => res.status === 200)).toHaveLength(1);
+      expect(respuestas.filter((res) => res.status === 409)).toHaveLength(1);
+      const rechazada = respuestas.find((res) => res.status === 409);
+      expect(rechazada.body.error.code).toBe('TURNO_YA_CANCELADO');
+
+      const ganadora = respuestas.find((res) => res.status === 200);
+      const { rows } = await fixture.consultar(
+        'SELECT estado, cancelado_en, cancelado_por, solicitado_por FROM turno WHERE id = $1',
+        [turno.id]
+      );
+      expect(rows[0]).toMatchObject({
+        estado: 'CANCELADO',
+        cancelado_por: fixture.usuarioId,
+        solicitado_por: ganadora.body.solicitadoPor,
+      });
+      expect(rows[0].cancelado_en).toBeInstanceOf(Date);
+    });
+  });
 });
