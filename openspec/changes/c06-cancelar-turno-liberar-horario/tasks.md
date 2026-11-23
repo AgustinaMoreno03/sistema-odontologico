@@ -29,13 +29,13 @@
 - [x] 5.2 GREEN: integrar la ruta, servicio y repositorio sin cambiar las restricciones de exclusión de C05; verificar que cancelar responde 200 y la nueva reserva responde 201, conservando ambos registros.
 - [x] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar.
 - [x] 5.4 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
-- [x] 5.5 Actualizar `openspec/specs/turnos/spec.md` al integrar para que su propósito ya no enumere cancelación como fuera de alcance; verificar que quedan explícitos el alcance de reprogramación/cancelación y los límites vigentes de C08.
+- [ ] 5.5 Deferred: sincronizar el spec principal de turnos únicamente durante el archive, según instrucción de la líder y respetando que su ownership es de C07 (Kevin). No editar `openspec/specs/` directamente.
 
 ## 6. Verificación final
 
-- [ ] 6.1 Ejecutar `npm test` contra PostgreSQL real, incluyendo cobertura de todos los escenarios de la delta spec y concurrencia; verificar salida en verde.
-- [ ] 6.2 Verificar migraciones 001→050→070→110 en base vacía y continuación sobre base existente con 070 aplicada; confirmar que el runner respeta el orden ascendente según `schema-migrations`.
-- [ ] 6.3 Revisar `git diff` para confirmar que solo cambian los archivos del módulo turnos, su migración nueva, tests/fixtures y la spec documentados; comprobar tenant desde token y datos exclusivamente ficticios.
+- [x] 6.1 Ejecutar `npm test` contra PostgreSQL real, incluyendo cobertura de todos los escenarios de la delta spec y concurrencia; verificar salida en verde.
+- [x] 6.2 Verificar migraciones 001→050→070→110 en base vacía y continuación sobre base existente con 070 aplicada; confirmar que el runner respeta el orden ascendente según `schema-migrations`.
+- [x] 6.3 Revisar `git diff` para confirmar que solo cambian los archivos del módulo turnos, su migración nueva, tests/fixtures y la spec documentados; comprobar tenant desde token y datos exclusivamente ficticios.
 
 ## Workflow follow-up
 
