@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Este capability permite crear y reprogramar turnos dentro del consultorio autenticado, conservando las garantías transaccionales de disponibilidad y aislamiento por tenant, y cancelar turnos futuros `PENDIENTE` o `CONFIRMADO` con auditoría. Reprogramar conserva el horario anterior si falla (RN-AG-09); cancelar conserva el registro y libera el horario. Cubre creación, reprogramación y cancelación (`POST /api/turnos`, `PATCH /api/turnos/:id/reprogramar` y `PATCH /api/turnos/:id/cancelar`). El cambio de recursos y el flag de operar sin recepción quedan fuera de alcance; bloqueos y listado de agenda siguen reservados para C08.
+Este capability reprograma turnos `PENDIENTE` cambiando su `inicio` con las mismas garantías de disponibilidad que al crearlos: reutiliza la validación transaccional de solapamientos de C05 (excluyendo el turno que se mueve) dentro del consultorio autenticado, y conserva el horario anterior si la operación falla (RN-AG-09). Cubre únicamente `PATCH /api/turnos/:id/reprogramar`: cancelación y transiciones de estado (C06), cambio de recursos del turno, bloqueos, listado de agenda (C08) y el flag de operar sin recepción quedan fuera de alcance.
 
 ## Requirements
 
@@ -51,22 +51,3 @@ El sistema SHALL validar la forma antes que el negocio: `inicio` SHALL ser ISO 8
 - **GIVEN** el consultorio A con un turno `PENDIENTE` ficticio reprogramable y un token con rol `ODONTOLOGO`
 - **WHEN** envía `PATCH /api/turnos/<id>/reprogramar` con un `inicio` válido y sin conflictos
 - **THEN** responde 403 con code `SIN_PERMISO` y el turno no se modifica
-
-### Requirement: Cancelar un turno con auditoría y autorización (C06)
-
-El sistema SHALL permitir a `RECEPCION` y `ADMIN_CONSULTORIO` cancelar turnos futuros `PENDIENTE` o `CONFIRMADO` mediante `PATCH /api/turnos/:id/cancelar`, con `solicitadoPor` igual a `PACIENTE` o `CONSULTORIO`. La cancelación SHALL conservar la fila, cambiar su estado a `CANCELADO` y registrar `canceladoEn`, `canceladoPor` y `solicitadoPor`; el consultorio y operador SHALL derivarse del token. `CANCELADO` SHALL responder 409 `TURNO_YA_CANCELADO`; `ATENDIDO`/`AUSENTE`, 409 `ESTADO_INVALIDO`; e inicio ocurrido, 409 `TURNO_PASADO`. Un turno inexistente o de otro consultorio SHALL responder 404 `TURNO_NO_ENCONTRADO`. Los errores SHALL conservar estado y auditoría.
-
-#### Scenario: Cancelar y reservar el intervalo liberado
-- **GIVEN** un turno ficticio futuro en estado `PENDIENTE` con paciente, profesional y sillón/box del consultorio autenticado
-- **WHEN** recepción lo cancela y crea otro turno con los mismos recursos e intervalo
-- **THEN** la cancelación responde 200, la nueva reserva responde 201 y ambos registros se conservan; el primero queda `CANCELADO`
-
-#### Scenario: ODONTOLOGO no puede cancelar
-- **GIVEN** un turno futuro y un usuario autenticado con rol `ODONTOLOGO`
-- **WHEN** solicita cancelar con `solicitadoPor` válido
-- **THEN** responde 403 `SIN_PERMISO` y no modifica el turno
-
-#### Scenario: Solicitud repetida o estado no cancelable
-- **GIVEN** un turno cancelado, atendido o ausente
-- **WHEN** recepción solicita cancelarlo
-- **THEN** responde respectivamente 409 `TURNO_YA_CANCELADO` o 409 `ESTADO_INVALIDO`, sin alterar estado ni auditoría original
