@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
+import { ApiError } from '../src/errores.js';
 import { crearRepositorioTurnos } from '../src/modules/turnos/repositorio.js';
 import { conFixtureTurnos, crearFixtureTurnos } from './helpers/turnos-fixtures.js';
 
@@ -268,5 +269,107 @@ describe('repositorio de turnos: alta y solapamientos (task 3.2)', () => {
         await otro.limpiar();
       }
     });
+  });
+});
+
+describe('repositorio: reintento de transacción ante deadlock 40P01 (S6, opción 1)', () => {
+  const SIN_CONFLICTO = { profesional: false, sillon_box: false, paciente: false };
+  const CONFLICTO_PROFESIONAL = { profesional: true, sillon_box: false, paciente: false };
+
+  /**
+   * Cliente falso con el seam de inyección del repo (`{ cliente }`): ejecuta
+   * BEGIN/COMMIT/ROLLBACK, devuelve el estado de pre-check que le pidan y
+   * lanza `40P01` (deadlock) en los primeros `fallosInsert` INSERT.
+   */
+  function clienteFalso({ preChecks, fallosInsert }) {
+    const llamadas = [];
+    let intentosInsert = 0;
+    let indicePrecheck = 0;
+    return {
+      llamadas,
+      async query(sql) {
+        const palabra = sql
+          .replace(/\s+/g, ' ')
+          .trim()
+          .split(' ')[0]
+          .toUpperCase();
+        llamadas.push(palabra);
+        if (palabra === 'BEGIN' || palabra === 'COMMIT' || palabra === 'ROLLBACK') return {};
+        if (palabra === 'SELECT') {
+          const estado = preChecks[Math.min(indicePrecheck, preChecks.length - 1)];
+          indicePrecheck += 1;
+          return { rows: [estado] };
+        }
+        if (palabra === 'INSERT') {
+          intentosInsert += 1;
+          if (intentosInsert <= fallosInsert) {
+            const error = new Error('deadlock detected');
+            error.code = '40P01';
+            throw error;
+          }
+          return { rows: [] }; // no usado: los dos caminos terminan antes
+        }
+        throw new Error(`SQL no soportado en el cliente falso: ${palabra}`);
+      },
+    };
+  }
+
+  function parametros() {
+    return {
+      consultorioId: randomUUID(),
+      pacienteId: randomUUID(),
+      profesionalId: randomUUID(),
+      sillonBoxId: randomUUID(),
+      prestacionId: randomUUID(),
+      inicio: new Date('2030-02-20T10:00:00.000Z'),
+      fin: new Date('2030-02-20T10:30:00.000Z'),
+      duracionMin: 30,
+    };
+  }
+
+  async function capturarError(promesa) {
+    try {
+      await promesa;
+      return null;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  it('40P01 en el primer INSERT → reintenta la transacción COMPLETA y el pre-check ve al ganador (409 detallado)', async () => {
+    const cliente = clienteFalso({
+      preChecks: [SIN_CONFLICTO, CONFLICTO_PROFESIONAL],
+      fallosInsert: 1,
+    });
+    const repo = crearRepositorioTurnos({ cliente });
+
+    const error = await capturarError(repo.crearTurno(parametros()));
+
+    // 409 con el mensaje DETALLADO del recurso (tras el rollback, el
+    // pre-check del segundo intento ve el turno ganador).
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.statusCode).toBe(409);
+    expect(error.code).toBe('SOLAPAMIENTO');
+    expect(error.message).toBe('El profesional ya tiene un turno en ese horario');
+
+    // La transacción entera se reintentó: dos BEGIN y un solo INSERT.
+    expect(cliente.llamadas.filter((p) => p === 'BEGIN')).toHaveLength(2);
+    expect(cliente.llamadas.filter((p) => p === 'INSERT')).toHaveLength(1);
+  });
+
+  it('40P01 también en el segundo intento → fallback a 409 SOLAPAMIENTO (nunca 500) y no hay tercer intento', async () => {
+    const cliente = clienteFalso({
+      preChecks: [SIN_CONFLICTO, SIN_CONFLICTO],
+      fallosInsert: 2,
+    });
+    const repo = crearRepositorioTurnos({ cliente });
+
+    const error = await capturarError(repo.crearTurno(parametros()));
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.statusCode).toBe(409); // nunca 500 por esta causa
+    expect(error.code).toBe('SOLAPAMIENTO');
+    // Límite de 2 intentos: no hubo un tercer BEGIN.
+    expect(cliente.llamadas.filter((p) => p === 'BEGIN')).toHaveLength(2);
   });
 });

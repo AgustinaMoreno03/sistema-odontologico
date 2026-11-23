@@ -94,17 +94,18 @@ export function calcularFin(inicio, duracionMin) {
 }
 
 /**
- * Traduce la violación de una restricción de exclusión de la base a un
- * error operacional (design D1): `23P01` (`exclusion_violation`) → 409
- * `SOLAPAMIENTO`. El INSERT dentro de la transacción es la garantía final
- * ante concurrencia; cualquier otro error pasa tal cual (precedente:
- * `traducirViolacionUnica` de catalogo para `23505`).
+ * Traduce los errores de concurrencia de la base a un error operacional
+ * (design D1 + opción 1 aprobada para S6): `23P01` (`exclusion_violation`)
+ * y `40P01` (`deadlock_detected`, solo como FALLBACK tras agotar los 2
+ * intentos de reintento del repositorio) → 409 `SOLAPAMIENTO`. Cualquier
+ * otro error pasa tal cual (precedente: `traducirViolacionUnica` de
+ * catalogo para `23505`).
  *
  * @param {unknown} error error proveniente de pg
- * @returns {unknown} ApiError 409 si era 23P01; el error original si no
+ * @returns {unknown} ApiError 409 si era 23P01 o 40P01; el error original si no
  */
 export function traducirViolacionExclusion(error) {
-  if (error?.code === '23P01') {
+  if (error?.code === '23P01' || error?.code === '40P01') {
     return new ApiError(409, 'SOLAPAMIENTO', 'El turno se solapa con otro turno existente');
   }
   return error;
