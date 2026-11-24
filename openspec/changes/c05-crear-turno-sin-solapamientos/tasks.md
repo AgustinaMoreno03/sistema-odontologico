@@ -29,17 +29,17 @@
 
 ## 6. Tests de integración de los escenarios del spec
 
-- [ ] 6.1 Escenarios S1, S2, S3 y S5 (reserva válida, conflicto por profesional, por sillón/box y por paciente): 409 `SOLAPAMIENTO` sin registro creado — verificación: `npx vitest run tests/turnos-api.test.js` en verde contra PostgreSQL real.
-- [ ] 6.2 Escenarios S4 y S9 (turno contiguo válido y duración fijada al crearse: editar la prestación a 60 min no altera el turno existente de 30 min) — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
-- [ ] 6.3 Escenario S6 (concurrencia): dos `POST /api/turnos` idénticos en paralelo con `Promise.all`, exactamente un 201 y un 409 `SOLAPAMIENTO`, un solo turno creado — verificación: el test pasa de rojo a verde con la restricción de exclusión activa y es determinista al repetirlo 3 veces.
-- [ ] 6.4 Escenario S7 (aislamiento): turnos solapados idénticos en dos consultorios distintos, cada uno con su token, ambos 201 y cada turno en su consultorio; además, identificador de otro consultorio tratado como inexistente — verificación: test en verde y sin filas cruzadas al filtrar por `consultorio_id`.
-- [ ] 6.5 Escenario S8 y errores (422 `REFERENCIA_INVALIDA` indicando el campo fallido — `profesionalId` para el profesional inactivo, `pacienteId` para el paciente de otro consultorio y `prestacionId` para la prestación inactiva, con un mensaje por campo; 400 `VALIDACION` con UUID malformado) — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
-- [ ] 6.6 Escenario S10 (permiso): token con rol `ODONTOLOGO` → 403 `SIN_PERMISO` y turno no creado — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
+- [x] 6.1 Escenarios S1, S2, S3 y S5 (reserva válida, conflicto por profesional, por sillón/box y por paciente): 409 `SOLAPAMIENTO` sin registro creado — verificación: `npx vitest run tests/turnos-api.test.js` en verde contra PostgreSQL real.
+- [x] 6.2 Escenarios S4 y S9 (turno contiguo válido y duración fijada al crearse: editar la prestación a 60 min no altera el turno existente de 30 min) — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
+- [x] 6.3 Escenario S6 (concurrencia): dos `POST /api/turnos` idénticos en paralelo con `Promise.all`, exactamente un 201 y un 409 `SOLAPAMIENTO`, un solo turno creado — verificación: el test pasa de rojo a verde con la restricción de exclusión activa y es determinista al repetirlo 3 veces.
+- [x] 6.4 Escenario S7 (aislamiento): turnos solapados idénticos en dos consultorios distintos, cada uno con su token, ambos 201 y cada turno en su consultorio; además, identificador de otro consultorio tratado como inexistente — verificación: test en verde y sin filas cruzadas al filtrar por `consultorio_id`.
+- [x] 6.5 Escenario S8 y errores (422 `REFERENCIA_INVALIDA` indicando el campo fallido — `profesionalId` para el profesional inactivo, `pacienteId` para el paciente de otro consultorio y `prestacionId` para la prestación inactiva, con un mensaje por campo; 400 `VALIDACION` con UUID malformado) — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
+- [x] 6.6 Escenario S10 (permiso): token con rol `ODONTOLOGO` → 403 `SIN_PERMISO` y turno no creado — verificación: `npx vitest run tests/turnos-api.test.js` en verde.
 
 ## 7. Verificación final
 
-- [ ] 7.1 Correr el gate completo `npm test` (vitest contra PostgreSQL real, escenarios ≥3 por spec cubiertos y aislamiento obligatorio) — verificación: salida en verde.
-- [ ] 7.2 Revisar reglas duras aplicables: sin datos reales de pacientes en tests/capturas (ficticios siempre), `consultorio_id` solo del token en toda query, sin secretos en el repo, sin editar migraciones mergeadas y sin tocar tablas de otros módulos — verificación: `git diff` limitado a `src/modules/turnos/`, `src/app.js`, `db/migrations/050_*` y archivos de test de turnos; checklist marcada en el PR.
+- [x] 7.1 Correr el gate completo `npm test` (vitest contra PostgreSQL real, escenarios ≥3 por spec cubiertos y aislamiento obligatorio) — verificación: salida en verde.
+- [x] 7.2 Revisar reglas duras aplicables: sin datos reales de pacientes en tests/capturas (ficticios siempre), `consultorio_id` solo del token en toda query, sin secretos en el repo, sin editar migraciones mergeadas y sin tocar tablas de otros módulos — verificación: `git diff` limitado a `src/modules/turnos/`, `src/app.js`, `db/migrations/050_*` y archivos de test de turnos; checklist marcada en el PR.
 
 ## Workflow follow-up
 
