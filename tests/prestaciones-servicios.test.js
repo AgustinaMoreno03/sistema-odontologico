@@ -124,4 +124,36 @@ describe('contrato de prestaciones para turnos', () => {
 
     await expect(servicios.obtenerPrestacionParaTurno({ prestacionId: PRESTACION, consultorioId: CONSULTORIO })).resolves.toBeNull();
   });
+
+  it('rechaza un prestacionId inválido con 400 VALIDACION sin tocar el repositorio', async () => {
+    const repositorio = crearRepositorioFalso();
+    const servicios = crearServiciosPrestaciones({ repositorio });
+
+    await expect(
+      servicios.obtenerPrestacionParaTurno({ prestacionId: 'prestacion-invalida', consultorioId: CONSULTORIO })
+    ).rejects.toMatchObject({ statusCode: 400, code: 'VALIDACION' });
+    expect(repositorio.obtenerPrestacionParaTurno).not.toHaveBeenCalled();
+  });
+
+  it('rechaza un consultorioId inválido con 400 VALIDACION sin tocar el repositorio', async () => {
+    const repositorio = crearRepositorioFalso();
+    const servicios = crearServiciosPrestaciones({ repositorio });
+
+    await expect(
+      servicios.obtenerPrestacionParaTurno({ prestacionId: PRESTACION, consultorioId: 'consultorio-invalido' })
+    ).rejects.toMatchObject({ statusCode: 400, code: 'VALIDACION' });
+    expect(repositorio.obtenerPrestacionParaTurno).not.toHaveBeenCalled();
+  });
+
+  it('con ambos UUID válidos delega al repositorio con los identificadores recibidos', async () => {
+    const repositorio = crearRepositorioFalso();
+    const servicios = crearServiciosPrestaciones({ repositorio });
+
+    await servicios.obtenerPrestacionParaTurno({ prestacionId: PRESTACION, consultorioId: CONSULTORIO });
+
+    expect(repositorio.obtenerPrestacionParaTurno).toHaveBeenCalledWith({
+      prestacionId: PRESTACION,
+      consultorioId: CONSULTORIO,
+    });
+  });
 });
