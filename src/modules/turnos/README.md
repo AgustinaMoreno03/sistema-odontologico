@@ -119,7 +119,7 @@ cancelarTurno({ turnoId, consultorioId, usuarioId, solicitadoPor }) → Promise<
 |---|---|---|
 | `TOKEN_INVALIDO` | 401 | Sin token válido — middleware de C00 (además borra cualquier `x-tenant-*`). |
 | `VALIDACION` | 400 | Formato: UUID malformado en cualquier campo, o `inicio` sin zona horaria explícita. |
-| `SIN_PERMISO` | 403 | Rol distinto de `RECEPCION`/`ADMIN_CONSULTORIO` (hoy: `ODONTOLOGO`; el flag "operar sin recepción" es fuera de alcance — C06). |
+| `SIN_PERMISO` | 403 | `ODONTOLOGO`. |
 | `TURNO_NO_ENCONTRADO` | 404 | Reprogramación (C07): turno inexistente o de OTRO consultorio — una sola señal, mensaje sin datos ajenos (RN-TEN-01/RN-TEN-02). |
 | `TURNO_YA_CANCELADO` | 409 | Cancelación (C06): el turno ya fue cancelado; se conserva la auditoría original. |
 | `TURNO_PASADO` | 409 | Cancelación (C06): el inicio del turno ya ocurrió. |
