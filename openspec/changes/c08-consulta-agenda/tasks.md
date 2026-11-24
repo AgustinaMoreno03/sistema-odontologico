@@ -1,10 +1,10 @@
 # Tasks
 
-Apply requiere aprobación del spec por Agustina y una nueva solicitud para iniciar la implementación. La exploración está registrada en design.md. Base ya comprobada: main 666dbc7, 421/421 tests; volver a comprobar si main cambió.
+Apply está bloqueado: requiere C05 archivado, revert de la 110 en main, reconciliación con el spec final de turnos, aprobación de Agustina y una nueva solicitud de implementación. La base histórica `666dbc721c7d8046383f299689853bcf491ca50a` pasó 421/421 tests, sin C06/110; esa corrida no reemplaza la verificación de la base final. No hay migraciones ni tests de C08 implementados.
 
 ## 1. Base y dominio de agenda
 
-- [ ] 1.1 Actualizar la rama desde upstream/main antes de Apply y ejecutar npm.cmd test. Guardar el reporte real con fecha y SHA; verificar todos los tests de la base antes de escribir implementación, sin fijar una cantidad histórica.
+- [ ] 1.1 Confirmar C05 archivado y su spec final en main, el revert integrado y la ausencia de la 110. Reconciliar C08 y obtener aprobación de Agustina antes de Apply; después actualizar la rama y ejecutar npm.cmd test. Guardar reporte con fecha y SHA completo y verificar todos los tests de la base final, sin fijar la cantidad histórica de 421.
 - [ ] 1.2 Escribir primero los tests de parámetros de agenda en tests/agenda-dominio.test.js y observar fallos genuinos. Implementar validación de rango, fechas reales con zona, UUID y paginación en agenda-dominio.js; verificar los tests de fechas inválidas, límites y duración máxima.
 - [ ] 1.3 Iniciar src/modules/turnos/AGENDA.md con parámetros, ejemplos diarios/semanales y errores del dominio. Verificar que cada ejemplo coincide con un caso probado.
 
@@ -24,14 +24,14 @@ Apply requiere aprobación del spec por Agustina y una nueva solicitud para inic
 ## 4. HTTP y aislamiento
 
 - [ ] 4.1 Implementar crearRouterAgenda en agenda-rutas.js con el middleware real C00 y montarlo con solo dos líneas en app.js. Verificar mediante Supertest el 200 real, el 401 uniforme y el formato central de errores.
-- [ ] 4.2 Cubrir dos consultorios y dos profesionales del mismo consultorio. Verificar que A nunca recibe nombres ni turnos de B y que el odontólogo no accede a la agenda de su colega, incluso con filtros explícitos.
+- [ ] 4.2 Persistir dos consultorios en PostgreSQL real de test con registros ficticios distinguibles y consultar ambos mediante HTTP real. Verificar resultados propios no vacíos y exclusión mutua de nombres e IDs; probar además dos profesionales del mismo consultorio y que el odontólogo no accede a su colega, incluso con filtro explícito. No sustituir este caso por mocks ni usar datos de personas reales.
 - [ ] 4.3 Probar sustitución de consultorio y usuario por query, body y headers, parámetros repetidos y fallos inesperados. Verificar respuestas 400/403/404/500 acordadas, ausencia de datos ajenos y ninguna modificación de turnos por GET.
 - [ ] 4.4 Completar AGENDA.md con ejemplos de respuesta, autenticación y los códigos HTTP. Verificar que el contrato coincide con el spec aprobado y publicar al equipo la ruta y el DTO para C09, sin comunicar como aprobado un borrador.
 
 ## 5. Verify integrado
 
 - [ ] 5.1 Ejecutar npm.cmd test completo sobre el main integrado y guardar evidencia roja y verde original de C08. Verificar cero fallos y registrar fecha, cantidad real, base y archivos modificados.
-- [ ] 5.2 Ejecutar openspec.cmd validate c08-consulta-agenda --strict y git diff --check. Verificar que C08 solo añade dos líneas a app.js y conserva package.json, tests/setup, helpers y migraciones ajenas frente al main integrado.
+- [ ] 5.2 Ejecutar openspec.cmd validate c08-consulta-agenda --strict y git diff --check. Verificar que C08 solo añade dos líneas a app.js, no añade migraciones ni DDL sobre turno y conserva package.json, tests/setup, helpers y migraciones ajenas frente al main integrado; 080–089 permanece sin usar.
 - [ ] 5.3 Revisar escenario por escenario el spec y documentar Verify en design.md. Verificar que cada requisito tiene evidencia y dejar explícita cualquier limitación antes del PR de implementación.
 
 ## Workflow follow-up

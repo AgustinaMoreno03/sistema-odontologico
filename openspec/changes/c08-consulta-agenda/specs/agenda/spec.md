@@ -38,7 +38,7 @@ El sistema SHALL responder 400 `VALIDACION` ante fechas inexistentes, fechas sin
 
 ### Requirement: Acceso de recepción y administración
 
-Según KB 03 y RN-AG-03, `RECEPCION` y `ADMIN_CONSULTORIO` SHALL consultar todas las agendas de su consultorio o filtrar por `profesionalId`. Una ficha profesional inactiva SHALL conservar su historial visible. Un filtro inexistente o ajeno SHALL recibir la misma respuesta 404 `PROFESIONAL_NO_ENCONTRADO`, sin revelar existencia externa.
+Según [KB 03](../../../../../knowledge-base/03_actores_y_roles.md) y RN-AG-03, `RECEPCION` y `ADMIN_CONSULTORIO` SHALL consultar todas las agendas de su consultorio o filtrar por `profesionalId`. Una ficha inactiva SHALL conservar su historial visible. Un filtro inexistente o ajeno SHALL recibir el mismo 404 `PROFESIONAL_NO_ENCONTRADO`, sin revelar existencia externa.
 
 #### Scenario: Un caso por rol administrativo
 - **WHEN** recepción o administración consulta sin filtro y luego con un profesional propio
@@ -71,9 +71,9 @@ El sistema SHALL resolver la ficha vinculada al usuario y consultorio del token.
 Toda lectura SHALL filtrar por el consultorio del token validado, incluyendo la resolución de nombres. Sin autenticación válida SHALL responder el 401 uniforme de C00. Query, body y encabezados del cliente no SHALL sustituir consultorioId ni usuarioId. Los errores inesperados SHALL producir el 500 genérico del manejador central sin SQL ni secretos (RN-TEN-01/02).
 
 #### Scenario: A no ve los turnos ni nombres de B
-- **GIVEN** dos consultorios ficticios con turnos en el mismo rango
-- **WHEN** un usuario de A consulta su agenda
-- **THEN** no recibe identificadores, nombres ni turnos de B
+- **GIVEN** dos consultorios A y B persistidos en PostgreSQL real de test, con usuarios, pacientes y turnos ficticios distintos en el mismo rango
+- **WHEN** un usuario de A consulta su agenda y otro de B consulta la suya mediante HTTP real
+- **THEN** cada uno recibe sus turnos y nombres propios; A no recibe identificadores, nombres ni turnos de B y B no recibe los de A
 
 #### Scenario: Suplantación del contexto
 - **WHEN** un usuario de A intenta seleccionar B por query, por body de GET o por encabezados x-tenant-* y x-consultorio-id

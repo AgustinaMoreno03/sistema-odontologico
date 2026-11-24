@@ -9,7 +9,8 @@ Hallazgos comprobados:
 - `profesionalDeUsuario({ usuarioId, consultorioId })` devuelve la ficha vinculada o null, incluidas fichas inactivas. `existeProfesional` verifica pertenencia sin exigir actividad.
 - La migración 050 ya contiene `turno_consultorio_profesional_inicio_idx`. No hace falta crear el mismo índice en 080.
 - Los turnos y sus recursos están distribuidos entre módulos. C03 no ofrece lectura de nombres por un conjunto de IDs, por lo que C08 necesita una interfaz mínima de pacientes.
-- Base local comprobada el 23/11/2026: 421/421 tests aprobados, antes de cambiar código. Reporte original guardado en `docs/evidencias/c08/base-main.json`; corresponde a la base, no a una implementación de C08.
+- Evidencia histórica: 421/421 tests en 47 archivos, iniciados el 23/11/2026 a las 16:45:58 -03:00, sobre `666dbc721c7d8046383f299689853bcf491ca50a`, antes de cambiar código. No contenía C06 ni la migración 110. Reporte original guardado en `docs/evidencias/c08/base-main.json`; corresponde a esa base y no habilita Apply sobre la versión final de C05 todavía pendiente de archivado.
+- Consulta remota posterior: upstream/main `85f253d` contiene el revert de C06 mediante PR #18. `git diff 666dbc7 85f253d` no muestra cambios de archivos y la 110 está ausente. Esta observación no es una nueva ejecución de tests ni una aprobación del spec de C08.
 
 ## Goals / Non-Goals
 
@@ -117,11 +118,11 @@ Cubrir cada escenario del spec mediante dominio y HTTP real con PostgreSQL. Mant
 - Consulta por intervalos que cruzan el límite → predicado de intersección [) y pruebas exactas de extremos.
 - Nombres históricos cambian si se edita una ficha → el DTO muestra el nombre actual; no se añade snapshot de pacientes al turno.
 - Offset durante cambios concurrentes → limitación documentada; refrescar la vista y no prometer una instantánea entre páginas.
-- Índice sin profesional menos selectivo → rango máximo de siete días y páginas acotadas; evaluar EXPLAIN antes de proponer otra migración, sin optimización especulativa.
+- Índice sin profesional menos selectivo → rango máximo de siete días y páginas acotadas; evaluar EXPLAIN y comunicar una necesidad demostrada al responsable del esquema, sin añadir DDL a turno en C08.
 
 ## Migration Plan
 
-No se requiere migración de esquema. Se reutilizan índices de 050; no alterar 050 ni 070. Si una medición demuestra necesario otro índice, volver a la propuesta, usar un prefijo nuevo en 080–089 y obtener aprobación antes de escribirlo. El retiro de la funcionalidad sería revertir archivos C08 y sus dos líneas de montaje, sin modificar datos.
+No se requiere migración de esquema. C08 no crea migraciones ni modifica la estructura de turno, sus índices o restricciones. Se reutilizan índices de 050; no alterar 050 ni 070. El rango reservado 080–089 queda sin usar. Cualquier necesidad de esquema se comunica a Agustina y requiere revisar el alcance; no habilita escribir una migración ni usar el prefijo 110 por cuenta propia. El retiro de la funcionalidad sería revertir archivos C08 y sus dos líneas de montaje, sin modificar datos.
 
 ## UI Mockups
 
@@ -129,4 +130,6 @@ Decision: no (no UI). C08 entrega API; la interfaz visual pertenece a C09.
 
 ## Estado de revisión
 
-Propuesta pendiente de aprobación. No se ha iniciado Apply. Las decisiones de endpoint, parámetros, inclusión de cancelados, paginación y DTO se presentan para revisión; no constituyen un contrato aprobado ni se comunican como congeladas hasta que Agustina lo confirme.
+Propuesta no aprobada según revisión de Agustina. No se ha iniciado Apply y no hay tests propios de C08 implementados. Las decisiones de endpoint, parámetros, inclusión de cancelados, paginación y DTO siguen siendo propuestas.
+
+Antes de Apply se requiere: (1) C05 archivado y spec final de turnos disponible; (2) revert de la migración 110 integrado y ausencia de esa migración en el árbol de main; (3) reconciliar esta propuesta con esa base final; (4) aprobación explícita de Agustina; (5) actualizar la rama y ejecutar npm test sobre el commit final identificado por SHA. No interpretar los 421 tests históricos ni el estado de archivos completos de OpenSpec como cumplimiento de estos requisitos.

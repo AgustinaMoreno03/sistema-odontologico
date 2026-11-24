@@ -29,5 +29,6 @@ Ninguna. La creación y reprogramación de `turnos` y los contratos existentes d
 - Interfaz nueva de nombres mínimos en pacientes, implementada en archivos propios y exportada desde `src/modules/pacientes/index.js` (Leandro mantiene C03).
 - Solo dos líneas añadidas a `src/app.js`: import y montaje de `/api/agenda` antes del manejador de errores.
 - Sin cambios a `package.json`, configuración, tests/setup, helpers compartidos ni migraciones existentes.
-- La 050 ya contiene el índice `(consultorio_id, profesional_id, inicio)`. No se propone migración redundante; 080–089 se reserva para una necesidad demostrada.
-- Contrato propuesto sujeto a aprobación antes de Apply. Base observada: upstream/main `666dbc7`, que ya incluye C07. C06 todavía no figura integrado en esa base.
+- La 050 ya contiene el índice `(consultorio_id, profesional_id, inicio)`. C08 no propone migraciones ni DDL sobre turno. El rango reservado de C08 es exclusivamente 080–089; permanece sin usar.
+- Apply bloqueado hasta que C05 esté archivado, el revert de la 110 esté en main y Agustina apruebe el spec reconciliado con la versión final de turnos.
+- Base histórica exacta: `666dbc721c7d8046383f299689853bcf491ca50a`, con C07 y sin C06/110. Sus 421 tests no sustituyen la verificación previa a Apply de la base final aprobada.
