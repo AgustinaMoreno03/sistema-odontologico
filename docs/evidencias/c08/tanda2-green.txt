@@ -1,0 +1,56 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-permisos.test.js tests/agenda-ruta.test.js tests/agenda-aislamiento.test.js tests/pacientes-agenda-lectura.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/tanda2-green.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > RECEPCION ve todas sus agendas y puede filtrar 842ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ADMIN_CONSULTORIO ve todas sus agendas y puede filtrar 878ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > filtro administrativo ajeno o inexistente da el mismo 404 184ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo usa profesionalDeUsuario y ve solo su agenda, también inactiva 582ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo no puede consultar otra ficha propia, ajena o inexistente 415ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo sin vínculo recibe 403 293ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ignora contexto de body/headers y rechaza suplantación por query 500ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > limpiar A conserva consultorio y turnos de B 274ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > un fallo de la interfaz de pacientes no filtra detalles ni datos parciales 345ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > devuelve el contrato vacío y los límites UTC 183ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin hasta 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin desde 8ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin zona 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza día imposible 21ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza mes imposible 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza hora imposible 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango vacío 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango invertido 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza más de 168 horas 11ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza UUID inválido 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza parámetro ajeno 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha repetida 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha estructurada 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token ausente con el error uniforme 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token expirado con el error uniforme 4ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token forjado con el error uniforme 4ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > aplica intersección [) y conserva turno cruzando medianoche 192ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > acepta la semana y omite el turno del lunes siguiente 293ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > incluye cancelados y muestra el nuevo horario tras reprogramar 286ms
+stdout | tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+C08 aislamiento: {"consultoriosPersistidos":2,"pacientesHTTP":[200,200],"agendaHTTP":[200,200]}
+
+ ✓ tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres 618ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > resuelve vacío, deduplica y devuelve solo nombres con apellido null 178ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > omite pacientes ajenos e inexistentes 237ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 3ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 1ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  20:07:22
+   Duration  10.98s (tests 74%, import 16%, setup 6%, transform 3%)
+
+    Isolate  4 workers spawned · ~219ms startup each (spawn + environment, per file)
+             at least ~657ms faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/tanda2-green.json

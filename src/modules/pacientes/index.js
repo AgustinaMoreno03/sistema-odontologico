@@ -1,2 +1,3 @@
 // Interfaz pública del módulo pacientes para los módulos consumidores.
 export { existePaciente } from './servicios.js';
+export { obtenerNombresPacientes } from './agenda-lectura.js';

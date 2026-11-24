@@ -1,0 +1,138 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-permisos.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/tanda2-red.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ × tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > RECEPCION ve todas sus agendas y puede filtrar 665ms
+   → expected [ …(2) ] to deeply equal [ Array(1) ]
+ × tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ADMIN_CONSULTORIO ve todas sus agendas y puede filtrar 761ms
+   → expected [ …(2) ] to deeply equal [ Array(1) ]
+ × tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > filtro administrativo ajeno o inexistente da el mismo 404 360ms
+   → expected [ 200, 200 ] to deeply equal [ 404, 404 ]
+ × tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo usa profesionalDeUsuario y ve solo su agenda, también inactiva 196ms
+   → expected 403 to be 200 // Object.is equality
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo no puede consultar otra ficha propia, ajena o inexistente 307ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo sin vínculo recibe 403 286ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ignora contexto de body/headers y rechaza suplantación por query 519ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > limpiar A conserva consultorio y turnos de B 269ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > un fallo de la interfaz de pacientes no filtra detalles ni datos parciales 329ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > RECEPCION ve todas sus agendas y puede filtrar
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "e2335e46-57ba-49aa-af79-8dd98f529e9a",
+    "e4e58b06-f6a7-4569-8db1-6001ddccac1d",
+  ]
+
+ ❯ rolA.rolA tests/agenda-permisos.test.js:35:56
+     33|       const filtrada = await consultar(tokenA, { profesionalId: segund…
+     34|       expect(filtrada.status).toBe(200);
+     35|       expect(filtrada.body.turnos.map(({ id }) => id)).toEqual([segund…
+       |                                                        ^
+     36|       await a.consultar('UPDATE profesional SET activo = FALSE WHERE i…
+     37|         [segundo.id, a.consultorioId]);
+ ❯ rol tests/fixtures/agenda.js:15:7
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/fixtures/agenda.js:6:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ conDosAgendas tests/fixtures/agenda.js:5:3
+ ❯ tests/agenda-permisos.test.js:24:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ADMIN_CONSULTORIO ve todas sus agendas y puede filtrar
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "4b0f84ce-10e1-426d-87d1-f5c06da6342b",
+    "bfdb493b-45a1-40e9-bb33-d219f5447d0a",
+  ]
+
+ ❯ rolA.rolA tests/agenda-permisos.test.js:35:56
+     33|       const filtrada = await consultar(tokenA, { profesionalId: segund…
+     34|       expect(filtrada.status).toBe(200);
+     35|       expect(filtrada.body.turnos.map(({ id }) => id)).toEqual([segund…
+       |                                                        ^
+     36|       await a.consultar('UPDATE profesional SET activo = FALSE WHERE i…
+     37|         [segundo.id, a.consultorioId]);
+ ❯ rol tests/fixtures/agenda.js:15:7
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/fixtures/agenda.js:6:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ conDosAgendas tests/fixtures/agenda.js:5:3
+ ❯ tests/agenda-permisos.test.js:24:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > filtro administrativo ajeno o inexistente da el mismo 404
+AssertionError: expected [ 200, 200 ] to deeply equal [ 404, 404 ]
+
+- Expected
++ Received
+
+  [
+-   404,
+-   404,
++   200,
++   200,
+  ]
+
+ ❯ tests/agenda-permisos.test.js:48:46
+     46|       const ajena = await consultar(tokenA, { profesionalId: b.profesi…
+     47|       const ausente = await consultar(tokenA, { profesionalId: randomU…
+     48|       expect([ajena.status, ausente.status]).toEqual([404, 404]);
+       |                                              ^
+     49|       expect(ajena.body.error.code).toBe('PROFESIONAL_NO_ENCONTRADO');
+     50|       expect(ajena.body).toEqual(ausente.body);
+ ❯ rol tests/fixtures/agenda.js:15:7
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/fixtures/agenda.js:6:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ conDosAgendas tests/fixtures/agenda.js:5:3
+ ❯ tests/agenda-permisos.test.js:45:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo usa profesionalDeUsuario y ve solo su agenda, también inactiva
+AssertionError: expected 403 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 403
+
+ ❯ rolA tests/agenda-permisos.test.js:65:30
+     63|         for (const extra of [{}, { profesionalId: a.profesionalId }]) {
+     64|           const res = await consultar(tokenA, extra);
+     65|           expect(res.status).toBe(200);
+       |                              ^
+     66|           expect(res.body.turnos.map(({ id }) => id)).toEqual([turnoA.…
+     67|         }
+ ❯ rol tests/fixtures/agenda.js:15:7
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/fixtures/agenda.js:6:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ conDosAgendas tests/fixtures/agenda.js:5:3
+ ❯ tests/agenda-permisos.test.js:56:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 5 passed (9)
+   Start at  20:06:46
+   Duration  6.28s (tests 83%, import 10%, transform 4%, setup 3%)
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/tanda2-red.json

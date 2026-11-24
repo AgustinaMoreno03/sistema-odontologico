@@ -6,6 +6,8 @@ solapamientos por paciente, profesional ni sillón/box. Spec vigente:
 `openspec/specs/turnos/spec.md` (changes `c05-crear-turno-sin-solapamientos`,
 `c06-cancelar-turno-liberar-horario` y `c07-reprogramar-turno`).
 
+La consulta diaria/semanal `GET /api/agenda` (C08), sus permisos, paginación y DTO están documentados en [AGENDA.md](AGENDA.md).
+
 ## Interfaz pública
 
 ### `crearTurno(parametros, deps = {})` — `src/modules/turnos/servicios.js`
@@ -118,12 +120,12 @@ cancelarTurno({ turnoId, consultorioId, usuarioId, solicitadoPor }) → Promise<
 | Code | HTTP | Significado |
 |---|---|---|
 | `TOKEN_INVALIDO` | 401 | Sin token válido — middleware de C00 (además borra cualquier `x-tenant-*`). |
-| `VALIDACION` | 400 | Formato: UUID malformado en cualquier campo, o `inicio` sin zona horaria explícita. |
-| `SIN_PERMISO` | 403 | `ODONTOLOGO`. |
+| `VALIDACION` | 400 | Formato: UUID malformado, `inicio` sin zona explícita o parámetros/rango de agenda inválidos (C08). |
+| `SIN_PERMISO` | 403 | Escrituras: `ODONTOLOGO`. Agenda C08: odontólogo sin vínculo o que solicita otra ficha. |
 | `TURNO_NO_ENCONTRADO` | 404 | Reprogramación (C07): turno inexistente o de OTRO consultorio — una sola señal, mensaje sin datos ajenos (RN-TEN-01/RN-TEN-02). |
 | `TURNO_YA_CANCELADO` | 409 | Cancelación (C06): el turno ya fue cancelado; se conserva la auditoría original. |
 | `TURNO_PASADO` | 409 | Cancelación (C06): el inicio del turno ya ocurrió. |
-| `PROFESIONAL_NO_ENCONTRADO` | 404 | Agenda (C08, contrato propuesto aún sin implementar): el filtro de recepción o administración identifica un profesional inexistente o ajeno al consultorio autenticado; ambos casos dan la misma señal. |
+| `PROFESIONAL_NO_ENCONTRADO` | 404 | Agenda (C08): el filtro de recepción o administración identifica un profesional inexistente o ajeno al consultorio autenticado; ambos casos dan la misma señal. |
 | `SOLAPAMIENTO` | 409 | Conflicto por paciente, profesional o sillón/box dentro del consultorio (pre-check o violación `23P01` del índice). |
 | `ESTADO_INVALIDO` | 409 | Reprogramación (C07): el turno no está en estado `PENDIENTE` (RN-AG-10); no se modifica nada. |
 | `REFERENCIA_INVALIDA` | 422 | Recurso inexistente, ajeno al consultorio o inactivo — **indicando el campo** (`pacienteId`, `profesionalId`, `sillonBoxId`, `prestacionId`), un mensaje por campo (mismo para los tres estados). |

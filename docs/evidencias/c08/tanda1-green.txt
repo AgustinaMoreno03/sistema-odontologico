@@ -1,0 +1,47 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-ruta.test.js tests/agenda-aislamiento.test.js tests/pacientes-agenda-lectura.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/tanda1-green.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > devuelve el contrato vacío y los límites UTC 303ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin hasta 13ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin desde 9ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin zona 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza día imposible 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza mes imposible 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza hora imposible 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango vacío 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango invertido 9ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza más de 168 horas 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza UUID inválido 9ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza parámetro ajeno 9ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha repetida 15ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha estructurada 11ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token ausente con el error uniforme 10ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token expirado con el error uniforme 14ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token forjado con el error uniforme 8ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > aplica intersección [) y conserva turno cruzando medianoche 346ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > acepta la semana y omite el turno del lunes siguiente 194ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > incluye cancelados y muestra el nuevo horario tras reprogramar 376ms
+stdout | tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+C08 aislamiento: {"consultoriosPersistidos":2,"pacientesHTTP":[200,200],"agendaHTTP":[200,200]}
+
+ ✓ tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres 681ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > resuelve vacío, deduplica y devuelve solo nombres con apellido null 155ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > omite pacientes ajenos e inexistentes 202ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 3ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+
+ Test Files  3 passed (3)
+      Tests  27 passed (27)
+   Start at  20:03:53
+   Duration  6.15s (tests 60%, import 24%, setup 9%, transform 6%, worker 1%)
+
+    Isolate  3 workers spawned · ~206ms startup each (spawn + environment, per file)
+             at least ~412ms faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/tanda1-green.json

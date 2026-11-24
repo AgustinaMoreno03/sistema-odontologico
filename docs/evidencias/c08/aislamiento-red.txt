@@ -1,0 +1,49 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-aislamiento.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/aislamiento-red.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+stdout | tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+C08 aislamiento: {"consultoriosPersistidos":2,"pacientesHTTP":[200,200],"agendaHTTP":[404,404]}
+
+ × tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres 316ms
+   → Agenda debe existir para ambos consultorios: expected [ 404, 404 ] to deeply equal [ 200, 200 ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+AssertionError: Agenda debe existir para ambos consultorios: expected [ 404, 404 ] to deeply equal [ 200, 200 ]
+
+- Expected
++ Received
+
+  [
+-   200,
+-   200,
++   404,
++   404,
+  ]
+
+ ❯ rol tests/agenda-aislamiento.test.js:66:10
+     64|       // Esperar el contrato final (200), no 404: el fallo es genuino.
+     65|       expect([agendaA.status, agendaB.status], 'Agenda debe existir pa…
+     66|         .toEqual([200, 200]);
+       |          ^
+     67|       expect(agendaA.body.turnos).toEqual([expect.objectContaining({
+     68|         id: turnoA.id,
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/agenda-aislamiento.test.js:11:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-aislamiento.test.js:10:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:54:37
+   Duration  3.26s (import 41%, tests 31%, transform 15%, setup 13%, worker 1%)
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/aislamiento-red.json
