@@ -25,10 +25,10 @@
 
 ## 5. Integración, liberación y concurrencia
 
-- [ ] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva. Verificación: pasó sin RED porque la liberación ya la garantizaban las restricciones de C05 y la 3.2
+- [ ] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva. Verificación, no RED: pasó porque la liberación ya la garantizaban las restricciones de exclusión de C05 (050) y la cancelación de 3.2
 - [x] 5.2 GREEN: integrar la ruta, servicio y repositorio sin cambiar las restricciones de exclusión de C05; verificar que cancelar responde 200 y la nueva reserva responde 201, conservando ambos registros.
-- [ ] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar. Verificación: pasó sin RED porque la serialización ya estaba en 3.2.
-- [x] 5.4 Verificación (no TDD): en `tests/turnos-cancelacion-api.test.js`, verificar que cancelar libera el mismo horario, paciente, profesional y sillón para una nueva reserva, y que dos cancelaciones concurrentes se serializan y conservan la auditoría ganadora.
+- [ ] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar. Verificación, no RED: pasó porque la serialización ya estaba en 3.2 (lectura FOR UPDATE).
+- [x] 5.4 Verificación (no TDD): en `tests/turnos-cancelacion-api.test.js`, verificar que cancelar libera el mismo horario, paciente, profesional y sillón para una nueva reserva (201), y que dos cancelaciones concurrentes terminan una en 200 y otra en 409 `TURNO_YA_CANCELADO`, conservando la auditoría de la primera.
 - [x] 5.5 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
 - [ ] 5.6 Deferred: sincronizar el spec principal de turnos únicamente durante el archive, según instrucción de la líder y respetando que su ownership es de C07 (Kevin). No editar `openspec/specs/` directamente.
 
