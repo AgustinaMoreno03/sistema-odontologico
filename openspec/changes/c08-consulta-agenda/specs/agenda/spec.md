@@ -55,7 +55,7 @@ Según [KB 03](../../../../../knowledge-base/03_actores_y_roles.md) y RN-AG-03, 
 
 ### Requirement: Odontólogo limitado a su propia agenda
 
-El sistema SHALL resolver la ficha vinculada al usuario y consultorio del token. `ODONTOLOGO` SHALL consultar exclusivamente esa agenda, esté activa o inactiva. Sin vínculo SHALL recibir 403 `SIN_PERMISO`. Un filtro distinto a su ficha SHALL recibir el mismo 403 sin consultar la existencia del profesional solicitado. Ser administrador no SHALL imponer esta limitación (KB 03, RN-AU-02).
+El sistema SHALL resolver la ficha mediante `profesionalDeUsuario({ usuarioId, consultorioId })` de catálogo con identidad del token, sin JOIN directo a profesional ni migración nueva. `ODONTOLOGO` SHALL consultar solo esa agenda, activa o inactiva; sin vínculo o con filtro distinto SHALL recibir 403 `SIN_PERMISO` sin buscar la ficha solicitada. Ser administrador no SHALL imponer esta limitación (KB 03, RN-AU-02).
 
 #### Scenario: Agenda propia
 - **GIVEN** un odontólogo vinculado a P1 y un segundo profesional P2 en el mismo consultorio
@@ -89,11 +89,16 @@ Toda lectura SHALL filtrar por el consultorio del token validado, incluyendo la 
 
 ### Requirement: Respuesta mínima y estados preservados
 
-La respuesta 200 SHALL contener `{ desde, hasta, zonaHoraria, turnos, hayMas, siguienteOffset }`. Cada turno SHALL contener `id`, `pacienteId`, `pacienteNombre`, `pacienteApellido`, `profesionalId`, `sillonBoxId`, `prestacionId`, `inicio`, `fin`, `duracionMin`, `estado`. SHALL incluir también cancelados y conservar todos los estados almacenados, sin contactos, historia clínica ni auditoría interna.
+La respuesta 200 SHALL contener `{ desde, hasta, zonaHoraria, turnos, hayMas, siguienteOffset }`. Cada turno SHALL contener `id`, `pacienteId`, `pacienteNombre`, `pacienteApellido`, `profesionalId`, `sillonBoxId`, `prestacionId`, `inicio`, `fin`, `duracionMin`, `estado`. Sin apellido, pacienteApellido SHALL ser null. SHALL incluir cancelados y conservar todos los estados almacenados, sin contactos, historia clínica ni auditoría interna.
 
 #### Scenario: Nombre del paciente y lista vacía
 - **WHEN** consulta un rango con turnos ficticios o un rango sin turnos
 - **THEN** recibe el DTO definido con nombre y apellido, o turnos `[]` con hayMas false y siguienteOffset null
+
+#### Scenario: Paciente sin apellido
+- **GIVEN** un turno de un paciente ficticio cuya ficha tiene apellido null
+- **WHEN** un usuario autorizado consulta la agenda correspondiente
+- **THEN** el turno contiene pacienteApellido null, conserva pacienteNombre y no omite el campo ni lo convierte en cadena vacía
 
 #### Scenario: Cancelación y reprogramación reflejadas
 - **GIVEN** un turno CANCELADO y otro turno reprogramado mediante C07
