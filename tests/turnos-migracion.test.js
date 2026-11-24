@@ -9,7 +9,8 @@ import { conFixtureTurnos } from './helpers/turnos-fixtures.js';
 import { obtenerUrlAdmin, obtenerUrlBaseTest } from './setup/urls.js';
 
 /**
- * C05 — verificación de la migración `050_turno.sql` (tasks 2.1 y 2.2).
+ * C05/C06 — verificación de las migraciones `050_turno.sql` y
+ * `071_cancelar_turno.sql`.
  *
  * Parte A: el runner OFICIAL (`npm run migrate`, node-pg-migrate +
  * migrations.config.js) aplica la secuencia completa `001 → 010 → 020 → 030
@@ -113,13 +114,14 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
 
     expect(res.status, `${res.stdout ?? ''}${res.stderr ?? ''}`).toBe(0);
     const trazas = await historial(urlScratch());
-    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050 → 070.
+    // Secuencia ascendente completa: 001 → 010 → 020 → 030 → 040 → 050 → 070 → 071.
     expect(trazas).toEqual(migracionesEsperadas);
     expect(trazas).toContain('050_turno');
     expect(trazas.indexOf('050_turno')).toBeGreaterThan(trazas.indexOf('040_prestaciones'));
-    // C07 (task 2.2): la 070 entra por readdir dinámico y corre DESPUÉS de la 050.
+    // C06 usa 071 inmediatamente después de C07 (070), porque 071 está libre.
     expect(trazas).toContain('070_reprogramar_turno');
-    expect(trazas.indexOf('070_reprogramar_turno')).toBeGreaterThan(trazas.indexOf('050_turno'));
+    expect(trazas).toContain('071_cancelar_turno');
+    expect(trazas.indexOf('071_cancelar_turno')).toBeGreaterThan(trazas.indexOf('070_reprogramar_turno'));
 
     expect(await tablas(urlScratch())).toContain('turno');
 
@@ -130,8 +132,7 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
     );
     expect(extensiones).toHaveLength(1);
 
-    // Columnas de design.md D2: cinco recursos + intervalo + duración + estado + timestamps.
-    // C07 (070): más la auditoría de reprogramación (reprogramado_en/por).
+    // Columnas de turnos, auditoría de cancelación (C05/C06) y reprogramación (C07).
     const columnas = await consultas(
       urlScratch(),
       "SELECT column_name FROM information_schema.columns " +
@@ -151,6 +152,8 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
         'estado',
         'creado_en',
         'cancelado_en',
+        'cancelado_por',
+        'solicitado_por',
         'reprogramado_en',
         'reprogramado_por',
       ].sort()
@@ -186,6 +189,24 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
     const checks = restricciones.filter((r) => r.contype === 'c').map((r) => r.conname);
     expect(checks).toContain('turno_intervalo_valido');
     expect(checks).toContain('turno_estado_valido');
+    expect(checks).toContain('turno_solicitado_por_valido');
+    const definicionSolicitadoPor = await consultas(
+      urlScratch(),
+      "SELECT pg_get_constraintdef(oid) AS definicion FROM pg_constraint WHERE conname = 'turno_solicitado_por_valido'"
+    );
+    expect(definicionSolicitadoPor[0].definicion).toContain('PACIENTE');
+    expect(definicionSolicitadoPor[0].definicion).toContain('CONSULTORIO');
+
+    const fkCancelacion = await consultas(
+      urlScratch(),
+      `SELECT c.conname
+         FROM pg_constraint c
+         JOIN pg_class tabla ON tabla.oid = c.conrelid
+         JOIN pg_class destino ON destino.oid = c.confrelid
+        WHERE tabla.relname = 'turno' AND destino.relname = 'usuario'
+          AND c.contype = 'f' AND pg_get_constraintdef(c.oid) LIKE '%cancelado_por%'`
+    );
+    expect(fkCancelacion.map((r) => r.conname)).toContain('turno_cancelado_por_fkey');
   }, 60_000);
 
   it('base existente solo con las migraciones previas → el runner aplica la 050 sin renumerar nada', async () => {
@@ -241,6 +262,7 @@ describe('050_turno aplicada por el runner oficial (schema-migrations)', () => {
     );
     expect(datos).toHaveLength(1);
   }, 60_000);
+
 });
 
 // ---------------------------------------------------------------------------

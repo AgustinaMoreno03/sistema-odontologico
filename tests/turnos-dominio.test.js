@@ -8,6 +8,9 @@ import {
   traducirViolacionExclusion,
   validarInicio,
   validarUuid,
+  validarSolicitadoPor,
+  errorTurnoYaCancelado,
+  errorTurnoPasado,
 } from '../src/modules/turnos/dominio.js';
 
 /**
@@ -58,6 +61,26 @@ describe('dominio de turnos: validarUuid', () => {
     expect(() => validarUuid('malo', 'sillonBoxId')).toThrowError(
       expect.objectContaining({ message: expect.stringContaining('sillonBoxId') })
     );
+  });
+});
+
+describe('dominio de cancelación C06', () => {
+  it.each(['PACIENTE', 'CONSULTORIO'])('acepta solicitadoPor %s', (valor) => {
+    expect(validarSolicitadoPor(valor)).toBe(valor);
+  });
+
+  it.each([undefined, null, '', 'OTRO'])('rechaza solicitadoPor inválido: %s', (valor) => {
+    expect(() => validarSolicitadoPor(valor)).toThrow(
+      expect.objectContaining({ statusCode: 400, code: 'VALIDACION' })
+    );
+  });
+
+  it('expone errores 409 estables para repetición y turno pasado', () => {
+    expect(errorTurnoYaCancelado()).toMatchObject({
+      statusCode: 409,
+      code: 'TURNO_YA_CANCELADO',
+    });
+    expect(errorTurnoPasado()).toMatchObject({ statusCode: 409, code: 'TURNO_PASADO' });
   });
 });
 
