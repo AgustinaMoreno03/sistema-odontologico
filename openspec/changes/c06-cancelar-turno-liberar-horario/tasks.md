@@ -25,11 +25,12 @@
 
 ## 5. Integración, liberación y concurrencia
 
-- [x] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva.
+- [ ] 5.1 RED: agregar prueba end-to-end de cancelación seguida de creación sobre mismo horario, paciente, profesional y sillón; verificar que antes del cambio el turno original bloquea la reserva. Verificación: pasó sin RED porque la liberación ya la garantizaban las restricciones de C05 y la 3.2
 - [x] 5.2 GREEN: integrar la ruta, servicio y repositorio sin cambiar las restricciones de exclusión de C05; verificar que cancelar responde 200 y la nueva reserva responde 201, conservando ambos registros.
-- [x] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar.
-- [x] 5.4 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
-- [ ] 5.5 Deferred: sincronizar el spec principal de turnos únicamente durante el archive, según instrucción de la líder y respetando que su ownership es de C07 (Kevin). No editar `openspec/specs/` directamente.
+- [ ] 5.3 RED: agregar la prueba de dos solicitudes concurrentes de cancelación sobre el mismo turno y verificar que detecta la carrera/auditoría sobrescrita antes de serializar. Verificación: pasó sin RED porque la serialización ya estaba en 3.2.
+- [x] 5.4 Verificación (no TDD): en `tests/turnos-cancelacion-api.test.js`, verificar que cancelar libera el mismo horario, paciente, profesional y sillón para una nueva reserva, y que dos cancelaciones concurrentes se serializan y conservan la auditoría ganadora.
+- [x] 5.5 GREEN: hacer que la operación concurrente sea atómica e idempotente bajo lock; verificar que solo una solicitud modifica la fila y la auditoría original se conserva.
+- [ ] 5.6 Deferred: sincronizar el spec principal de turnos únicamente durante el archive, según instrucción de la líder y respetando que su ownership es de C07 (Kevin). No editar `openspec/specs/` directamente.
 
 ## 6. Verificación final
 
