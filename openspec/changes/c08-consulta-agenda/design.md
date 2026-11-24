@@ -148,7 +148,7 @@ flowchart LR
 
 ### 6. Verificación y propiedad
 
-Tests propios en `tests/agenda-dominio.test.js`, `agenda-api.test.js` y `pacientes-agenda-lectura.test.js`; fixtures propios en `tests/fixtures/agenda.js`. Pueden reutilizar helpers existentes por import, nunca editarlos. Crear dos consultorios y dos profesionales del mismo consultorio para probar ambas fronteras. UUID ficticios por fixture, limpieza por IDs propios y rollback cuando corresponda.
+Tests propios en `tests/agenda-ruta.test.js`, `agenda-aislamiento.test.js`, `agenda-permisos.test.js`, `agenda-paginacion.test.js` y `pacientes-agenda-lectura.test.js`; fixtures propios en `tests/fixtures/agenda.js`. Las validaciones puras se ejercitan por la interfaz HTTP pública. Se reutilizan helpers existentes por import, nunca editados. Dos consultorios y dos profesionales del mismo consultorio prueban ambas fronteras, con UUID ficticios y limpieza por identificador.
 
 Cubrir cada escenario del spec mediante dominio y HTTP real con PostgreSQL. Mantener salida roja genuina y verde de los tests nuevos. La suite completa de main puede aumentar durante el trabajo: no fijar como expectativa que siempre sean 421 tests. Antes de Apply actualizar desde main y verificar la base completa; al cerrar ejecutar npm test y strict validation, registrar fecha, número real y commits.
 
@@ -173,6 +173,30 @@ Decision: no (no UI). C08 entrega API; la interfaz visual pertenece a C09.
 
 ## Estado de revisión
 
-Propuesta no aprobada según revisión de Agustina. No se ha iniciado Apply y no hay tests propios de C08 implementados. Las decisiones de endpoint, parámetros, inclusión de cancelados, paginación y DTO siguen siendo propuestas.
+Contrato aprobado por Agustina mediante PR #22. Apply autorizado expresamente el 24/11/2026 tras ver el RED genuino de aislamiento y la suite base. Se implementa en una única sesión y rama, con git status antes de cada escritura y sin alterar aserciones para conseguir GREEN.
 
-Antes de Apply se requiere: (1) C05 archivado y spec final de turnos disponible; (2) revert de la migración 110 integrado y ausencia de esa migración en el árbol de main; (3) reconciliar esta propuesta con esa base final; (4) aprobación explícita de Agustina; (5) actualizar la rama y ejecutar npm test sobre el commit final identificado por SHA. No interpretar los 421 tests históricos ni el estado de archivos completos de OpenSpec como cumplimiento de estos requisitos.
+Base previa: `5e0f581846c241bd25c5e242ac881be81264bb44`, suite 458/458 tests en 49 archivos. Después se incorporó por fast-forward `7dcdcd1304bec09079206cacb8731ce9627ee466`, que solo añade los cuatro Markdown aprobados de PR #22. C05 está archivado en `2026-11-24-c05-crear-turno-sin-solapamientos`; migración C06 071, sin 110. La suite completa se vuelve a ejecutar al cerrar sobre la implementación resultante.
+
+## Evidencia por tandas
+
+Todos los logs originales y reportes JSON se conservan en docs/evidencias/c08. El test inicial de aislamiento mantiene SHA256 `51FCD35819CF277D58C0BE6E3055D6AAE959F9D94981C2D8140C38BECE08D7A7`.
+
+| Tanda | RED original | GREEN acumulado |
+|---|---|---|
+| Ruta, parámetros y lectura mínima | tanda1-red-valido: 24 fallos, 3 aprobados; ruta ausente y export de nombres aún inexistente | tanda1-green: 27/27 |
+| Filtro por rol y profesional | tanda2-red: 4 fallos, 5 aprobados; filtro ignorado y odontólogo propio rechazado | tanda2-green: 36/36 |
+| Paginación | tanda3-red: 2 fallos, 9 aprobados; límite/offset no aplicados | tanda3-green: 47/47 |
+
+Se conserva también tanda1-red como diagnóstico inicial: contenía un error de fixture al pedir dos veces recursos con el mismo nombre profesional. Se quitó un crearRecursos innecesario del test nuevo, sin tocar aserciones, y se repitió el RED válido antes de escribir código productivo. No se reemplazaron ni maquillaron las salidas originales.
+
+Los 47 tests cubren rango diario/semanal, intersección y medianoche, cancelados y reprogramados, estados inactivos, roles, pacienteApellido null, pertenencia, suplantación por query/body/headers, paginación, limpieza independiente y error inesperado de la interfaz de pacientes. Esta última se sustituye solo en la frontera entre módulos para simular fallo; SQL y HTTP de integración son reales.
+
+## Verify final
+
+Suite completa el 24/11/2026, inicio 20:10:35 -03:00: **505/505 tests en 54 archivos**, cero fallos, 118.02 segundos. Base integrada `7dcdcd1304bec09079206cacb8731ce9627ee466`, implementación aún sin commit durante esa primera ejecución (según la condición de commitear después del GREEN). Reportes originales suite-completa-green.txt y suite-completa-green.json. El SHA del commit de implementación y su comprobación posterior se entregan en el PR de cierre.
+
+Validación estricta OpenSpec y git diff --check aprobados. Revisión de SQL: parámetros para todos los valores, predicado temporal [) sin funciones sobre columnas, filtro por consultorio en las dos lecturas, variante por profesional sin JOIN a catálogo ni pacientes. `src/app.js` agrega exactamente dos líneas. package.json, package-lock.json, tests/setup, helpers y db/migrations coinciden con la base integrada. No hay nuevas dependencias ni migraciones.
+
+Los archivos de evidencia histórica conservan el estado de su momento, incluido preparacion-red.md que indica que Apply aún no estaba autorizado. El presente apartado documenta la autorización y verificación posteriores; no se alteran los logs históricos.
+
+Limitaciones acordadas: nombres actuales del paciente (sin snapshot histórico), rango de hasta 168 horas y paginación offset sin snapshot entre solicitudes concurrentes. No se agrega UI, confirmación, asistencia ni bloqueos. Archive queda después de la revisión correspondiente; no se cierran changes ajenos.

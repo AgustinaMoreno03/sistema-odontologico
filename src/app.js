@@ -6,6 +6,7 @@ import { chequearBase } from './salud/repositorios.js';
 import { crearRouterSalud } from './salud/rutas.js';
 import { rutasAuth, rutasUsuarios } from './modules/auth/rutas.js';
 import { crearRouterCatalogo } from './modules/catalogo/index.js';
+import { crearRouterAgenda } from './modules/turnos/agenda-rutas.js';
 import { crearRouterTurnos } from './modules/turnos/rutas.js';
 
 /**
@@ -36,6 +37,7 @@ export function crearApp({ chequearBase: chequearInyectado = chequearBase } = {}
 
   // Módulo catalogo (C02): rutas bajo /api con la autenticación de C00.
   app.use('/api', crearRouterCatalogo());
+  app.use('/api/agenda', crearRouterAgenda());
   app.use('/api/pacientes', crearRouterPacientes());
   app.use('/api/turnos', crearRouterTurnos());
 

@@ -1,0 +1,541 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/suite-completa-green.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > sin token → 401 TOKEN_INVALIDO 53ms
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > rol ODONTOLOGO → 403 SIN_PERMISO y no se crea ningún turno 126ms
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > UUID malformado → 400 VALIDACION nombrando el campo 8ms
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > inicio sin zona horaria → 400 VALIDACION nombrando inicio 6ms
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > crearApp() expone /api/turnos: con token válido y UUID malformado responde 400 (no 404) 7ms
+ ✓ tests/turnos-api.test.js > POST /api/turnos — capa HTTP (spec R1) > crearApp() /api/turnos sin token → 401 TOKEN_INVALIDO (el auth blanket de /api lo cubre aunque la ruta no exista) 5ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S1 — reserva válida: 201 con fin = inicio + 30 min, estado PENDIENTE y fila persistida 749ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S2 — conflicto por profesional: 409 SOLAPAMIENTO y no se crea el segundo turno 379ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S3 — conflicto por sillón/box: 409 SOLAPAMIENTO y no se crea el segundo turno 253ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S4 — turno contiguo válido: 201 con inicio 17:30Z y fin 18:00Z, COUNT = 2 284ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S5 — conflicto por paciente (RN-AG-01): 409 SOLAPAMIENTO y COUNT = 1 381ms
+stdout | tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S6 — concurrencia: dos POST idénticos en paralelo → exactamente un 201 y un 409
+S6 instantes → A: envío=3343.55 respuesta=3629.31 status=409 | B: envío=3344.25 respuesta=3547.78 status=201
+
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S6 — concurrencia: dos POST idénticos en paralelo → exactamente un 201 y un 409 489ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S7 — aislamiento: turnos solapados idénticos en A y B → ambos 201; consultorioId en query/body/header se ignora 855ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S7 — recurso de B enviado desde A → 422 idéntico al inexistente (respuesta completa, 4 campos) 1128ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S8 — 422 por campo con datos reales: inactivo/ajeno/inexistente → bodies idénticos 1637ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S9 — duración fijada al crearse: editar la prestación a 60 min no altera el turno existente y la nueva reserva usa 60 652ms
+ ✓ tests/turnos-api.test.js > Escenarios del spec — contra crearApp() real (Tanda D) > S10 — ODONTOLOGO → 403 SIN_PERMISO y no se crea ningún turno (contra crearApp()) 193ms
+ ✓ tests/turnos-api.test.js > PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1) > sin token → 401 TOKEN_INVALIDO 4ms
+ ✓ tests/turnos-api.test.js > PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1) > :id malformado → 400 VALIDACION sin tocar la base 189ms
+ ✓ tests/turnos-api.test.js > PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1) > inicio sin timezone → 400 VALIDACION sin tocar la base 83ms
+ ✓ tests/turnos-api.test.js > PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1) > rol ODONTOLOGO → 403 SIN_PERMISO (después de la forma, antes de tocar la base) 83ms
+ ✓ tests/turnos-api.test.js > PATCH /api/turnos/:id/reprogramar — capa HTTP (C07 task 6.1) > crearApp() expone el PATCH: con token válido e id malformado responde 400 (no 404) 5ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S1 — reprogramación exitosa: 200 con el mismo turno, 15:00–15:30 UTC y auditoría (task 7.1) 255ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S2 — conflicto: 409 SOLAPAMIENTO y el turno conserva inicio 10:00 / fin 10:30 UTC (task 7.2) 259ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S3 — 404 TURNO_NO_ENCONTRADO: id inexistente y turno de otro consultorio, sin modificar filas (task 7.3) 292ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S4 — turno CANCELADO → 409 ESTADO_INVALIDO y conserva horario y estado (task 7.4) 351ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S4 — turno ATENDIDO → 409 ESTADO_INVALIDO y conserva horario y estado (task 7.4) 139ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S5 — inicio sin zona horaria → 400 VALIDACION y el turno conserva su horario anterior (task 7.5) 198ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S5 — :id malformado → 400 VALIDACION nombrando el campo (task 7.5) 185ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > S6 — token ODONTOLOGO → 403 SIN_PERMISO y el turno no se modifica (task 7.6) 143ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > R2 — el turno que empieza justo cuando termina el reprogramado no bloquea ([), RN-AG-06) (task 7.7) 139ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > R2 — el turno que termina justo cuando empieza el reprogramado no bloquea ([), RN-AG-06) (task 7.7) 249ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > R2 — un turno CANCELADO en el nuevo rango no bloquea la reprogramación (task 7.7) 141ms
+ ✓ tests/turnos-api.test.js > Reprogramación — escenarios del spec contra crearApp() (C07 tasks 7.1–7.8) > Carrera — dos PATCH idénticos en paralelo: dos 200 y un solo horario final (task 7.8) 169ms
+ ✓ tests/turnos-migracion.test.js > 050_turno aplicada por el runner oficial (schema-migrations) > base vacía + runner con todas las migraciones → secuencia completa con la 050, extensión, tabla e índices 2665ms
+ ✓ tests/turnos-migracion.test.js > 050_turno aplicada por el runner oficial (schema-migrations) > base existente solo con las migraciones previas → el runner aplica la 050 sin renumerar nada 2133ms
+ ✓ tests/turnos-migracion.test.js > 050_turno aplicada por el runner oficial (schema-migrations) > re-ejecución sin pendientes → exit 0, historial sin duplicados y los datos previos intactos 1900ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > btree_gist instalado y opclass uuid disponible para gist 199ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > INSERT solapado por paciente → 23P01 de turno_paciente_sin_solape 87ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > INSERT solapado por profesional → 23P01 de turno_profesional_sin_solape 86ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > INSERT solapado por sillón/box → 23P01 de turno_sillon_box_sin_solape 85ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > dos turnos contiguos [) del mismo recurso coexisten sin conflicto (RN-AG-06) 189ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > fin = inicio (rango vacío) → CHECK 23514 de turno_intervalo_valido 194ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > estado fuera de los cinco valores de RN-AG-10 → 23514; sin estado nace PENDIENTE 196ms
+ ✓ tests/turnos-migracion.test.js > restricciones de la 050 contra la base de test (design D1) > un turno CANCELADO no bloquea reservas solapadas (WHERE parcial, RN-AG-08) 79ms
+ ✓ tests/catalogo-migracion-runner.test.js > 020_catalogo aplicada por el runner oficial (schema-migrations) > base vacía + runner con todas las migraciones → crea el esquema completo del catálogo 2150ms
+ ✓ tests/catalogo-migracion-runner.test.js > 020_catalogo aplicada por el runner oficial (schema-migrations) > base existente con solo la 001 → el runner aplica la 020 sin renumerar nada 1844ms
+ ✓ tests/catalogo-migracion-runner.test.js > 020_catalogo aplicada por el runner oficial (schema-migrations) > la segunda ejecución del runner es no-op y no pierde los datos existentes 1893ms
+ ✓ tests/runner-migraciones.test.js > runner de migraciones (schema-migrations) > SQL inválido → exit ≠ 0, transacción revocada y sin registro en el historial 1636ms
+ ✓ tests/runner-migraciones.test.js > runner de migraciones (schema-migrations) > 002 pendiente tras 010 aplicado → fallo visible con exit ≠ 0, sin aplicarla fuera de orden ni ignorarla 1620ms
+ ✓ tests/runner-migraciones.test.js > runner de migraciones (schema-migrations) > re-ejecución sin pendientes → exit 0, esquema sin cambios e historial sin duplicados 1743ms
+ ✓ tests/runner-migraciones.test.js > runner de migraciones (schema-migrations) > cadena estilo Neon (sslmode + parámetros extra) aceptada por el runner y por la API 985ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > POST /consultorios devuelve 404 sin ofrecer registro público 219ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > un admin crea usuarios con cualquiera de los tres roles (201) en su consultorio 746ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > ODONTOLOGO recibe 403 al intentar crear un usuario 332ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > RECEPCION recibe 403 al intentar crear un usuario 318ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > POST /usuarios falla si falta email o contraseña 221ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > POST /usuarios falla si falta email o contraseña 552ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > un email duplicado devuelve 409 629ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > ignora consultorioId enviado en el body y usa el consultorio del admin 664ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > GET /usuarios lista solo usuarios del consultorio autenticado 495ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > GET /usuarios/:id devuelve 200 para un usuario del propio consultorio 256ms
+ ✓ tests/usuarios.test.js > gestión de usuarios por consultorio > GET /usuarios/:id de otro consultorio devuelve 404 506ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > crea un turno ficticio con fin = inicio + duración y estado PENDIENTE 187ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > solape por profesional → 409 SOLAPAMIENTO nombrando al profesional y sin segundo registro 198ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > solape por sillón/box → 409 SOLAPAMIENTO nombrando al sillón y sin segundo registro 195ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > solape por paciente → 409 SOLAPAMIENTO nombrando al paciente y sin segundo registro 198ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > dos turnos contiguos [) del mismo recurso coexisten (RN-AG-06) 215ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > turnos en el mismo intervalo con recursos distintos coexisten dentro del consultorio 213ms
+ ✓ tests/turnos-repositorio.test.js > repositorio de turnos: alta y solapamientos (task 3.2) > el pre-check y el índice filtran SIEMPRE por consultorio (RN-TEN-01) 223ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reintento de transacción ante deadlock 40P01 (S6, opción 1) > 40P01 en el primer INSERT → reintenta la transacción COMPLETA y el pre-check ve al ganador (409 detallado) 3ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reintento de transacción ante deadlock 40P01 (S6, opción 1) > 40P01 también en el segundo intento → fallback a 409 SOLAPAMIENTO (nunca 500) y no hay tercer intento 1ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (a) el callback lanza ApiError 409 → ROLLBACK: horario conservado y sin auditoría 229ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (a2) el nuevo horario solapa con OTRO turno → 409 SOLAPAMIENTO y conserva el horario anterior 243ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (b) id inexistente → 404 TURNO_NO_ENCONTRADO y ninguna fila modificada 129ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (b2) turno de OTRO consultorio → 404 y el turno ajeno queda intacto (RN-TEN-01) 201ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (c) reprogramar al MISMO horario del propio turno no se auto-conflicta (exclusión id != turnoId) 142ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (c2) dos turnos distintos en solape → el pre-check excluye SOLO al propio turno y señala al conflicto real 232ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: reprogramarTurno transaccional (C07 task 4.2) > (d) 40P01 en el UPDATE: reintenta la transacción completa y, si persiste, 409 (nunca 500) 2ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: mapearTurno con auditoría de reprogramación (C07 task 4.3) > un turno recién creado tiene reprogramadoEn y reprogramadoPor en null 254ms
+ ✓ tests/turnos-repositorio.test.js > repositorio: mapearTurno con auditoría de reprogramación (C07 task 4.3) > tras un reprogramarTurno exitoso, el DTO devuelve ambos campos con valor 302ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a RECEPCION 285ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a ADMIN_CONSULTORIO 239ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > permite buscar fichas básicas a ODONTOLOGO 236ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca parcialmente sin distinguir tildes ni mayúsculas: JOSE 126ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca parcialmente sin distinguir tildes ni mayúsculas: ALVAR 236ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > devuelve lista vacía cuando no hay coincidencias 127ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > busca teléfono con +54 y separadores 238ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > no equipara automáticamente un teléfono internacional con uno local 241ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > compara email usando las mismas reglas de espacios y mayúsculas del índice 121ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por Ana 127ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por 1100000000 121ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > excluye fichas ajenas al buscar por ana@example.com 124ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter % 131ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter _ 122ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > interpreta literalmente el carácter \ 223ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > trata un intento de inyección como texto de búsqueda 232ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > limita a 50 y mantiene el orden aunque el cliente solicite más 145ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: "" 69ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: "   " 69ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza un texto de búsqueda inválido: ["Ana","Pérez"] 81ms
+ ✓ tests/pacientes-busqueda.test.js > C03: GET /api/pacientes > rechaza búsqueda sin token 79ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > RECEPCION ve todas sus agendas y puede filtrar 1007ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ADMIN_CONSULTORIO ve todas sus agendas y puede filtrar 688ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > filtro administrativo ajeno o inexistente da el mismo 404 389ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo usa profesionalDeUsuario y ve solo su agenda, también inactiva 916ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo no puede consultar otra ficha propia, ajena o inexistente 181ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > odontólogo sin vínculo recibe 403 164ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > ignora contexto de body/headers y rechaza suplantación por query 285ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > limpiar A conserva consultorio y turnos de B 267ms
+ ✓ tests/agenda-permisos.test.js > C08 tanda 2: roles y contexto autenticado > un fallo de la interfaz de pacientes no filtra detalles ni datos parciales 220ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > sin token → 401 TOKEN_INVALIDO 44ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > RECEPCION cancela un turno futuro y recibe DTO con auditoría sin consultorioId 176ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > ADMIN_CONSULTORIO cancela un turno futuro y recibe DTO con auditoría sin consultorioId 137ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > ODONTOLOGO recibe 403 SIN_PERMISO y no altera el turno 90ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > solicitadoPor ausente → 400 VALIDACION sin modificar el turno 90ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > solicitadoPor inválido → 400 VALIDACION sin modificar el turno 90ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > UUID malformado → 400 VALIDACION 85ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > turno inexistente o de otro consultorio → 404 TURNO_NO_ENCONTRADO 480ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > repetir cancelación → 409 TURNO_YA_CANCELADO y conserva auditoría original 238ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > ATENDIDO → 409 ESTADO_INVALIDO 133ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > AUSENTE → 409 ESTADO_INVALIDO 129ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > turno pasado → 409 TURNO_PASADO 131ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > crearApp() monta PATCH bajo /api/turnos 80ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > libera el mismo horario, paciente, profesional y sillón para una nueva reserva (C06 5.1–5.2) 863ms
+ ✓ tests/turnos-cancelacion-api.test.js > PATCH /api/turnos/:id/cancelar — capa HTTP (C06 task 4.1) > dos cancelaciones concurrentes serializan y conservan la auditoría ganadora (C06 5.3–5.4) 245ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > permite alta con nombre y teléfono a RECEPCION 301ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > permite alta con nombre y teléfono a ADMIN_CONSULTORIO 226ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > acepta solo email como contacto y lo normaliza 125ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > normaliza un teléfono con +54 y separadores 224ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > trata teléfono "()" como ausente cuando hay email 244ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana"} 76ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana","telefono":"()","email":null} 185ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana","telefono":"   ","email":"   "} 187ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"   ","telefono":"1100000000"} 175ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"telefono":"1100000000"} 82ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana","telefono":"abc","email":"ana@example.com"} 179ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana","telefono":1100000000} 76ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza datos inválidos sin crear una ficha: {"nombre":"Ana","email":123} 88ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza un email repetido sin distinguir mayúsculas 279ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > permite el mismo email en consultorios diferentes 164ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza alta por odontólogo sin permiso administrativo 78ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza alta sin token con el error uniforme de C00 73ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > rechaza un consultorio enviado en el body 73ms
+ ✓ tests/pacientes-alta.test.js > C03: POST /api/pacientes > toma el consultorio del token aunque query y headers indiquen otro 115ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — deps inyectables (design D3) > existePaciente falso → 422 REFERENCIA_INVALIDA indicando pacienteId 7ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > UUID malformado en pacienteId → 400 VALIDACION nombrando el campo 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > UUID malformado en profesionalId → 400 VALIDACION nombrando el campo 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > UUID malformado en sillonBoxId → 400 VALIDACION nombrando el campo 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > UUID malformado en prestacionId → 400 VALIDACION nombrando el campo 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > propaga el ApiError 400 VALIDACION de existePaciente (contrato C03 §7) 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 400 VALIDACION de formato (spec R1) > inicio sin zona horaria → 400 VALIDACION nombrando inicio 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 422 REFERENCIA_INVALIDA por campo (spec R4) > pacienteId: el mismo mensaje para inexistente y ajeno (030 no tiene estado inactivo) 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 422 REFERENCIA_INVALIDA por campo (spec R4) > profesionalId: el mismo mensaje para inexistente, ajeno e inactivo 1ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 422 REFERENCIA_INVALIDA por campo (spec R4) > sillonBoxId: el mismo mensaje para inexistente, ajeno e inactivo 1ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 422 REFERENCIA_INVALIDA por campo (spec R4) > prestacionId: el mismo mensaje para inexistente, ajeno e inactivo 0ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 409 SOLAPAMIENTO contra la base real (una por restricción) > restricción de paciente (RN-AG-01): 409 SOLAPAMIENTO y no crea el segundo turno 344ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 409 SOLAPAMIENTO contra la base real (una por restricción) > restricción de profesional (RN-AG-02): 409 SOLAPAMIENTO y no crea el segundo turno 443ms
+ ✓ tests/turnos-servicio.test.js > crearTurno — 409 SOLAPAMIENTO contra la base real (una por restricción) > restricción de sillón/box (RN-AG-02): 409 SOLAPAMIENTO y no crea el segundo turno 541ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > éxito: fin = inicio + 30 min con la duración congelada y auditoría del usuario 266ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > 400 defensivo: turnoId malformado o inicio sin timezone → VALIDACION sin tocar la base 80ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > estado CANCELADO → 409 ESTADO_INVALIDO sin cambios (RN-AG-10) 126ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > estado ATENDIDO → 409 ESTADO_INVALIDO sin cambios (RN-AG-10, triangulación) 240ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > solape con otro turno → 409 SOLAPAMIENTO y conserva el horario anterior (RN-AG-09) 241ms
+ ✓ tests/turnos-servicio.test.js > reprogramarTurno — servicio (C07 task 5.1) > turno inexistente o de OTRO consultorio → 404 TURNO_NO_ENCONTRADO sin modificar nada 357ms
+ ✓ tests/pacientes-actualizacion.test.js > C03 aplica 030 sobre C00 existente y repetir el runner conserva datos e historial 2925ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > el servicio valida UUID y solicitadoPor antes de acceder al repositorio 9ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > el servicio cancela turno futuro y registra el operador recibido 323ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > el servicio responde 409 CANCELADO → 2030-02-20T10:00:00Z 249ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > el servicio responde 409 ATENDIDO → 2030-02-20T10:00:00Z 152ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > el servicio responde 409 PENDIENTE → 2026-11-24T23:10:42.482Z 137ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > cancela turno PENDIENTE y persiste auditoría UTC, operador y solicitante 151ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > cancela turno CONFIRMADO y persiste auditoría UTC, operador y solicitante 248ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > id inexistente o turno de otro consultorio → 404 TURNO_NO_ENCONTRADO sin cambios 405ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > CANCELADO futuro → 409 TURNO_YA_CANCELADO y conserva estado y auditoría 135ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > ATENDIDO futuro → 409 ESTADO_INVALIDO y conserva estado y auditoría 137ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > AUSENTE futuro → 409 ESTADO_INVALIDO y conserva estado y auditoría 236ms
+ ✓ tests/turnos-cancelacion-repositorio.test.js > repositorio: cancelarTurno transaccional (C06 task 3.1) > PENDIENTE pasado → 409 TURNO_PASADO y conserva estado y auditoría 144ms
+ ✓ tests/catalogo-sillon-box-http.test.js > POST /api/sillon-boxes > 201 con la ficha del sillón creado (spec: alta válida de sillón) 219ms
+ ✓ tests/catalogo-sillon-box-http.test.js > POST /api/sillon-boxes > 422 DATOS_INVALIDOS con nombre vacío y no se crea ningún registro 98ms
+ ✓ tests/catalogo-sillon-box-http.test.js > POST /api/sillon-boxes > 409 RECURSO_DUPLICADO con "SILLÓN 1" tras "Sillón 1" (RN-TEN-03) 104ms
+ ✓ tests/catalogo-sillon-box-http.test.js > POST /api/sillon-boxes > 201 con el mismo nombre de sillón en otro consultorio y el registro queda en B 220ms
+ ✓ tests/catalogo-sillon-box-http.test.js > POST /api/sillon-boxes > 403 SIN_PERMISO para RECEPCION y ODONTOLOGO con el catálogo intacto, y 401 sin token 98ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > 200 con los campos actualizados conservando los no enviados (spec: actualización de datos) 210ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > :id malformado → 400 DATOS_INVALIDOS, validado ANTES que el cuerpo 81ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > id válido inexistente → 404 RECURSO_NO_ENCONTRADO 77ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > id de otro consultorio → 404 y el registro ajeno queda intacto (RN-TEN-02) 268ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > renombrar a un nombre ya ocupado → 409 RECURSO_DUPLICADO y el registro queda sin cambios 213ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > baja lógica y reactivación: activo false conserva el registro, lo excluye del catálogo y activo true lo devuelve 429ms
+ ✓ tests/catalogo-sillon-box-http.test.js > PUT /api/sillon-boxes/:id (actualización y baja lógica) > 403 SIN_PERMISO para RECEPCION y ODONTOLOGO y 401 TOKEN_INVALIDO sin token 205ms
+ ✓ tests/prestaciones-migracion.test.js > migracion 040 de prestaciones > aplica desde cero y puede reejecutarse sin duplicar tabla ni historial 1570ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > cuerpo con los campos documentados → 201 (spec) 292ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > consultorioId en el cuerpo → 422 y no se escribe nada en ningún consultorio 271ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > usuarioId en el cuerpo → 422 sin escribir nada (el vínculo es solo interfaz de módulo) 83ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > tipos inválidos y campos desconocidos → 422 en alta y actualización, sin escribir nada 137ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > PUT sin campos → 422 DATOS_INVALIDOS 189ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/profesionales y PUT /api/profesionales/:id > el email con mayúsculas y espacios se guarda recortado y en minúsculas en alta y actualización 83ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/sillon-boxes y PUT /api/sillon-boxes/:id > cuerpo con los campos documentados → 201 (spec) 74ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/sillon-boxes y PUT /api/sillon-boxes/:id > consultorioId y usuarioId en el cuerpo → 422 sin escribir nada 93ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/sillon-boxes y PUT /api/sillon-boxes/:id > tipos inválidos y campos desconocidos → 422 en alta y actualización, sin escribir nada 116ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/sillon-boxes y PUT /api/sillon-boxes/:id > PUT sin campos → 422 DATOS_INVALIDOS 78ms
+ ✓ tests/catalogo-contrato.test.js > contrato de entrada: POST /api/sillon-boxes y PUT /api/sillon-boxes/:id > la descripción con espacios se guarda recortada en alta y actualización 79ms
+ ✓ tests/catalogo-profesional-http.test.js > POST /api/profesionales > 201 con la ficha completa para ADMIN_CONSULTORIO (spec: alta válida con nombre y matrícula) 93ms
+ ✓ tests/catalogo-profesional-http.test.js > POST /api/profesionales > 403 SIN_PERMISO para RECEPCION y ODONTOLOGO y el catálogo queda intacto 22ms
+ ✓ tests/catalogo-profesional-http.test.js > POST /api/profesionales > 401 TOKEN_INVALIDO sin encabezado de autorización (mensaje uniforme de C00) 5ms
+ ✓ tests/catalogo-profesional-http.test.js > unicidad RN-TEN-03 en el alta de profesionales > nombre repetido con distinta caja y tilde → 409 RECURSO_DUPLICADO sin crear el segundo registro 17ms
+ ✓ tests/catalogo-profesional-http.test.js > unicidad RN-TEN-03 en el alta de profesionales > email repetido con mayúsculas y espacios → 409 RECURSO_DUPLICADO 55ms
+ ✓ tests/catalogo-profesional-http.test.js > unicidad RN-TEN-03 en el alta de profesionales > dos profesionales sin email en el mismo consultorio → ambos 201 (el email nulo no participa) 57ms
+ ✓ tests/catalogo-profesional-http.test.js > unicidad RN-TEN-03 en el alta de profesionales > mismo nombre y email en otro consultorio → 201 y el registro queda en B 12ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > 200 con los campos actualizados conservando los no enviados 196ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > :id malformado → 400 DATOS_INVALIDOS, validado ANTES que el cuerpo 74ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > id válido inexistente → 404 RECURSO_NO_ENCONTRADO 76ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > id de otro consultorio → 404 y el registro ajeno queda intacto (RN-TEN-02) 260ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > renombrar a un nombre ya ocupado → 409 RECURSO_DUPLICADO y el registro queda sin cambios 88ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > nombre vacío o de solo espacios en PUT → 422 DATOS_INVALIDOS y el registro queda sin cambios 233ms
+ ✓ tests/catalogo-profesional-http.test.js > PUT /api/profesionales/:id (actualización y baja lógica) > 403 SIN_PERMISO para RECEPCION y ODONTOLOGO y 401 TOKEN_INVALIDO sin token 193ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > devuelve el contrato vacío y los límites UTC 183ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin hasta 8ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin desde 8ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin zona 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza día imposible 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza mes imposible 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza hora imposible 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango vacío 6ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango invertido 13ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza más de 168 horas 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza UUID inválido 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza parámetro ajeno 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha repetida 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha estructurada 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token ausente con el error uniforme 17ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token expirado con el error uniforme 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token forjado con el error uniforme 4ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > aplica intersección [) y conserva turno cruzando medianoche 299ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > acepta la semana y omite el turno del lunes siguiente 284ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > incluye cancelados y muestra el nuevo horario tras reprogramar 259ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > recorre páginas con orden estable, sin duplicados y con metadata exacta 481ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > usa 100 por defecto y permite máximo 200 sin perder la fila adicional 717ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"0"} 8ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"201"} 8ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"1.5"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"texto"} 8ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"-1"} 10ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"0.5"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"10001"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":["1","2"]} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":["0","1"]} 4ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > devuelve true para un paciente del consultorio indicado 258ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > devuelve false para un paciente de otro consultorio 218ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > devuelve false para un paciente inexistente 217ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > rechaza pacienteId inválido (incorrecto) con ApiError 400 VALIDACION 74ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > rechaza consultorioId inválido (incorrecto) con ApiError 400 VALIDACION 72ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > rechaza pacienteId inválido (undefined) con ApiError 400 VALIDACION 70ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > rechaza consultorioId inválido (123) con ApiError 400 VALIDACION 70ms
+ ✓ tests/pacientes-existencia.test.js > C03: interfaz existePaciente para C05 > propaga un fallo de conexión y lo distingue de un paciente inexistente 75ms
+ ✓ tests/auth-login.test.js > login con email y contraseña > login válido devuelve un JWT con exp exactamente ocho horas después de iat 487ms
+ ✓ tests/auth-login.test.js > login con email y contraseña > email desconocido y contraseña incorrecta responden el mismo mensaje genérico 733ms
+ ✓ tests/auth-login.test.js > login con email y contraseña > la contraseña se persiste como hash salado y nunca como texto plano 311ms
+ ✓ tests/auth-secret.test.js > fail-fast de JWT_SECRET corto (spec development-environment, "Secreto del JWT demasiado corto") > JWT_SECRET de 31 caracteres → NO arranca: exit ≠ 0, mensaje del mínimo 32 y sin el valor del secreto 511ms
+ ✓ tests/auth-secret.test.js > fail-fast de JWT_SECRET corto (spec development-environment, "Secreto del JWT demasiado corto") > JWT_SECRET de exactamente 32 caracteres → supera el chequeo de configuración y arranca 494ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > guarda la ficha mínima con teléfono y asigna sus valores iniciales 203ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > acepta un paciente con email como único contacto 154ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza una ficha sin ningún contacto 160ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza un nombre compuesto solo por espacios 46ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > impide emails equivalentes por mayúsculas y espacios en el mismo consultorio 53ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > permite el mismo email en otro consultorio y múltiples emails ausentes 156ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza una referencia a un consultorio inexistente 46ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza email de solo espacios aunque haya teléfono válido 47ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > rechaza teléfono de solo espacios aunque haya email válido 43ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > mantiene la ficha mínima sin columna activo 101ms
+ ✓ tests/pacientes-migracion.test.js > C03: esquema de pacientes > habilita unaccent para comparar nombres sin tildes 46ms
+ ✓ tests/auth-config.test.js > fail-fast de JWT_SECRET (spec development-environment, "Secreto del JWT ausente o vacío") > JWT_SECRET ausente → el proceso termina con código distinto de cero, sin arrancar 510ms
+ ✓ tests/auth-config.test.js > fail-fast de JWT_SECRET (spec development-environment, "Secreto del JWT ausente o vacío") > JWT_SECRET vacío ("") → el proceso termina con código distinto de cero, sin arrancar 493ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > las tablas profesional y sillon_box existen con exactamente sus columnas 99ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > id usa DEFAULT gen_random_uuid(), creado_en es timestamptz y activo nace en true 181ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > FKs: profesional → consultorio(id) y usuario(id); sillon_box → consultorio(id) 81ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > profesional tiene índice ÚNICO parcial sobre usuario_id (WHERE usuario_id IS NOT NULL) 165ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > RN-TEN-03: índices únicos (consultorio_id, clave_unicidad(nombre)) en ambas tablas 162ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > RN-TEN-03: índice único (consultorio_id, clave_unicidad(email)) parcial en profesional 159ms
+ ✓ tests/catalogo-migracion.test.js > migración 020_catalogo: esquema de profesional y sillon_box > la función clave_unicidad(text) es IMMUTABLE y STRICT 46ms
+ ✓ tests/repositorios-c01.test.js > repositorios C01: aislamiento por consultorio > listarUsuariosPorConsultorio devuelve solo los usuarios del tenant solicitado 189ms
+ ✓ tests/repositorios-c01.test.js > repositorios C01: aislamiento por consultorio > buscarUsuarioPorId no revela un usuario que pertenece a otro consultorio 200ms
+ ✓ tests/repositorios-c01.test.js > repositorios C01: aislamiento por consultorio > crearConsultorio aprovisiona un tenant y se puede recuperar por su ID 365ms
+ ✓ tests/catalogo-listados.test.js > GET /api/profesionales y GET /api/sillon-boxes (listados de gestión) > admin lista activos e inactivos con activo y usuarioId (spec) 172ms
+ ✓ tests/catalogo-listados.test.js > GET /api/profesionales y GET /api/sillon-boxes (listados de gestión) > admin lista los sillones/boxes activos e inactivos con su estado 79ms
+ ✓ tests/catalogo-listados.test.js > GET /api/profesionales y GET /api/sillon-boxes (listados de gestión) > listado de un consultorio sin registros → 200 con lista vacía 81ms
+ ✓ tests/catalogo-listados.test.js > GET /api/profesionales y GET /api/sillon-boxes (listados de gestión) > RECEPCION y ODONTOLOGO reciben 403 SIN_PERMISO en ambos listados 85ms
+ ✓ tests/catalogo-listados.test.js > GET /api/profesionales y GET /api/sillon-boxes (listados de gestión) > sin token responden 401 TOKEN_INVALIDO (mensaje uniforme de C00) 10ms
+stdout | tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+C08 aislamiento: {"consultoriosPersistidos":2,"pacientesHTTP":[200,200],"agendaHTTP":[200,200]}
+
+ ✓ tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres 811ms
+ ✓ tests/catalogo-activo.test.js > GET /api/catalogo > los tres roles autenticados acceden con la proyección mínima id+nombre+matricula/descripcion 196ms
+ ✓ tests/catalogo-activo.test.js > GET /api/catalogo > los registros inactivos se excluyen del catálogo 12ms
+ ✓ tests/catalogo-activo.test.js > GET /api/catalogo > aislamiento entre consultorios: la respuesta de A no contiene datos de B 6ms
+ ✓ tests/catalogo-activo.test.js > GET /api/catalogo > un consultorio sin recursos responde 200 con arrays vacíos 79ms
+ ✓ tests/catalogo-activo.test.js > GET /api/catalogo > sin encabezado de autorización responde 401 TOKEN_INVALIDO (mensaje uniforme de C00) 6ms
+ ✓ tests/catalogo-activo.test.js > obtenerCatalogo (interfaz de módulo para C05) > devuelve solo los activos del consultorio indicado, con proyección mínima 1ms
+ ✓ tests/catalogo-activo.test.js > obtenerCatalogo (interfaz de módulo para C05) > devuelve arrays vacíos para un consultorio sin recursos 174ms
+ ✓ tests/catalogo-activo.test.js > obtenerCatalogo (interfaz de módulo para C05) > un consultorioId malformado lanza ApiError 400 DATOS_INVALIDOS (design D8) 1ms
+ ✓ tests/config-conexion-invalida.test.js > conexión inválida (spec schema-migrations, "Cadena malformada o credenciales inválidas") > cadena malformada (puerto inválido) → exit ≠ 0 y el mensaje no filtra la contraseña ni la cadena completa 302ms
+ ✓ tests/config-conexion-invalida.test.js > conexión inválida (spec schema-migrations, "Cadena malformada o credenciales inválidas") > credenciales inválidas (contraseña incorrecta) → exit ≠ 0 y el mensaje no filtra la contraseña ni la cadena completa 343ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > vincula y resuelve inversamente: profesionalDeUsuario devuelve la ficha dentro del consultorio 184ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > el vínculo se permite sin restricción de rol (RN-AU-02): un usuario ADMIN_CONSULTORIO se vincula 5ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > un profesional de otro consultorio → false y ningún vínculo cambia 10ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > usuario ya vinculado a otra ficha → ApiError 409 RECURSO_DUPLICADO conservando el primer vínculo 57ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > profesional ya vinculado a otro usuario → 409 RECURSO_DUPLICADO conservando el primer vínculo 9ms
+ ✓ tests/catalogo-vinculacion.test.js > vincularUsuario / profesionalDeUsuario (interfaz de módulo para C01) > revincular la misma pareja es idempotente y devuelve true 5ms
+ ✓ tests/catalogo-vinculacion.test.js > desvincularUsuario (interfaz de módulo para C01) > desvincula: devuelve true, profesionalDeUsuario → null y el profesional sigue publicado en el catálogo 156ms
+ ✓ tests/catalogo-vinculacion.test.js > desvincularUsuario (interfaz de módulo para C01) > profesional de otro consultorio → false sin cambios 8ms
+ ✓ tests/catalogo-vinculacion.test.js > borde de la vinculación (design D1/D8) > profesionalDeUsuario devuelve también fichas inactivas (resuelve identidad, no disponibilidad) 4ms
+ ✓ tests/catalogo-vinculacion.test.js > borde de la vinculación (design D1/D8) > un usuarioId inexistente viola la FK → ApiError 422 DATOS_INVALIDOS 5ms
+ ✓ tests/catalogo-vinculacion.test.js > borde de la vinculación (design D1/D8) > identificadores malformados lanzan ApiError 400 DATOS_INVALIDOS 1ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > resuelve vacío, deduplica y devuelve solo nombres con apellido null 159ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > omite pacientes ajenos e inexistentes 435ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 3ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+ ✓ tests/turnos-fixtures.test.js > helper de fixtures de turnos > crea los recursos ficticios del turno y al salir no queda nada huérfano 157ms
+ ✓ tests/turnos-fixtures.test.js > C07 task 1.2 — usuario ficticio del fixture y turnos de partida > crea un usuario ficticio en el consultorio y el token del fixture referencia ESE id 78ms
+ ✓ tests/turnos-fixtures.test.js > C07 task 1.2 — usuario ficticio del fixture y turnos de partida > crearTurnoPartida crea un turno PENDIENTE 10:00–10:30 UTC con los recursos del fixture 87ms
+ ✓ tests/turnos-fixtures.test.js > C07 task 1.2 — usuario ficticio del fixture y turnos de partida > crearTurnoPartida admite overrides de estado (CANCELADO/ATENDIDO) y de recursos 211ms
+ ✓ tests/turnos-fixtures.test.js > C07 task 1.2 — usuario ficticio del fixture y turnos de partida > la limpieza por FK borra el turno auditado con reprogramado_por ANTES que el usuario 232ms
+ ✓ tests/config-database-url.test.js > fail-fast de DATABASE_URL (spec development-environment, "Variable de entorno requerida ausente") > DATABASE_URL ausente → exit ≠ 0, mensaje que nombra la variable, sin stack ni cadenas de conexión 518ms
+ ✓ tests/catalogo-aislamiento.test.js > aislamiento entre consultorios (RN-TEN-01, RN-TEN-02) > las operaciones de A solo devuelven datos de A 259ms
+ ✓ tests/catalogo-aislamiento.test.js > aislamiento entre consultorios (RN-TEN-01, RN-TEN-02) > PUT con un :id del consultorio B → 404 y el registro de B queda intacto 26ms
+ ✓ tests/catalogo-aislamiento.test.js > aislamiento entre consultorios (RN-TEN-01, RN-TEN-02) > la query ?consultorioId=B y los headers x-tenant-* se descartan: siempre se opera sobre A 16ms
+ ✓ tests/catalogo-aislamiento.test.js > aislamiento entre consultorios (RN-TEN-01, RN-TEN-02) > un consultorioId en el cuerpo responde 422 y no crea nada en ningún consultorio 11ms
+ ✓ tests/catalogo-aislamiento.test.js > aislamiento entre consultorios (RN-TEN-01, RN-TEN-02) > el catálogo y los listados de A no contienen ningún dato de B 20ms
+ ✓ tests/catalogo-profesional-repositorio.test.js > repositorio de profesional > inserta con consultorio_id del tenant, activo true, usuario_id nulo y creado_en 58ms
+ ✓ tests/catalogo-profesional-repositorio.test.js > repositorio de profesional > obtenerProfesionalPorId devuelve la ficha propia y null para otro consultorio o un id inexistente 8ms
+ ✓ tests/catalogo-profesional-repositorio.test.js > repositorio de profesional > listarProfesionales nunca devuelve filas de otro consultorio 4ms
+ ✓ tests/prestaciones-integracion.test.js > integración de prestaciones en la app > monta POST y GET /api/prestaciones con auth y persistencia reales 143ms
+ ✓ tests/catalogo-fixtures.test.js > fixtures del catálogo > crea y limpia sus fixtures sin tocar datos de otros consultorios 175ms
+ ✓ tests/catalogo-fixtures.test.js > fixtures del catálogo > limpia en orden profesional/sillon_box → usuario → consultorio sin violar las FKs 139ms
+ ✓ tests/esquema.test.js > base de test: aislamiento y esquema migrado desde cero > la suite apunta a la base de test, nunca a la base de desarrollo 2ms
+ ✓ tests/esquema.test.js > base de test: aislamiento y esquema migrado desde cero > la base de test tiene las tablas del 001 y su migración registrada una sola vez, como la primera 83ms
+ ✓ tests/esquema.test.js > base de test: aislamiento y esquema migrado desde cero > el CHECK de roles rechaza PACIENTE en la base real (fixture ficticio, con limpieza propia) 74ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Token válido adjunta el triple exacto (los valores salen del token, no de la query ni de headers) 31ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Token forjado firmado con un secreto distinto → 401 seguro sin contexto 6ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Claims alterados conservando la firma original → 401 seguro sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Token correcto pero expirado → 401 (la caducidad se verifica desde el inicio) 6ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Algoritmo no permitido: alg "none" → 401 seguro sin contexto 4ms
+ ✓ tests/auth.test.js > spec auth R1 — Middleware que adjunta el triple desde un token válido > Algoritmo no permitido: HS512 (distinto del allowlist HS256) → 401 seguro sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente pero sin el claim usuarioId → 401 TOKEN_INVALIDO genérico sin contexto 4ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente pero sin el claim consultorioId → 401 TOKEN_INVALIDO genérico sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente pero sin el claim rol → 401 TOKEN_INVALIDO genérico sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente con el claim usuarioId vacío ("") → 401 TOKEN_INVALIDO genérico sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente con el claim consultorioId vacío ("") → 401 TOKEN_INVALIDO genérico sin contexto 4ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado correctamente con el claim rol vacío ("") → 401 TOKEN_INVALIDO genérico sin contexto 5ms
+ ✓ tests/auth.test.js > spec auth R1 — Claims requeridos faltantes (task 4.7) > Token firmado con usuarioId presente pero NO texto (numérico 12345) → 401 TOKEN_INVALIDO genérico sin contexto 4ms
+ ✓ tests/auth.test.js > spec auth R2 — Token ausente o malformado rechazado con 401 seguro > Ruta protegida sin Authorization → 401 con la forma de error consistente y sin contexto 3ms
+ ✓ tests/auth.test.js > spec auth R2 — Token ausente o malformado rechazado con 401 seguro > Contenido que no es un JWT (basura en Bearer) → 401 sin revelar si fue firma, estructura o caducidad 4ms
+ ✓ tests/auth.test.js > spec auth R2 — Token ausente o malformado rechazado con 401 seguro > Health exento de autenticación → 200 sin token 72ms
+ ✓ tests/auth.test.js > spec auth R3 — Conjunto cerrado de roles válidos (DD-17) > Los tres roles vigentes son aceptados y quedan en el contexto sin normalizar 14ms
+ ✓ tests/auth.test.js > spec auth R3 — Conjunto cerrado de roles válidos (DD-17) > Rol de paciente rechazado → 401 (DD-16: el paciente no es un rol del sistema) 4ms
+ ✓ tests/auth.test.js > spec auth R3 — Conjunto cerrado de roles válidos (DD-17) > Variante fuera del conjunto exacto (rol "admin") → 401, sin normalización implícita 4ms
+ ✓ tests/auth.test.js > spec auth R4 — consultorioId y rol siempre desde el token, nunca del cliente > Valores de consultorio enviados por el cliente ignorados (?consultorioId=B y x-tenant-id: B) 3ms
+ ✓ tests/auth.test.js > spec auth R4 — consultorioId y rol siempre desde el token, nunca del cliente > Token del consultorio A nunca puede operar como B (query + body + headers) 23ms
+ ✓ tests/health.test.js > GET /health > responde 200 cuando la base está sana (chequeo real) 94ms
+ ✓ tests/health.test.js > GET /health > responde 503 con JSON seguro cuando el chequeo de la base falla 6ms
+ ✓ tests/health.test.js > GET /health > sin token nunca responde 401 (health exento de autenticación) 49ms
+ ✓ tests/health.test.js > GET /health > sigue viva tras un 503 y recupera 200 sin reiniciar la API 10ms
+ ✓ tests/health.test.js > GET /health > no expone el header X-Powered-By (fingerprinting del framework) 45ms
+stderr | tests/catalogo-existencia.test.js > existeProfesional / existeSillonBox (interfaz de módulo para C05) > un fallo de base se propaga al consumidor y el manejador central responde 500 ERROR_INTERNO sin filtrar internals
+Error: connection refused 127.0.0.1:5432 (detalle sensible)
+    at C:/Users/Tecno booster/Desktop/sistema-odontologico/tests/catalogo-existencia.test.js:122:19
+    at file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:1695:35
+    at file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:2864:26
+    at file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:3402:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:3397:10)
+    at file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:3381:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:3339:10)
+    at file:///C:/Users/Tecno%20booster/Desktop/sistema-odontologico/node_modules/vitest/dist/chunks/run.zBhXlcZQ.js:3989:64
+
+ ✓ tests/catalogo-existencia.test.js > existeProfesional / existeSillonBox (interfaz de módulo para C05) > recursos propios del consultorio → true, incluidos los inactivos 54ms
+ ✓ tests/catalogo-existencia.test.js > existeProfesional / existeSillonBox (interfaz de módulo para C05) > recursos de otro consultorio o inexistentes → false, igual que para un inexistente 5ms
+ ✓ tests/catalogo-existencia.test.js > existeProfesional / existeSillonBox (interfaz de módulo para C05) > identificadores malformados lanzan ApiError 400 DATOS_INVALIDOS 1ms
+ ✓ tests/catalogo-existencia.test.js > existeProfesional / existeSillonBox (interfaz de módulo para C05) > un fallo de base se propaga al consumidor y el manejador central responde 500 ERROR_INTERNO sin filtrar internals 28ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > repositorio de sillon_box > inserta con consultorio_id del tenant, activo true y creado_en 156ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > repositorio de sillon_box > obtenerSillonBoxPorId devuelve la ficha propia y null para otro consultorio o un id inexistente 7ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > repositorio de sillon_box > listarSillonBoxes nunca devuelve filas de otro consultorio 7ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > servicio de alta de sillon_box > crea la ficha con nombre y descripción recortados, activo true y creadoEn ISO UTC 5ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > servicio de alta de sillon_box > descripción vacía o de solo espacios se guarda como NULL 1ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > servicio de alta de sillon_box > nombre vacío o de solo espacios lanza ApiError 422 DATOS_INVALIDOS sin crear registro 7ms
+ ✓ tests/catalogo-sillon-box-servicio.test.js > servicio de alta de sillon_box > el alta queda solo en el consultorio del contexto (aislamiento por tenant) 6ms
+ ✓ tests/catalogo-unicidad.test.js > RN-TEN-03 a nivel de base: la unicidad la garantiza el índice > "dr. juan perez" tras "Dr. Juan Pérez" en el mismo consultorio viola la restricción (23505) 15ms
+ ✓ tests/catalogo-unicidad.test.js > RN-TEN-03 a nivel de base: la unicidad la garantiza el índice > " JUAN@EXAMPLE.COM " tras juan@example.com en el mismo consultorio viola la restricción (23505) 2ms
+ ✓ tests/catalogo-unicidad.test.js > RN-TEN-03 a nivel de base: la unicidad la garantiza el índice > dos profesionales sin email en el mismo consultorio se insertan sin error (el email nulo no participa) 2ms
+ ✓ tests/catalogo-unicidad.test.js > RN-TEN-03 a nivel de base: la unicidad la garantiza el índice > el mismo nombre y email en otro consultorio se inserta sin error (la unicidad es por tenant) 1ms
+ ✓ tests/migracion-c01.test.js > migración C01: credenciales de usuario > agrega email y hash de contraseña a usuario con email único 109ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST crea una prestación válida y responde 201 con el DTO 60ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza datos inválidos con 400 9ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza datos inválidos con 400 5ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza datos inválidos con 400 6ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza datos inválidos con 400 6ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza datos inválidos con 400 5ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > POST rechaza duplicados en el consultorio con 409 y permite el mismo nombre en otro consultorio 9ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > GET lista ordenado, aislado y filtra activas 26ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > GET permite lectura a RECEPCION y POST responde 403 9ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > GET permite lectura a ODONTOLOGO y POST responde 403 10ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > GET permite lectura y PUT no modifica para RECEPCION 10ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > GET permite lectura y PUT no modifica para ODONTOLOGO 9ms
+ ✓ tests/prestaciones-rutas.test.js > API de prestaciones > PUT edita, rechaza duplicado, id ajeno y duración inválida, y aplica borrado lógico 24ms
+ ✓ tests/catalogo-profesional-servicio.test.js > servicio de alta de profesional > crea la ficha recortada con activo true, usuarioId nulo y creadoEn en ISO 8601 UTC 51ms
+ ✓ tests/catalogo-profesional-servicio.test.js > servicio de alta de profesional > matrícula y email vacíos se guardan como NULL 2ms
+ ✓ tests/catalogo-profesional-servicio.test.js > servicio de alta de profesional > nombre vacío o de solo espacios lanza ApiError 422 DATOS_INVALIDOS sin crear registro 8ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > crea una prestacion valida y devuelve su DTO persistido 10ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duracion fuera de rango: 0 4ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duracion fuera de rango: -1 1ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duracion fuera de rango: 481 1ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duracion no entera: 45.5 1ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duracion no entera: cuarenta 1ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza nombres de mas de 100 caracteres 1ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > rechaza duplicados en el mismo consultorio y permite el mismo nombre en otro 3ms
+ ✓ tests/prestaciones-repositorio.test.js > repositorio de prestaciones (seccion 1) > obtiene solo la prestacion activa del consultorio solicitado 7ms
+ ✓ tests/errores.test.js > manejador de errores centralizado (ApiError) > un ApiError responde con su status y la forma única { error: { code, message } } 29ms
+ ✓ tests/errores.test.js > manejador de errores centralizado (ApiError) > un ApiError con otro status operacional respeta ese status y la misma forma única 5ms
+ ✓ tests/errores.test.js > manejador de errores centralizado (ApiError) > un error inesperado responde 500 seguro, sin stack en la respuesta, y loguea el stack con console.error 8ms
+ ✓ tests/auth-helper.test.js > helper de tests de tokens (design D2 — soporte de implementación) > token del helper es aceptado con su triple exacto 29ms
+ ✓ tests/auth-helper.test.js > helper de tests de tokens (design D2 — soporte de implementación) > helper con un secreto distinto → 401 (firma que el middleware no acepta) 5ms
+ ✓ tests/auth-helper.test.js > helper de tests de tokens (design D2 — soporte de implementación) > helper en modo expirado → 401 instantáneo, sin esperar tiempo real 5ms
+ ✓ tests/auth-helper.test.js > helper de tests de tokens (design D2 — soporte de implementación) > helper en modo rol "PACIENTE" → 401, para ejercitar el rechazo DD-16 4ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > crea una prestación válida y delega el consultorio del contexto 4ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > rechaza escritura del rol RECEPCION sin tocar el repositorio 2ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > rechaza escritura del rol ODONTOLOGO sin tocar el repositorio 0ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > valida antes de persistir y no deja persistencia parcial 0ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > permite listar a RECEPCION y ODONTOLOGO y pasa el tenant al repositorio 1ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > edita y puede marcar inactiva solo ADMIN_CONSULTORIO 0ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > rechaza una edición inválida antes de tocar el repositorio 0ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > consulta por id con el tenant del contexto, sin permitir que el repositorio lo omita 0ms
+ ✓ tests/prestaciones-servicios.test.js > servicios de prestaciones > convierte un duplicado del repositorio en ApiError 409 1ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > devuelve la prestación activa del mismo consultorio 1ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > devuelve null si la prestación es inexistente 0ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > devuelve null si la prestación es otro consultorio 0ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > devuelve null si la prestación es inactiva 0ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > rechaza un prestacionId inválido con 400 VALIDACION sin tocar el repositorio 0ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > rechaza un consultorioId inválido con 400 VALIDACION sin tocar el repositorio 0ms
+ ✓ tests/prestaciones-servicios.test.js > contrato de prestaciones para turnos > con ambos UUID válidos delega al repositorio con los identificadores recibidos 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > acepta un UUID bien formado en pacienteId 2ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > acepta un UUID bien formado en profesionalId 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > acepta un UUID bien formado en sillonBoxId 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > acepta un UUID bien formado en prestacionId 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > acepta un UUID bien formado en id 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador malformado con 400 VALIDACION 1ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador sin guiones con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador con menos dígitos con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador vacío con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador no string con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador null con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > rechaza un identificador undefined con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarUuid > el mensaje de validación identifica el campo inválido 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > acepta solicitadoPor PACIENTE 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > acepta solicitadoPor CONSULTORIO 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > rechaza solicitadoPor inválido: undefined 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > rechaza solicitadoPor inválido: null 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > rechaza solicitadoPor inválido:  0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > rechaza solicitadoPor inválido: OTRO 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de cancelación C06 > expone errores 409 estables para repetición y turno pasado 1ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > acepta UTC con Z y devuelve el instante correcto 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > acepta offset negativo y devuelve el instante correcto 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > acepta offset +00:00 y devuelve el instante correcto 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > acepta con milisegundos y devuelve el instante correcto 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > acepta segundos con offset y devuelve el instante correcto 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza sin timezone con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza solo fecha con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza fecha y hora con espacio con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza no fecha con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza fecha imposible con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza vacío con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza no string con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza null con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: validarInicio (ISO 8601 con timezone) > rechaza Date object con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > calcula fin = inicio + 30 min con la duración guardada al crearse 1ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > acepta un Date como inicio y suma la duración en minutos exactos 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin = 0: produciría fin = inicio (rango vacío, RN-AG-06) 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin negativa con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin fraccionaria con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin string con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin null con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin undefined con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza duracionMin NaN con 400 VALIDACION 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: calcularFin (RN-AG-07) > rechaza un inicio sin timezone aunque la duración sea válida 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: traducirViolacionExclusion (design D1) > 23P01 → ApiError 409 SOLAPAMIENTO con mensaje seguro 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: traducirViolacionExclusion (design D1) > devuelve cualquier otro error tal cual (no lo traduce) 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorSolapamiento (mensaje detallado del pre-check) > devuelve un ApiError 409 SOLAPAMIENTO que nombra al recurso profesional 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorSolapamiento (mensaje detallado del pre-check) > devuelve un ApiError 409 SOLAPAMIENTO que nombra al recurso sillonBox 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorSolapamiento (mensaje detallado del pre-check) > devuelve un ApiError 409 SOLAPAMIENTO que nombra al recurso paciente 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorSolapamiento (mensaje detallado del pre-check) > los tres mensajes son distintos (detalle por recurso) 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorSolapamiento (mensaje detallado del pre-check) > recurso desconocido → mensaje genérico igualmente seguro 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorTurnoNoEncontrado (C07, design D4) > devuelve ApiError 404 con code TURNO_NO_ENCONTRADO 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorTurnoNoEncontrado (C07, design D4) > no expone datos de otros consultorios en el mensaje (aislamiento) 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorEstadoInvalido (C07, design D4) > devuelve ApiError 409 con code ESTADO_INVALIDO 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: errorEstadoInvalido (C07, design D4) > los cuatro estados distintos de PENDIENTE comparten el mismo mensaje seguro 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: los validadores de forma siguen en 400 VALIDACION (spec S5) > UUID malformado → 400 VALIDACION (incluye el :id del PATCH) 0ms
+ ✓ tests/turnos-dominio.test.js > dominio de turnos: los validadores de forma siguen en 400 VALIDACION (spec S5) > inicio sin timezone → 400 VALIDACION 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: normalización > normalizarTexto recorta nombre, matricula y descripcion conservando el interior 2ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: normalización > normalizarTexto devuelve NULL para vacío o compuesto solo por espacios (opcionales → NULL) 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: normalización > normalizarEmail recorta y pasa a minúsculas 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: normalización > normalizarEmail devuelve NULL para vacío o solo espacios 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: validación de UUID > validarUuid devuelve el identificador cuando es un UUID válido 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: validación de UUID > validarUuid lanza ApiError 400 DATOS_INVALIDOS ante identificadores malformados 1ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: predicados y validarCuerpo (capa de rutas) > esTexto y esBooleano distinguen los tipos JSON correctos 0ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: predicados y validarCuerpo (capa de rutas) > validarCuerpo devuelve solo los campos presentes y válidos del esquema 1ms
+ ✓ tests/catalogo-dominio.test.js > dominio compartido del catálogo: predicados y validarCuerpo (capa de rutas) > validarCuerpo lanza 422 DATOS_INVALIDOS por desconocidos, tipos inválidos y requeridos ausentes 1ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > acepta duracionMin en el limite 1 2ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > acepta duracionMin en el limite 480 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: 0 1ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: -1 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: 481 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: 45.5 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: 45 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza duracionMin invalido: null 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > acepta nombre de hasta 100 caracteres 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza nombre invalido:  1ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza nombre invalido: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza nombre invalido: null 0ms
+ ✓ tests/prestaciones-dominio.test.js > dominio de prestaciones > rechaza nombre invalido: 123 0ms
+
+ Test Files  54 passed (54)
+      Tests  505 passed (505)
+   Start at  20:10:35
+   Duration  118.02s (tests 80%, import 12%, setup 7%, transform 1%)
+
+    Isolate  54 workers spawned · ~196ms startup each (spawn + environment, per file)
+             at least ~10.40s faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/suite-completa-green.json

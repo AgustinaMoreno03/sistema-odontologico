@@ -1,0 +1,261 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-ruta.test.js tests/agenda-aislamiento.test.js tests/pacientes-agenda-lectura.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/tanda1-red-valido.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > devuelve el contrato vacío y los límites UTC 259ms
+   → expected 404 to be 200 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin hasta 12ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin desde 7ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin zona 7ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza día imposible 6ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza mes imposible 6ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza hora imposible 6ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango vacío 5ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango invertido 7ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza más de 168 horas 5ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza UUID inválido 8ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza parámetro ajeno 5ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha repetida 7ms
+   → expected 404 to be 400 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha estructurada 5ms
+   → expected 404 to be 400 // Object.is equality
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token ausente con el error uniforme 7ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token expirado con el error uniforme 5ms
+ ✓ tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza token forjado con el error uniforme 6ms
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > aplica intersección [) y conserva turno cruzando medianoche 122ms
+   → expected 404 to be 200 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > acepta la semana y omite el turno del lunes siguiente 204ms
+   → expected 404 to be 200 // Object.is equality
+ × tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > incluye cancelados y muestra el nuevo horario tras reprogramar 193ms
+   → expected 404 to be 200 // Object.is equality
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > resuelve vacío, deduplica y devuelve solo nombres con apellido null 229ms
+   → obtenerNombresPacientes is not a function
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > omite pacientes ajenos e inexistentes 161ms
+   → obtenerNombresPacientes is not a function
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 1ms
+   → obtenerNombresPacientes is not a function
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 1ms
+   → obtenerNombresPacientes is not a function
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+   → obtenerNombresPacientes is not a function
+ × tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos 0ms
+   → obtenerNombresPacientes is not a function
+stdout | tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+C08 aislamiento: {"consultoriosPersistidos":2,"pacientesHTTP":[200,200],"agendaHTTP":[404,404]}
+
+ × tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres 427ms
+   → Agenda debe existir para ambos consultorios: expected [ 404, 404 ] to deeply equal [ 200, 200 ]
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 24 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/agenda-aislamiento.test.js > C08: dos consultorios consultan su agenda por HTTP sin compartir turnos ni nombres
+AssertionError: Agenda debe existir para ambos consultorios: expected [ 404, 404 ] to deeply equal [ 200, 200 ]
+
+- Expected
++ Received
+
+  [
+-   200,
+-   200,
++   404,
++   404,
+  ]
+
+ ❯ rol tests/agenda-aislamiento.test.js:66:10
+     64|       // Esperar el contrato final (200), no 404: el fallo es genuino.
+     65|       expect([agendaA.status, agendaB.status], 'Agenda debe existir pa…
+     66|         .toEqual([200, 200]);
+       |          ^
+     67|       expect(agendaA.body.turnos).toEqual([expect.objectContaining({
+     68|         id: turnoA.id,
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ rol tests/agenda-aislamiento.test.js:11:5
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-aislamiento.test.js:10:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > devuelve el contrato vacío y los límites UTC
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/agenda-ruta.test.js:15:26
+     13|     await conFixtureTurnos(async ({ token }) => {
+     14|       const res = await consultar(rango, token);
+     15|       expect(res.status).toBe(200);
+       |                          ^
+     16|       expect(res.body).toEqual({
+     17|         desde: '2026-12-01T03:00:00.000Z', hasta: '2026-12-02T03:00:00…
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-ruta.test.js:13:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin hasta
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin desde
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza sin zona
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza día imposible
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza mes imposible
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza hora imposible
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango vacío
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza rango invertido
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza más de 168 horas
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza UUID inválido
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza parámetro ajeno
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha repetida
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > rechaza fecha estructurada
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/agenda-ruta.test.js:39:24
+     37|   ])('rechaza %s', async (_caso, query) => {
+     38|     const res = await consultar(query);
+     39|     expect(res.status).toBe(400);
+       |                        ^
+     40|     expect(res.body.error.code).toBe('VALIDACION');
+     41|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > aplica intersección [) y conserva turno cruzando medianoche
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/agenda-ruta.test.js:64:26
+     62|       await crearTurnoPartida(fixture, { inicio: '2026-12-02T03:00:00Z…
+     63|       const res = await consultar(rango, token);
+     64|       expect(res.status).toBe(200);
+       |                          ^
+     65|       expect(res.body.turnos.map(({ id }) => id)).toEqual([cruza.id]);
+     66|     });
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-ruta.test.js:55:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > acepta la semana y omite el turno del lunes siguiente
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/agenda-ruta.test.js:74:26
+     72|       await crearTurnoPartida(fixture, { inicio: '2026-12-07T03:00:00Z…
+     73|       const res = await consultar({ desde: '2026-11-30T00:00:00-03:00'…
+     74|       expect(res.status).toBe(200);
+       |                          ^
+     75|       expect(res.body.turnos.map(({ id }) => id)).toEqual([dentro.id]);
+     76|     });
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-ruta.test.js:70:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/agenda-ruta.test.js > C08 tanda 1: ruta y parámetros > incluye cancelados y muestra el nuevo horario tras reprogramar
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/agenda-ruta.test.js:87:26
+     85|       expect(cambio.status).toBe(200);
+     86|       const res = await consultar(rango, token);
+     87|       expect(res.status).toBe(200);
+       |                          ^
+     88|       expect(res.body.turnos).toEqual([
+     89|         expect.objectContaining({ id: cancelado.id, estado: 'CANCELADO…
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-ruta.test.js:80:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > resuelve vacío, deduplica y devuelve solo nombres con apellido null
+TypeError: obtenerNombresPacientes is not a function
+ ❯ tests/pacientes-agenda-lectura.test.js:10:30
+      8|     await conFixtureTurnos(async ({ fixture }) => {
+      9|       const contexto = { consultorioId: fixture.consultorioId };
+     10|       expect(await pacientes.obtenerNombresPacientes({ ...contexto, pa…
+       |                              ^
+     11|       const filas = await pacientes.obtenerNombresPacientes({
+     12|         ...contexto, pacienteIds: [fixture.pacienteId, fixture.pacient…
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:18
+ ❯ tests/pacientes-agenda-lectura.test.js:8:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > omite pacientes ajenos e inexistentes
+TypeError: obtenerNombresPacientes is not a function
+ ❯ tests/pacientes-agenda-lectura.test.js:21:39
+     19|     await conFixtureTurnos(async ({ fixture: a }) => {
+     20|       await conFixtureTurnos(async ({ fixture: b }) => {
+     21|         const filas = await pacientes.obtenerNombresPacientes({
+       |                                       ^
+     22|           consultorioId: a.consultorioId, pacienteIds: [a.pacienteId, …
+     23|         });
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:18
+ ❯ tests/pacientes-agenda-lectura.test.js:20:7
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/pacientes-agenda-lectura.test.js:19:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos
+ FAIL  tests/pacientes-agenda-lectura.test.js > C08: interfaz mínima de nombres de pacientes > rechaza parámetros inválidos
+TypeError: obtenerNombresPacientes is not a function
+ ❯ tests/pacientes-agenda-lectura.test.js:35:28
+     33|     { consultorioId: randomUUID(), pacienteIds: Array.from({ length: 2…
+     34|   ])('rechaza parámetros inválidos', async (parametros) => {
+     35|     await expect(pacientes.obtenerNombresPacientes(parametros))
+       |                            ^
+     36|       .rejects.toMatchObject({ statusCode: 400, code: 'VALIDACION' });
+     37|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  24 failed | 3 passed (27)
+   Start at  20:02:32
+   Duration  5.39s (tests 52%, import 29%, setup 12%, transform 6%, worker 1%)
+
+    Isolate  3 workers spawned · ~208ms startup each (spawn + environment, per file)
+             at least ~416ms faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/tanda1-red-valido.json

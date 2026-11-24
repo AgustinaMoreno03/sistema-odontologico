@@ -1,0 +1,180 @@
+
+> odontologia-api@0.1.0 test
+> node --env-file=.env ./node_modules/vitest/vitest.mjs run tests/agenda-paginacion.test.js --reporter=verbose --reporter=json --outputFile.json=docs/evidencias/c08/tanda3-red.json
+
+
+ RUN  v5.1.1 C:/Users/Tecno booster/Desktop/sistema-odontologico
+
+ × tests/agenda-paginacion.test.js > C08 tanda 3: paginación > recorre páginas con orden estable, sin duplicados y con metadata exacta 350ms
+   → expected [ …(3) ] to deeply equal [ …(2) ]
+ × tests/agenda-paginacion.test.js > C08 tanda 3: paginación > usa 100 por defecto y permite máximo 200 sin perder la fila adicional 408ms
+   → expected [ …(100) ] to deeply equal [ …(200) ]
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"0"} 7ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"201"} 6ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"1.5"} 9ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":"texto"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"-1"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"0.5"} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":"10001"} 6ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"limite":["1","2"]} 5ms
+ ✓ tests/agenda-paginacion.test.js > C08 tanda 3: paginación > rechaza paginación inválida {"offset":["0","1"]} 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/agenda-paginacion.test.js > C08 tanda 3: paginación > recorre páginas con orden estable, sin duplicados y con metadata exacta
+AssertionError: expected [ …(3) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "aaaaaaaa-0000-4000-8000-000000000001",
+    "bbbbbbbb-0000-4000-8000-000000000002",
++   "cccccccc-0000-4000-8000-000000000003",
+  ]
+
+ ❯ tests/agenda-paginacion.test.js:38:55
+     36|       const pagina1 = await consultar(token, { limite: '2' });
+     37|       expect(pagina1.status).toBe(200);
+     38|       expect(pagina1.body.turnos.map(({ id }) => id)).toEqual([ids[1],…
+       |                                                       ^
+     39|       expect(pagina1.body.hayMas).toBe(true);
+     40|       expect(pagina1.body.siguienteOffset).toBe(2);
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-paginacion.test.js:29:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/agenda-paginacion.test.js > C08 tanda 3: paginación > usa 100 por defecto y permite máximo 200 sin perder la fila adicional
+AssertionError: expected [ …(100) ] to deeply equal [ …(200) ]
+
+- Expected
++ Received
+
+@@ -97,106 +97,6 @@
+    "857c8332-f10f-49e4-9408-50b13e00a381",
+    "85e24e7f-5371-4a7e-8e72-edd334f2ef44",
+    "87f85179-16a5-4c3c-b3fe-2444c4607bb0",
+    "8858d0ef-0dad-4d5e-af6e-85031be8f9f1",
+    "88a3b949-9ac4-4e75-b15f-158bcf12a3e3",
+-   "88e1061d-41dc-4539-8d5f-d70bccdb1a12",
+-   "893b9130-82b2-458b-82e5-d4772f241464",
+-   "89737ef0-34fd-4aa0-96ff-1bfdf89ee903",
+-   "8c2459f1-fdcf-48e3-b0e7-a47c7e03b2e9",
+-   "8cb67c41-1b55-4ff7-8274-b3c10acfb82e",
+-   "8ed10756-b324-4a8c-a243-ec3c4f2ae091",
+-   "911ecb28-3757-4359-9de9-11e8fd9eb416",
+-   "916fb340-314b-4524-a496-060f5ca58186",
+-   "93b7f1eb-4c8f-4f12-a9da-cf828e767cf3",
+-   "94173341-705e-4f1c-b9e5-dd46c76a607e",
+-   "941f9212-2ecc-4a39-b842-de3c1b74e894",
+-   "95c75ade-5396-4add-a271-6c3b52e705ed",
+-   "95dd5b52-0ba0-44e7-8c2e-a9b370730f39",
+-   "95f588b9-86f4-47d4-9393-8a9aa24d14f0",
+-   "96d9be11-1f5b-4850-bc6a-34e39d9ad730",
+-   "98cf7fa5-ca85-4278-a71c-ad0468f96b19",
+-   "9977ad0d-6cc8-4a0c-beee-7dd444d33f33",
+-   "9a020869-0125-4ba6-91a2-0333774b7f19",
+-   "9a02bb59-b965-48d4-8f6c-a22e37d9ebdf",
+-   "9a3d89f0-bd42-46ed-a082-b008242f64e2",
+-   "9a6b0dc1-0e5f-4c3f-ab98-6a7e007f5ac2",
+-   "9c721c38-8692-4f9b-894b-a1dddac8d7e0",
+-   "9cbdde9c-b2cb-4bb7-a5b1-82b7a930f49f",
+-   "9e65dcfb-fbd8-4bc4-83ea-6ed0e729904a",
+-   "9eaff625-4563-4fdf-93ab-695d71d07269",
+-   "a189a175-2718-43a5-87d5-8e6836a49487",
+-   "a284eb8c-c7bd-4b8d-8fdd-46f37739c294",
+-   "a28bf604-ce27-47fe-bdb3-0ba8862799f4",
+-   "a4d77a6f-473e-4285-a2d1-95a180431664",
+-   "a62ed74a-8c45-4191-95dc-2bb69d959ae5",
+-   "a681786d-dd27-45b9-ac0a-23ac6e925e84",
+-   "a6ae75cb-ccc9-4991-97a0-8583158d5c2f",
+-   "a71685ba-a1fe-46d0-99d2-1e61dc504e25",
+-   "a8c8c36a-5396-4c7b-96e1-9d4a385b9a12",
+-   "adbf9477-db31-411f-bd14-5e9c45f293a7",
+-   "ae31523c-4184-4384-89fd-e4bf4fbd675b",
+-   "ae3e0631-5264-43bd-9b03-f0a472a284b8",
+-   "b0d3c4ee-89e9-4e91-8ecc-759990440276",
+-   "b16cd326-05f2-400a-8a60-147f13940f83",
+-   "b35e85c3-6f8d-4f47-bca3-f564a103df0a",
+-   "b374691e-f12d-415b-a31a-b9b499fb132c",
+-   "b59b3f88-1e0e-4001-beb1-b0c025b5f944",
+-   "b6d9c65c-331c-4250-a7ff-db2d435ccb1b",
+-   "b7af1813-852d-4d68-90b3-477a88037e7e",
+-   "b9656161-462d-4e32-9cdc-20c9e4227aad",
+-   "b9dcd616-2f03-42c6-94b2-ee0231d81783",
+-   "ba34f5b3-477a-414d-9a9e-986a1db9fe40",
+-   "bb1bdc10-3c4d-4e52-a0c5-4f592e399eb4",
+-   "bc4c12e9-1813-41a4-98df-38f4f6631d7d",
+-   "bcf9f6e5-6349-440e-a21d-b248101fc6cb",
+-   "beb3ef40-b49a-4d02-9ba2-116335bada6a",
+-   "bec336b9-d0e0-4406-a47b-12a268b34def",
+-   "bf121245-890f-43b9-a5d2-54c592c035fb",
+-   "c0400b85-0035-46bc-905b-ef404eaa40e2",
+-   "c0501ae9-d5d1-44ef-859a-7675b52d8fd7",
+-   "c0fdda22-79e3-4719-9e41-5ac2fbb7221d",
+-   "c2d2d05b-f063-4bea-9b59-cd03e1af285b",
+-   "c36bfab1-bb23-41a6-84b5-3ac6e047d3f4",
+-   "c84737a7-506f-4b0a-91ab-d174e6adbadd",
+-   "c87313fc-1a3f-486f-8427-5b9fc7072733",
+-   "ca051c87-c1b4-46c6-8c0c-bf00f94fbc8a",
+-   "cbdaa0ad-4394-4ca8-aacb-a99d04b66b60",
+-   "cef9a31e-6e79-47b6-9039-1797f74fd727",
+-   "d08b3d86-dd29-4628-aa9f-38fcd7a21326",
+-   "d1053621-8a59-40a0-8349-92d6f25567e6",
+-   "d511f145-cb36-4275-b4a3-9e16ea48f2ac",
+-   "d7494cf6-583f-456f-90fe-8af92882637b",
+-   "d8ad9dce-b715-4f79-94c7-a6b2a667c5b8",
+-   "db5f3d17-79fd-48a1-97bf-6fe902d6e84f",
+-   "db616619-22ad-4911-90aa-698b02527c3d",
+-   "dbb4b283-adb1-4db3-b995-5fae0d0b1a61",
+-   "dde8e18f-7836-482c-af71-5bb09004f6a6",
+-   "ddec43e0-7f31-4efb-a116-4c7fdf183316",
+-   "e08c8dc4-d42e-49f8-ad9c-03786f7a139d",
+-   "e25e2697-09a0-43a3-8df1-d72253c17dde",
+-   "e35edf00-88b7-40c1-b919-52b726b8f5ed",
+-   "e3732ee5-2af9-41e0-b530-10a0ae09556d",
+-   "e67481bf-2842-4250-9064-8d1f8f1fe721",
+-   "e7c06067-5e93-4b14-8167-83059ac2bf51",
+-   "e9733ca8-28c0-44a6-bd82-d61970b4219d",
+-   "eacc31b9-2387-47c4-aa02-a528889d29d9",
+-   "eb6db186-ab78-4cb5-bcf9-a05a0c3f505a",
+-   "ebb08412-379e-4b4e-ba16-62ffc7bd9ae8",
+-   "ef1ed24f-3924-4a92-bb43-740352c01a24",
+-   "f09e654a-77e3-4705-81b5-ae3430765845",
+-   "f108d632-284f-44a3-8566-b90090090793",
+-   "f1520186-970d-4097-a42a-043d24fd6204",
+-   "f24bf49e-ea4d-4296-9c29-547fe844ffcd",
+-   "f2f4722c-0bea-468a-9450-2e270f13bb66",
+-   "f3d0a33e-c5bb-42f9-9bfd-2673d42fc549",
+-   "f5d3bfee-ad5a-4ed4-8145-3e996c3d2978",
+-   "f661e567-e652-4eda-83d8-73a9573ce244",
+-   "f66bcdb2-db0a-4128-9f5b-5c9cf1032c9f",
+-   "f73dc222-9158-47b2-84e7-1d22306a71ca",
+-   "f75b6825-f2fd-4b01-8cb7-1eae92bb48fe",
+-   "f771d631-30de-4786-bd81-34915f156c4f",
+-   "f7c78333-94bc-41cc-8c40-e7c0eadcf310",
+-   "f8aff287-acc3-48a3-aaa5-9eccff01b1ec",
+-   "fa70e384-c3b5-4012-a0a6-c5313836e4da",
+-   "fb3892f5-35c5-44ad-b311-9999dc093eca",
+  ]
+
+ ❯ tests/agenda-paginacion.test.js:64:54
+     62|       const maxima = await consultar(token, { limite: '200' });
+     63|       expect(maxima.status).toBe(200);
+     64|       expect(maxima.body.turnos.map(({ id }) => id)).toEqual([...ids].…
+       |                                                      ^
+     65|       expect(maxima.body.hayMas).toBe(true);
+     66|       expect(maxima.body.siguienteOffset).toBe(200);
+ ❯ conFixtureTurnos tests/helpers/turnos-fixtures.js:42:12
+ ❯ tests/agenda-paginacion.test.js:55:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  20:08:51
+   Duration  3.28s (tests 51%, import 28%, transform 11%, setup 9%, worker 1%)
+
+JSON report written to C:/Users/Tecno booster/Desktop/sistema-odontologico/docs/evidencias/c08/tanda3-red.json
