@@ -1,4 +1,5 @@
 import { ApiError } from '../../../errores.js';
+import { validarUuid } from '../../pacientes/dominio.js';
 import { crearRepositorioPrestaciones } from './repositorio.js';
 import { validarCambiosPrestacion, validarPrestacion } from './dominio.js';
 
@@ -55,7 +56,9 @@ export function crearServiciosPrestaciones({ repositorio = crearRepositorioPrest
       }
     },
 
-    obtenerPrestacionParaTurno({ prestacionId, consultorioId }) {
+    async obtenerPrestacionParaTurno({ prestacionId, consultorioId }) {
+      validarUuid(prestacionId);
+      validarUuid(consultorioId);
       return repositorio.obtenerPrestacionParaTurno({ prestacionId, consultorioId });
     },
   };
