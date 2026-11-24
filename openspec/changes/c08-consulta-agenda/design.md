@@ -6,7 +6,7 @@ Motivación en proposal.md y comportamiento en specs/agenda/spec.md. Explore se 
 
 Hallazgos comprobados:
 - C05 registra turnos en UTC; C07 ya está integrado. C06 no está integrado en esta base. La tabla ya admite CANCELADO y la consulta solo necesita leer ese estado.
-- `profesionalDeUsuario({ usuarioId, consultorioId })` devuelve la ficha vinculada o null, incluidas fichas inactivas. `existeProfesional` verifica pertenencia sin exigir actividad.
+- El vínculo existente de C02 es `profesional.usuario_id`. `profesionalDeUsuario({ usuarioId, consultorioId })` devuelve la ficha vinculada o null, incluidas fichas inactivas. C08 usa esa interfaz y no hace JOIN directo a profesional ni crea otra relación o migración. `existeProfesional` verifica pertenencia sin exigir actividad.
 - La migración 050 ya contiene `turno_consultorio_profesional_inicio_idx`. No hace falta crear el mismo índice en 080.
 - Los turnos y sus recursos están distribuidos entre módulos. C03 no ofrece lectura de nombres por un conjunto de IDs, por lo que C08 necesita una interfaz mínima de pacientes.
 - Evidencia histórica: 421/421 tests en 47 archivos, iniciados el 23/11/2026 a las 16:45:58 -03:00, sobre `666dbc721c7d8046383f299689853bcf491ca50a`, antes de cambiar código. No contenía C06 ni la migración 110. Reporte original guardado en `docs/evidencias/c08/base-main.json`; corresponde a esa base y no habilita Apply sobre la versión final de C05 todavía pendiente de archivado.
@@ -53,6 +53,47 @@ Respuesta:
 ```
 
 Los campos de cada turno están enumerados en el spec; pacienteApellido puede ser null. C09 usa las interfaces de catálogo existentes para mostrar los nombres de profesional, box y prestación a partir de sus IDs. No incluir consultorioId ni contactos del paciente en el DTO.
+
+Ejemplo ficticio completo para un stub de C09, NO obtenido de un endpoint implementado:
+
+```json
+{
+  "desde": "2026-12-01T03:00:00.000Z",
+  "hasta": "2026-12-02T03:00:00.000Z",
+  "zonaHoraria": "America/Argentina/Buenos_Aires",
+  "turnos": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "pacienteId": "22222222-2222-4222-8222-222222222222",
+      "pacienteNombre": "Ana Ficticia",
+      "pacienteApellido": null,
+      "profesionalId": "33333333-3333-4333-8333-333333333333",
+      "sillonBoxId": "44444444-4444-4444-8444-444444444444",
+      "prestacionId": "55555555-5555-4555-8555-555555555555",
+      "inicio": "2026-12-01T13:00:00.000Z",
+      "fin": "2026-12-01T13:30:00.000Z",
+      "duracionMin": 30,
+      "estado": "PENDIENTE"
+    }
+  ],
+  "hayMas": false,
+  "siguienteOffset": null
+}
+```
+
+Los turnos son objetos planos. Solo pacienteNombre y pacienteApellido se enriquecen; los demás recursos permanecen como IDs. Sin apellido se devuelve exactamente null. Orden: inicio ASC, id ASC. Paginación: limite por defecto 100, máximo 200; offset por defecto 0, máximo 10000. Si hayMas es true, C09 repite la consulta con siguienteOffset.
+
+Tabla de errores propuesta para agenda (aún sin implementación):
+
+| HTTP | code | Significado |
+|---|---|---|
+| 400 | VALIDACION | Fechas o parámetros inválidos; rango vacío, invertido o mayor a 168 horas; paginación o UUID inválidos. |
+| 401 | TOKEN_INVALIDO | Token ausente, inválido o expirado; mensaje uniforme de C00. |
+| 403 | SIN_PERMISO | Odontólogo sin vínculo o que solicita otra agenda. |
+| 404 | PROFESIONAL_NO_ENCONTRADO | Filtro de recepción/admin que no pertenece a su consultorio o no existe; misma señal en ambos casos. |
+| 500 | ERROR_INTERNO | Fallo inesperado con mensaje seguro del manejador central. |
+
+Todos los errores usan `{ "error": { "code": "...", "message": "..." } }`. El texto del mensaje debe servir para informar al usuario; C09 decide el comportamiento mediante status y code. Token inválido mantiene exactamente el mensaje `No autorizado` de C00.
 
 La API recibe instantes explícitos y no calcula el calendario del cliente. C09 define los límites de su día o semana local y muestra las horas mediante Intl y la zona informada. Así no se depende de la zona horaria del servidor ni se añade una librería de fechas. Se acepta cualquier rango positivo de hasta 168 horas; los ejemplos diarios/semanales son convenciones de presentación, no validaciones de medianoche.
 
@@ -110,6 +151,8 @@ flowchart LR
 Tests propios en `tests/agenda-dominio.test.js`, `agenda-api.test.js` y `pacientes-agenda-lectura.test.js`; fixtures propios en `tests/fixtures/agenda.js`. Pueden reutilizar helpers existentes por import, nunca editarlos. Crear dos consultorios y dos profesionales del mismo consultorio para probar ambas fronteras. UUID ficticios por fixture, limpieza por IDs propios y rollback cuando corresponda.
 
 Cubrir cada escenario del spec mediante dominio y HTTP real con PostgreSQL. Mantener salida roja genuina y verde de los tests nuevos. La suite completa de main puede aumentar durante el trabajo: no fijar como expectativa que siempre sean 421 tests. Antes de Apply actualizar desde main y verificar la base completa; al cerrar ejecutar npm test y strict validation, registrar fecha, número real y commits.
+
+El RED de aislamiento se ejecuta recién después de la aprobación: dos consultorios persistidos, datos ficticios y tokens válidos hacen GET /api/agenda esperando 200; el endpoint aún inexistente responde 404. No provocar un fallo artificial ni implementar la consulta antes de registrar ese RED. Después implementar y conservar GREEN.
 
 ## Risks / Trade-offs
 

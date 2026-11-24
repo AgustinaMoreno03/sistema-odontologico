@@ -5,8 +5,9 @@ Apply está bloqueado: requiere C05 archivado, revert de la 110 en main, reconci
 ## 1. Base y dominio de agenda
 
 - [ ] 1.1 Confirmar C05 archivado y su spec final en main, el revert integrado y la ausencia de la 110. Reconciliar C08 y obtener aprobación de Agustina antes de Apply; después actualizar la rama y ejecutar npm.cmd test. Guardar reporte con fecha y SHA completo y verificar todos los tests de la base final, sin fijar la cantidad histórica de 421.
-- [ ] 1.2 Escribir primero los tests de parámetros de agenda en tests/agenda-dominio.test.js y observar fallos genuinos. Implementar validación de rango, fechas reales con zona, UUID y paginación en agenda-dominio.js; verificar los tests de fechas inválidas, límites y duración máxima.
-- [ ] 1.3 Iniciar src/modules/turnos/AGENDA.md con parámetros, ejemplos diarios/semanales y errores del dominio. Verificar que cada ejemplo coincide con un caso probado.
+- [ ] 1.2 Tras aprobación y base verificada, escribir primero el test HTTP de aislamiento y sus fixtures ficticios de dos consultorios en PostgreSQL real, con tokens válidos. Ejecutarlo esperando 200 y guardar RED genuino por 404 del endpoint inexistente ANTES de implementar la consulta; comprobar que falla por ese motivo y no por setup o autenticación.
+- [ ] 1.3 Escribir primero los tests de parámetros de agenda en tests/agenda-dominio.test.js y observar fallos genuinos. Implementar validación de rango, fechas reales con zona, UUID y paginación en agenda-dominio.js; verificar los tests de fechas inválidas, límites y duración máxima.
+- [ ] 1.4 Iniciar src/modules/turnos/AGENDA.md con parámetros, ejemplos diarios/semanales y errores del dominio. Verificar que cada ejemplo coincide con un caso probado.
 
 ## 2. Interfaz mínima de pacientes
 
@@ -16,7 +17,7 @@ Apply está bloqueado: requiere C05 archivado, revert de la 110 en main, reconci
 
 ## 3. Lectura de turnos y permisos
 
-- [ ] 3.1 Crear fixtures ficticios propios en tests/fixtures/agenda.js sin editar tests/helpers. Verificar por test que limpiar A conserva los registros de B y que la limpieza borra únicamente IDs propios.
+- [ ] 3.1 Reutilizar los fixtures ficticios propios del RED inicial en tests/fixtures/agenda.js sin editar tests/helpers. Verificar por test que limpiar A conserva los registros de B y que la limpieza borra únicamente IDs propios.
 - [ ] 3.2 Escribir escenarios de repositorio y HTTP para rango diario/semanal, extremos [), cruce de medianoche, estados y paginación. Implementar agenda-repositorio.js sobre turno con parámetros y verificar resultados ordenados y páginas sin pérdida con datos estables.
 - [ ] 3.3 Escribir tests por rol y por vínculo profesional. Implementar agenda-servicios.js usando profesionalDeUsuario y existeProfesional de catálogo, con los nombres desde pacientes; verificar agenda propia, filtro ajeno/inexistente, ficha inactiva y odontólogo sin vínculo.
 - [ ] 3.4 Documentar en AGENDA.md el DTO, el orden y la limitación de paginación ante escrituras concurrentes. Verificar los ejemplos con los escenarios implementados.
@@ -24,9 +25,9 @@ Apply está bloqueado: requiere C05 archivado, revert de la 110 en main, reconci
 ## 4. HTTP y aislamiento
 
 - [ ] 4.1 Implementar crearRouterAgenda en agenda-rutas.js con el middleware real C00 y montarlo con solo dos líneas en app.js. Verificar mediante Supertest el 200 real, el 401 uniforme y el formato central de errores.
-- [ ] 4.2 Persistir dos consultorios en PostgreSQL real de test con registros ficticios distinguibles y consultar ambos mediante HTTP real. Verificar resultados propios no vacíos y exclusión mutua de nombres e IDs; probar además dos profesionales del mismo consultorio y que el odontólogo no accede a su colega, incluso con filtro explícito. No sustituir este caso por mocks ni usar datos de personas reales.
+- [ ] 4.2 Sobre el test de aislamiento con RED registrado en 1.2, comprobar GREEN con resultados propios no vacíos y exclusión mutua de nombres e IDs de ambos consultorios, más la separación de profesionales del mismo consultorio. No usar mocks ni datos de personas reales.
 - [ ] 4.3 Probar sustitución de consultorio y usuario por query, body y headers, parámetros repetidos y fallos inesperados. Verificar respuestas 400/403/404/500 acordadas, ausencia de datos ajenos y ninguna modificación de turnos por GET.
-- [ ] 4.4 Completar AGENDA.md con ejemplos de respuesta, autenticación y los códigos HTTP. Verificar que el contrato coincide con el spec aprobado y publicar al equipo la ruta y el DTO para C09, sin comunicar como aprobado un borrador.
+- [ ] 4.4 Completar AGENDA.md con respuesta plana y pacienteApellido null, autenticación y códigos HTTP; comprobar PROFESIONAL_NO_ENCONTRADO en la tabla del README de turnos. Verificar el contrato contra el spec aprobado y comunicarlo a C09, sin presentar un borrador como congelado.
 
 ## 5. Verify integrado
 
