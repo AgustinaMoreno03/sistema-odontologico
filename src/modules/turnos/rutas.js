@@ -6,8 +6,8 @@
 import { Router } from 'express';
 import { ApiError } from '../../errores.js';
 import { middlewareAutenticacion } from '../auth/rutas.js';
-import { validarUuid, validarInicio } from './dominio.js';
-import { crearTurno, reprogramarTurno } from './servicios.js';
+import { validarUuid, validarInicio, validarSolicitadoPor } from './dominio.js';
+import { cancelarTurno, crearTurno, reprogramarTurno } from './servicios.js';
 
 // Roles que crean turnos hoy (spec R1): RECEPCION y ADMIN_CONSULTORIO;
 // ODONTOLOGO recibe 403. Mismos roles para reprogramar (RN-AG-03, C07);
@@ -100,6 +100,36 @@ export function crearRouterTurnos() {
 
       // 200 con el mismo DTO que el POST + reprogramadoEn/reprogramadoPor
       // (S1), sin consultorioId.
+      const { consultorioId: _consultorioId, ...dto } = turno;
+      res.status(200).json(dto);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // C06 — cancelar: validar forma antes de autorizar, igual que C07.
+  router.patch('/:id/cancelar', async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { solicitadoPor } = req.body ?? {};
+      validarUuid(id, 'id');
+      validarSolicitadoPor(solicitadoPor);
+
+      if (!ROLES_QUE_CREAN.includes(req.auth?.rol)) {
+        throw new ApiError(
+          403,
+          'SIN_PERMISO',
+          'Solo recepción y administración pueden cancelar turnos'
+        );
+      }
+
+      const turno = await cancelarTurno({
+        turnoId: id,
+        consultorioId: req.auth.consultorioId,
+        usuarioId: req.auth.usuarioId,
+        solicitadoPor,
+      });
+
       const { consultorioId: _consultorioId, ...dto } = turno;
       res.status(200).json(dto);
     } catch (error) {

@@ -28,6 +28,9 @@ function mapearTurno(fila) {
     // reprogramación; `?? null` cubre los SELECTs que no las traen.
     reprogramadoEn: fila.reprogramado_en ?? null,
     reprogramadoPor: fila.reprogramado_por ?? null,
+    canceladoEn: fila.cancelado_en ?? null,
+    canceladoPor: fila.cancelado_por ?? null,
+    solicitadoPor: fila.solicitado_por ?? null,
   };
 }
 
@@ -294,6 +297,49 @@ export function crearRepositorioTurnos({ cliente } = {}) {
             // del último intento) → 409; los ApiError pasan tal cual.
             throw traducirViolacionExclusion(error);
           }
+        }
+      });
+    },
+
+    /**
+     * Cancela atómicamente el turno propio del tenant. Validación de estado
+     * y fecha dentro del lock; el reloj y la auditoría vienen de PostgreSQL.
+     */
+    async cancelarTurno({ turnoId, consultorioId, canceladoPor, solicitadoPor }, bajoBloqueo) {
+      return conCliente(async (conexion) => {
+        try {
+          await conexion.query('BEGIN');
+          const { rows } = await conexion.query(
+            `SELECT id, consultorio_id, paciente_id, profesional_id, sillon_box_id,
+                    prestacion_id, inicio, fin, duracion_min, estado, creado_en,
+                    reprogramado_en, reprogramado_por, cancelado_en, cancelado_por,
+                    solicitado_por, now() AS ahora
+             FROM turno
+             WHERE id = $1 AND consultorio_id = $2
+             FOR UPDATE`,
+            [turnoId, consultorioId]
+          );
+          if (!rows[0]) throw errorTurnoNoEncontrado();
+
+          await bajoBloqueo(mapearTurno(rows[0]), rows[0].ahora);
+          const resultado = await conexion.query(
+            `UPDATE turno
+                SET estado = 'CANCELADO',
+                    cancelado_en = now(),
+                    cancelado_por = $3,
+                    solicitado_por = $4
+              WHERE id = $1 AND consultorio_id = $2
+              RETURNING id, consultorio_id, paciente_id, profesional_id, sillon_box_id,
+                        prestacion_id, inicio, fin, duracion_min, estado, creado_en,
+                        reprogramado_en, reprogramado_por, cancelado_en, cancelado_por,
+                        solicitado_por`,
+            [turnoId, consultorioId, canceladoPor, solicitadoPor]
+          );
+          await conexion.query('COMMIT');
+          return mapearTurno(resultado.rows[0]);
+        } catch (error) {
+          await conexion.query('ROLLBACK').catch(() => {});
+          throw error;
         }
       });
     },

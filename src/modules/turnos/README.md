@@ -3,8 +3,8 @@
 Alta de turnos (`POST /api/turnos`) y reprogramación (`PATCH
 /api/turnos/:id/reprogramar`) en el consultorio autenticado, sin
 solapamientos por paciente, profesional ni sillón/box. Spec vigente:
-`openspec/specs/turnos/spec.md` (changes `c05-crear-turno-sin-solapamientos`
-y `c07-reprogramar-turno`).
+`openspec/specs/turnos/spec.md` (changes `c05-crear-turno-sin-solapamientos`,
+`c06-cancelar-turno-liberar-horario` y `c07-reprogramar-turno`).
 
 ## Interfaz pública
 
@@ -97,6 +97,22 @@ callback del servicio bajo el lock (estado `PENDIENTE` → si no, 409
 auditoría → `COMMIT`. Un `ApiError` del callback hace `ROLLBACK` y se
 propaga tal cual.
 
+### `cancelarTurno(parametros)` — `src/modules/turnos/servicios.js` (C06)
+
+```js
+cancelarTurno({ turnoId, consultorioId, usuarioId, solicitadoPor }) → Promise<turno>
+```
+
+- `consultorioId` y `usuarioId` se derivan exclusivamente del token;
+  `solicitadoPor` acepta `PACIENTE` o `CONSULTORIO`.
+- Solo cancela turnos futuros `PENDIENTE` o `CONFIRMADO`. La operación toma
+  `FOR UPDATE`, evalúa estado e inicio usando el reloj UTC de PostgreSQL y
+  actualiza estado y auditoría (`cancelado_en`, `cancelado_por`,
+  `solicitado_por`) en una transacción.
+- Errores: 400 `VALIDACION`, 404 `TURNO_NO_ENCONTRADO`, 409
+  `TURNO_YA_CANCELADO`, `ESTADO_INVALIDO` o `TURNO_PASADO`. Un error revierte
+  la transacción y conserva la auditoría previa.
+
 ## Códigos de error
 
 | Code | HTTP | Significado |
@@ -105,6 +121,8 @@ propaga tal cual.
 | `VALIDACION` | 400 | Formato: UUID malformado en cualquier campo, o `inicio` sin zona horaria explícita. |
 | `SIN_PERMISO` | 403 | Rol distinto de `RECEPCION`/`ADMIN_CONSULTORIO` (hoy: `ODONTOLOGO`; el flag "operar sin recepción" es fuera de alcance — C06). |
 | `TURNO_NO_ENCONTRADO` | 404 | Reprogramación (C07): turno inexistente o de OTRO consultorio — una sola señal, mensaje sin datos ajenos (RN-TEN-01/RN-TEN-02). |
+| `TURNO_YA_CANCELADO` | 409 | Cancelación (C06): el turno ya fue cancelado; se conserva la auditoría original. |
+| `TURNO_PASADO` | 409 | Cancelación (C06): el inicio del turno ya ocurrió. |
 | `SOLAPAMIENTO` | 409 | Conflicto por paciente, profesional o sillón/box dentro del consultorio (pre-check o violación `23P01` del índice). |
 | `ESTADO_INVALIDO` | 409 | Reprogramación (C07): el turno no está en estado `PENDIENTE` (RN-AG-10); no se modifica nada. |
 | `REFERENCIA_INVALIDA` | 422 | Recurso inexistente, ajeno al consultorio o inactivo — **indicando el campo** (`pacienteId`, `profesionalId`, `sillonBoxId`, `prestacionId`), un mensaje por campo (mismo para los tres estados). |
