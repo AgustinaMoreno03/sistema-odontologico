@@ -7,7 +7,7 @@
 ## 2. Migración y auditoría
 
 - [x] 2.1 RED: agregar primero una prueba de esquema/migración que espere `cancelado_por` y `solicitado_por` en `turno`, incluida la FK al usuario y la restricción de valores permitidos; verificar que falla antes de crear la migración. `cancelado_en` ya existe desde 050.
-- [x] 2.2 GREEN: renumerar la migración C06 como `110_cancelar_turno.sql`, agregando solo los campos de auditoría faltantes y sus constraints, sin editar 001–050 ni 070; verificar aplicación en base vacía en orden ascendente (001→050→070→110) y re-ejecución sin pendientes.
+- [x] 2.2 GREEN: renumerar la migración C06 como `071_cancelar_turno.sql`, agregando solo los campos de auditoría faltantes y sus constraints, sin editar migraciones ya mergeadas (001, 010, 020, 030, 040, 050, 070); verificar aplicación ascendente (001→050→070→071) y re-ejecución sin pendientes.
 - [x] 2.3 Actualizar fixtures/helpers de turnos con datos ficticios de cancelación y limpieza filtrada por IDs propios; verificar que las pruebas de esquema y las pruebas de humo pasan.
 
 ## 3. Repositorio y dominio
@@ -34,7 +34,7 @@
 ## 6. Verificación final
 
 - [x] 6.1 Ejecutar `npm test` contra PostgreSQL real, incluyendo cobertura de todos los escenarios de la delta spec y concurrencia; verificar salida en verde.
-- [x] 6.2 Verificar migraciones 001→050→070→110 en base vacía y continuación sobre base existente con 070 aplicada; confirmar que el runner respeta el orden ascendente según `schema-migrations`.
+- [x] 6.2 Verificar migraciones 001→050→070→071 en base vacía y continuación sobre base existente con 070 aplicada; confirmar que el runner respeta el orden ascendente según `schema-migrations`.
 - [x] 6.3 Revisar `git diff` para confirmar que solo cambian los archivos del módulo turnos, su migración nueva, tests/fixtures y la spec documentados; comprobar tenant desde token y datos exclusivamente ficticios.
 
 ## Workflow follow-up

@@ -220,7 +220,7 @@ Cerrar C00–C08 y la verificación del flujo de turnos antes de ampliar agenda.
 | C03 | 030–039 | Pacientes. |
 | C04 | 040–049 | Prestaciones. |
 | C05 | 050–059 | Turnos y disponibilidad. |
-| C06 | 060–069 | Cancelación. |
+| C06 | 071 (único) | Cancelación. 070 ya aplicada en main por C07. |
 | C07 | 070–079 | Reprogramación. |
 | C08 | 080–089 | Lectura de agenda. |
 | C09 | 090–099 | Reservado. El frontend no requiere migraciones. |

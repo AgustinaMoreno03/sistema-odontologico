@@ -24,7 +24,7 @@ Ver `proposal.md` para el motivo y `specs/turnos/spec.md` para el contrato obser
    - Decisión aprobada: “ya pasó” significa `inicio <= instante actual UTC` al procesar la cancelación.
    - Alternativa descartada: leer y luego actualizar sin lock; dos solicitudes concurrentes podrían reemplazar la auditoría original.
 
-3. **Auditoría con columnas nuevas.** La 050 ya declara `cancelado_en TIMESTAMPTZ`; la migración forward-only `110_cancelar_turno.sql` agregará `cancelado_por UUID` con FK a `usuario(id)` y `solicitado_por` restringido a `PACIENTE`/`CONSULTORIO`. La 070 solo agrega `reprogramado_en` y `reprogramado_por`, que auditan reprogramación y no cubren ningún dato de auditoría de cancelación. No reutilizar ni editar 050 o 070.
+3. **Auditoría con columnas nuevas.** La 050 ya declara `cancelado_en TIMESTAMPTZ`; la migración forward-only `071_cancelar_turno.sql` agregará `cancelado_por UUID` con FK a `usuario(id)` y `solicitado_por` restringido a `PACIENTE`/`CONSULTORIO`. La 070 solo agrega `reprogramado_en` y `reprogramado_por`, que auditan reprogramación y no cubren ningún dato de auditoría de cancelación. No reutilizar ni editar 050 ni 070.
    - Alternativa descartada: sobrecargar las columnas de reprogramación de 070; mezclan eventos diferentes y no conservan ambas auditorías.
 
 4. **Códigos de error específicos.** Mantener `400 VALIDACION`, `403 SIN_PERMISO` y `404 TURNO_NO_ENCONTRADO` tanto para UUID inexistente como para turno de otro consultorio, igual que C07. Usar `409 ESTADO_INVALIDO` para `ATENDIDO`/`AUSENTE` (convención C07) y, según el contrato explícito de C06, `409 TURNO_YA_CANCELADO` y `409 TURNO_PASADO` para las otras condiciones.
@@ -34,15 +34,15 @@ Ver `proposal.md` para el motivo y `specs/turnos/spec.md` para el contrato obser
 ## Risks / Trade-offs
 
 - **[Estado OpenSpec de C05]** C05 está en `main` con 379 tests en verde, según confirmación de Agus; OpenSpec aún lo muestra in-progress porque falta archivar su carpeta → tomar la dependencia como cumplida, sin esperar ese archivo administrativo.
-- **[Excepción de prefijo para C06]** La 060 no puede aplicarse en bases que ya registraron 070: `schema-migrations` exige que el runner falle visiblemente ante una versión inferior pendiente. Se usa 110 porque la base local de Kevin y Neon ya tienen 070 y no pueden resetearse. Así se conserva el orden ascendente sin `--no-check-order` ni recrear esos entornos. La líder Agus documentará la excepción en `CHANGES.md`; no editar ese archivo desde C06. Todavía no hay entorno desplegado, por lo que 110 se aplicará después de 070.
+- **[Secuencia de migración C06]** El equipo decidió usar `071_cancelar_turno.sql`: Kevin confirmó que 071 está libre y la 070 de C07 ya está aplicada en `main`. La migración C06 queda inmediatamente después de 070 y antes de cualquier rango posterior. La regla es no renumerar migraciones ya mergeadas; no se edita ninguna migración existente.
 - **[Carrera entre cancelaciones simultáneas]** Sin serialización se podría sobrescribir la auditoría inicial → lock transaccional y test concurrente de idempotencia; solo la primera solicitud modifica la fila.
 - **[Borde temporal]** Una comparación con la hora de la aplicación puede diferir de la base → comparar con reloj UTC de PostgreSQL dentro de la transacción y probar el límite `inicio <= ahora`.
 
 ## Migration Plan
 
-1. Aplicar 110 después de 070 en orden ascendente; no editar archivos versionados.
-2. Ejecutar las pruebas contra PostgreSQL real, incluyendo liberación, aplicación desde base vacía con 001→050→070→110 y re-ejecución sin pendientes.
-3. Rollback operativo: no borrar auditoría ni editar la 110 ya integrada; si se necesita revertir el comportamiento, publicar una migración forward-only y retirar/desplegar la ruta en un cambio coordinado.
+1. Aplicar 071 después de 070 en orden ascendente; no editar archivos versionados.
+2. Ejecutar las pruebas contra PostgreSQL real, incluyendo liberación, aplicación desde base vacía con 001→050→070→071 y re-ejecución sin pendientes.
+3. Rollback operativo: no borrar auditoría ni editar la 071 ya integrada; si se necesita revertir el comportamiento, publicar una migración forward-only y retirar/desplegar la ruta en un cambio coordinado.
 
 ## UI Mockups
 
