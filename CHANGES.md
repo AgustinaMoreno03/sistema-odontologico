@@ -152,6 +152,7 @@ Cerrar C00–C08 y la verificación del flujo de turnos antes de ampliar agenda.
 - **Alcance:** validar reglas RN-AG-01, RN-AG-02 y RN-AG-05 a RN-AG-07. Rechazar solapamientos por profesional y box de forma transaccional, también ante solicitudes simultáneas. Evaluar restricciones de exclusión en `design.md`. Usar duración de la prestación y el consultorio autenticado.
 - **Ciclo OPSX completo:** spec aprobado, implementación, `npm test`, verificación y archivo. Cubrir reserva válida, conflictos por profesional y por box, turnos contiguos, concurrencia y aislamiento entre consultorios.
 - **Riesgos:** C05 puede prepararse con interfaces acordadas y stubs. Para verificar el recorrido integrado se necesitan las implementaciones reales de C01–C04.
+- **Estado:** completo, archivado el 2026-11-24 en `openspec/changes/archive/` (379 tests en verde). Excepción documentada: task 2.3 (Neon) pendiente de comprobar en el primer deploy.
 
 ### C06 — Cancelar turno y liberar el horario
 - **Gobernanza** · MEDIA para cancelación.
