@@ -83,8 +83,8 @@ function usuarioPublico(usuario) {
   };
 }
 
-/** Alta tenant-scoped: la identidad autenticada es la única fuente del tenant. */
-export async function crearUsuarioEnConsultorio(auth, datos) {
+/** Alta tenant-scoped: el tenant sale del contexto confiable (HTTP o CLI interno). */
+export async function crearUsuarioEnConsultorio(auth, datos, { cliente } = {}) {
   if (auth.rol !== 'ADMIN_CONSULTORIO') {
     throw new ApiError(403, 'ROL_NO_AUTORIZADO', 'No tiene permiso para administrar usuarios');
   }
@@ -102,7 +102,7 @@ export async function crearUsuarioEnConsultorio(auth, datos) {
       rol,
       email,
       passwordHash,
-    });
+    }, { cliente });
     return usuarioPublico(usuario);
   } catch (error) {
     if (error.code === '23505' && error.constraint === 'usuario_email_unique') {

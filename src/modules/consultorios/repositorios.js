@@ -2,7 +2,8 @@
 // propia tabla, sin HTTP ni reglas de negocio (DD-13).
 import pg from 'pg';
 
-async function consultar(sql, valores = []) {
+async function consultar(sql, valores = [], clienteExterno) {
+  if (clienteExterno) return clienteExterno.query(sql, valores);
   const cliente = new pg.Client({ connectionString: process.env.DATABASE_URL });
   try {
     await cliente.connect();
@@ -13,9 +14,11 @@ async function consultar(sql, valores = []) {
 }
 
 /** Aprovisiona un tenant sin exponer una ruta pública de registro. */
-export async function crearConsultorio() {
+export async function crearConsultorio({ cliente } = {}) {
   const resultado = await consultar(
-    'INSERT INTO consultorio DEFAULT VALUES RETURNING id'
+    'INSERT INTO consultorio DEFAULT VALUES RETURNING id',
+    [],
+    cliente
   );
   return resultado.rows[0];
 }
