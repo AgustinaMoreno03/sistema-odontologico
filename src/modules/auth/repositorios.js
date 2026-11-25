@@ -5,7 +5,8 @@
 
 import pg from 'pg';
 
-async function consultar(sql, valores) {
+async function consultar(sql, valores, clienteExterno) {
+  if (clienteExterno) return clienteExterno.query(sql, valores);
   const cliente = new pg.Client({ connectionString: process.env.DATABASE_URL });
   try {
     await cliente.connect();
@@ -18,12 +19,13 @@ async function consultar(sql, valores) {
 const COLUMNAS_PUBLICAS = 'id, consultorio_id, rol, email';
 
 /** Inserta credenciales ya hasheadas; nunca recibe ni persiste la contraseña. */
-export async function crearUsuario({ id, consultorioId, rol, email, passwordHash }) {
+export async function crearUsuario({ id, consultorioId, rol, email, passwordHash }, { cliente } = {}) {
   const resultado = await consultar(
     `INSERT INTO usuario (id, consultorio_id, rol, email, password_hash)
      VALUES (COALESCE($1::uuid, gen_random_uuid()), $2, $3, $4, $5)
      RETURNING id, consultorio_id, rol, email, password_hash`,
-    [id ?? null, consultorioId, rol, email, passwordHash]
+    [id ?? null, consultorioId, rol, email, passwordHash],
+    cliente
   );
   return resultado.rows[0];
 }

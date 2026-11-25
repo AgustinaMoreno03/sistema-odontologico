@@ -250,9 +250,33 @@ en `servicios`.
   consultorio del token.
 - `GET /usuarios/:id` devuelve usuarios del mismo consultorio; un ID ajeno o
   inexistente devuelve 404.
-- `POST /consultorios` no está disponible (404). Para el aprovisionamiento
-  operativo interno, `npm run crear-consultorio` crea un tenant y muestra su
-  ID; no agrega permisos de pacientes, turnos ni agenda.
+- `POST /consultorios` no está disponible (404). El alta inicial se realiza
+  exclusivamente mediante el comando interno.
+
+### Aprovisionar un consultorio y su primer administrador
+
+Con una versión de Node compatible con `package.json` y las dependencias
+instaladas, configurá `DATABASE_URL` para la base autorizada. Esta base debe
+tener aplicadas `001_esquema_inicial.sql` y `010_credenciales_usuario.sql`
+mediante el runner habitual (`npm run migrate`, según el procedimiento del
+entorno). El bootstrap no aplica migraciones.
+
+Proveé `BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD` por el canal
+privado del entorno. El email debe ser nuevo en todo el sistema; el servicio
+recorta el email, pero no la contraseña. No pases credenciales por argumentos.
+
+- `npm run crear-consultorio` requiere un archivo `.env` local porque el
+  alias usa `--env-file=.env`.
+- Si las tres variables ya están inyectadas, usá `node scripts/crear-consultorio.js`
+  sin archivo `.env`. El comando no requiere `JWT_SECRET`; la API lo sigue
+  necesitando para el login.
+
+El comando confirma el consultorio nuevo y su primer `ADMIN_CONSULTORIO`
+juntos, con la contraseña hasheada. Solo informa el ID del consultorio tras
+confirmar ambas altas. Si falla, termina con código distinto de cero y un
+mensaje genérico. Si se interrumpe la conexión al confirmar, verificá el
+estado en la base de destino antes de repetir. El comando no agrega usuarios
+a consultorios existentes.
 
 ## Scripts
 
@@ -260,7 +284,7 @@ en `servicios`.
 |---|---|---|
 | `npm start` | `node --env-file=.env src/server.js` | Levanta la API (fail-fast sin `DATABASE_URL`/`JWT_SECRET` válidos) |
 | `npm run migrate` | `node --env-file=.env ./node_modules/node-pg-migrate/bin/node-pg-migrate.js up --config-file migrations.config.js` | Aplica las migraciones SQL de `db/migrations/` en orden ascendente |
-| `npm run crear-consultorio` | `node --env-file=.env scripts/crear-consultorio.js` | Aprovisiona un consultorio inicial por mecanismo interno |
+| `npm run crear-consultorio` | `node --env-file=.env scripts/crear-consultorio.js` | Aprovisiona un consultorio nuevo y su primer administrador en una sola transacción |
 | `npm test` | `node --env-file=.env ./node_modules/vitest/vitest.mjs run` | Corre la suite completa (única puerta de integración) |
 
 ## Estructura por capas (DD-13)
