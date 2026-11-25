@@ -1,6 +1,6 @@
 # Agenda C08
 
-Contrato aprobado en PR #22. Implementación completada por tres tandas RED/GREEN el 24/11/2026: 47 tests propios y suite completa de 505/505 en 54 archivos. Requiere revisión del PR de implementación antes de integrar; no está archivado todavía.
+Contrato aprobado en PR #22 e implementación integrada mediante PR #23. Se completaron tres tandas RED/GREEN el 24/11/2026: 47 tests propios y suite completa de 505/505 en 54 archivos. El archivado se gestiona como cierre posterior.
 
 ## Consulta HTTP
 
@@ -33,7 +33,15 @@ La selección usa intersección `[desde, hasta)`: un turno que termina exactamen
 
 Cada turno es plano: `id`, `pacienteId`, `pacienteNombre`, `pacienteApellido`, `profesionalId`, `sillonBoxId`, `prestacionId`, `inicio`, `fin`, `duracionMin`, `estado`. `pacienteApellido` es null cuando falta. Los instantes son UTC; C09 presenta la zona indicada y resuelve los nombres de catálogo mediante sus endpoints existentes. No se exponen contactos, consultorioId ni historia clínica.
 
-Orden: inicio ASC, id ASC. Continuar con siguienteOffset mientras hayMas sea true. No se ofrece un snapshot entre páginas: si se modifican turnos mientras se navega, refrescar la agenda. Si se alcanza el máximo de offset, reducir el rango o filtrar profesional.
+Orden: inicio ASC, id ASC. Continuar con siguienteOffset mientras hayMas sea true. Si se alcanza el máximo de offset, reducir el rango o filtrar profesional.
+
+## Limitación de paginación ante cambios concurrentes
+
+La consulta usa LIMIT/OFFSET. Cada solicitud HTTP lee el estado de la base en ese momento; las páginas sucesivas no comparten una instantánea (snapshot). El orden por inicio e id es estable mientras los datos no cambien, pero siguienteOffset indica una posición y no congela los resultados anteriores.
+
+Si entre páginas se crea un turno o se reprograma uno dentro o fuera del rango, las posiciones pueden cambiar. En consecuencia, al continuar con el mismo offset pueden aparecer turnos duplicados o pueden omitirse turnos. Por ejemplo, si la primera página devuelve A y B y luego se inserta X antes de ambos, la segunda página con offset 2 puede volver a incluir B. Una reprogramación hacia una posición ya recorrida puede hacer que ese turno no aparezca en las páginas restantes.
+
+Para C09: después de crear o reprogramar, o cuando se necesite una vista actualizada, descartar las páginas acumuladas y volver a consultar desde offset 0. Deduplicar por id solo evita duplicados visuales; no recupera posibles omisiones. Refrescar permite obtener una vista más reciente, pero tampoco garantiza una instantánea si siguen ocurriendo cambios durante la navegación. C08 no ofrece consistencia de snapshot entre páginas ni usa un cursor versionado.
 
 ## Permisos y errores
 
