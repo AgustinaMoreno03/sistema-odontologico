@@ -181,6 +181,7 @@ Cerrar C00–C08 y la verificación del flujo de turnos antes de ampliar agenda.
 - **Tamaño:** mediano.
 - **Módulos y archivos que toca:** `turnos` (lectura de agenda por rango: día/semana, por profesional; recepción y administración ven las agendas del consultorio, cada odontólogo ve la suya — RN-AG-03), índices de lectura (`consultorio_id`, `profesional_id`, `inicio`), endpoints de consulta. **Contrato de API** que consumirá C09.
 - **Riesgos:** cada consulta debe filtrar por el consultorio autenticado — test de aislamiento obligatorio; cambios de contrato después de que C09 arranque → congelar contrato en el spec.
+- **Estado:** completo, archivado el 2026-11-24 en `openspec/changes/archive/` (505 tests en verde, commit 971bdf7). Limitación documentada: paginación sin snapshot entre solicitudes (AGENDA.md).
 
 ### C09 — Frontend mínimo en React 19 con Vite y JavaScript
 - **Gobernanza** · MEDIA para integración y permisos de interfaz.
