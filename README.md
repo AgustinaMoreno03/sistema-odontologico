@@ -4,8 +4,9 @@ API REST del sistema de gestión odontológica (multi-consultorio). Monolito
 modular **por capas** en Node.js con **Express 5** (JavaScript plano, sin
 TypeScript) y **PostgreSQL 18**.
 
-> Estado: C00 — base del proyecto. Este README es la guía completa de
-> arranque en frío: desde un checkout vacío hasta la suite en verde.
+El frontend React 19 con Vite vive en `frontend/`. Backend y frontend
+instalan sus dependencias y ejecutan sus pruebas por separado. Esta guía
+cubre el arranque de la API y la verificación de ambas suites.
 
 ## Requisitos
 
@@ -68,19 +69,63 @@ reales de pacientes ni credenciales reales en ningún archivo.
   200 sin reiniciar la API.
 - PowerShell en lugar de curl: `Invoke-RestMethod http://localhost:3000/health`
 
-### `npm test` — la única puerta de integración
+### Backend: `npm test` — puerta de integración principal
 
-- Corre la suite completa contra PostgreSQL real en una **base separada
+- Desde la raíz, corre exclusivamente `tests/**/*.test.js`, incluyendo
+  las pruebas de integración contra PostgreSQL real en una **base separada
   `odontologia_test`** que el setup **crea desde cero (drop + create) y
   migra en cada corrida**; solo dropea bases terminadas en `_test` (nunca
   la de desarrollo).
-- Verde con código 0 = condición para integrar (regla dura 6).
+- Resultado de referencia al 25/11/2026: **521 tests de backend aprobados**.
+  La cantidad puede aumentar con nuevos cambios; todos deben pasar con
+  **código de salida 0** para integrar (regla dura 6).
 - Necesita Docker/PostgreSQL arriba; si la base de test es inaccesible,
   la suite **falla con código ≠ 0** (sin falso verde).
 - ⚠️ Señal real: el **código de salida y los contadores**
-  (`Tests  43 passed (43)`). Si el setup global falla, Vitest puede
+  (`Tests  521 passed (521)`). Si el setup global falla, Vitest puede
   imprimir un confuso *"No test files found"* — eso **no** es el resultado:
   mirá el exit code.
+
+### Frontend: instalación, pruebas y build
+
+En otra terminal, empezando en la raíz del repositorio:
+
+```bash
+cd frontend
+npm install
+npm test
+npm run build
+```
+
+Resultado de referencia al 25/11/2026: **42 tests aprobados en 6 archivos**
+y build correcto, ambos con código de salida 0. Esta suite usa su propia
+configuración de Vitest, React y jsdom; sus pruebas automatizadas simulan
+las respuestas HTTP y no requieren que la API esté levantada.
+
+El `npm install` de la raíz no instala las dependencias de `frontend/`.
+Tampoco `npm test` desde la raíz ejecuta sus pruebas. Para verificar el
+proyecto completo, ejecutar **ambas suites** y el build del frontend; los
+contadores corresponden a ejecuciones separadas.
+
+En Windows PowerShell, si la política de scripts bloquea `npm.ps1`, usar
+`npm.cmd` en lugar de `npm` en los comandos de esta guía.
+
+### Abrir el frontend local
+
+Con la API iniciada en `http://localhost:3000`, ejecutar desde `frontend/`:
+
+```bash
+npm run dev
+```
+
+Abrir la URL que informe Vite en la terminal. El proxy de desarrollo
+redirige `/auth` y `/api` al backend local en el puerto 3000. Para iniciar
+sesión, aprovisionar antes un consultorio y su administrador mediante la
+sección «Aprovisionar un consultorio y su primer administrador» de esta guía;
+no hay registro público. Usar siempre datos ficticios.
+
+Para volver a ejecutar comandos del backend desde esa terminal, regresar
+a la raíz con `cd ..`.
 
 ## Puertos y servicios
 
@@ -285,7 +330,7 @@ a consultorios existentes.
 | `npm start` | `node --env-file=.env src/server.js` | Levanta la API (fail-fast sin `DATABASE_URL`/`JWT_SECRET` válidos) |
 | `npm run migrate` | `node --env-file=.env ./node_modules/node-pg-migrate/bin/node-pg-migrate.js up --config-file migrations.config.js` | Aplica las migraciones SQL de `db/migrations/` en orden ascendente |
 | `npm run crear-consultorio` | `node --env-file=.env scripts/crear-consultorio.js` | Aprovisiona un consultorio nuevo y su primer administrador en una sola transacción |
-| `npm test` | `node --env-file=.env ./node_modules/vitest/vitest.mjs run` | Corre la suite completa (única puerta de integración) |
+| `npm test` | `node --env-file=.env ./node_modules/vitest/vitest.mjs run` | Desde la raíz, corre exclusivamente la suite del backend en `tests/` (puerta de integración principal); el frontend se verifica por separado |
 
 ## Estructura por capas (DD-13)
 
