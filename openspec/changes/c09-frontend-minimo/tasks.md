@@ -132,7 +132,7 @@
     - Cancelacion desde la pantalla Nuevo turno.
     - Prueba de aislamiento utilizando un segundo administrador perteneciente a otro consultorio.
     - En la sesion del segundo administrador no aparecieron los pacientes, catalogos ni turnos del primero.
-    - Captura de la prueba de aislamiento guardada fuera del repositorio para el video de entrega.
+    - Evidencia visual del aislamiento: `openspec/changes/c09-frontend-minimo/evidencias/C09-aislamiento.jpg`, disponible en el repositorio para revision y para el video de entrega.
   - Alcance de la evidencia: los tests automatizados utilizan respuestas HTTP simuladas para comprobar el comportamiento del frontend; las pruebas manuales verificaron el recorrido funcional contra la API y PostgreSQL reales.
   - No se incorporaron scripts de seed ni modificaciones al backend como parte de C09.
 
@@ -187,7 +187,7 @@
 - Se verifico que los catalogos no mostraran los recursos del primer consultorio.
 - Se verifico que la agenda no mostrara los turnos del primer consultorio.
 - Resultado: aislamiento funcional verificado en el recorrido manual realizado.
-- Evidencia visual: captura guardada fuera del repositorio para el video de entrega.
+- Evidencia visual: `openspec/changes/c09-frontend-minimo/evidencias/C09-aislamiento.jpg`.
 - Esta prueba manual no constituye una auditoria integral de seguridad.
 
 ### Alcance y pendientes
